@@ -36,10 +36,10 @@ const Hero = () => {
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
             Exclusive Drip
             <br />
-            <span className="text-primary">For True Collectors</span>
+            <span className="text-primary">for any application</span>
           </h1>
           <p className="text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-8">
-            Limited edition chains for those who know what's up.
+            quick, fast and easy
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button className="button-primary">
@@ -47,7 +47,7 @@ const Hero = () => {
             </button>
           </div>
         </div>
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mt-16 hidden md:grid md:grid-cols-3 gap-8">
           <div className="relative group">
             <img
               src="/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png"
@@ -62,6 +62,15 @@ const Hero = () => {
               className="w-full h-full object-cover rounded-lg shadow-2xl transition-transform duration-500 group-hover:scale-105"
             />
           </div>
+          <div className="relative group">
+            <img
+              src="/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
+              alt="Product showcase 3"
+              className="w-full h-full object-cover rounded-lg shadow-2xl transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+        </div>
+        <div className="mt-16 md:hidden">
           <div className="relative group">
             <img
               src="/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
