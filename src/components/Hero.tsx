@@ -36,10 +36,10 @@ const Hero = () => {
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
             Exclusive Drip
             <br />
-            <span className="text-primary">for any application</span>
+            <span className="text-primary">For Any Application</span>
           </h1>
           <p className="text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-8">
-            quick, fast and easy
+            Quick, Fast, and Easy
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button className="button-primary">
