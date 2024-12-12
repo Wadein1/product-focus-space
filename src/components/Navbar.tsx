@@ -23,7 +23,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
             <a href="#" className="text-xl font-semibold">
-              ProductName
+              Gimmie Drip
             </a>
           </div>
 

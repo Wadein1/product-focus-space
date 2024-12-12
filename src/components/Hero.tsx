@@ -33,37 +33,42 @@ const Hero = () => {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 opacity-0 translate-y-4 transition-all duration-1000"
       >
         <div className="text-center">
-          <span className="inline-block px-4 py-1 mb-4 text-sm font-medium bg-primary/10 text-primary rounded-full animate-fade-in">
-            Introducing Innovation
-          </span>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-            The Future of
+            Exclusive Drip
             <br />
-            <span className="text-primary">Product Design</span>
+            <span className="text-primary">For True Collectors</span>
           </h1>
           <p className="text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-8">
-            Experience the perfect blend of form and function. Designed to
-            revolutionize your everyday life with unparalleled precision and
-            elegance.
+            Limited edition chains for those who know what's up.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button className="button-primary">
-              Pre-order Now
-            </button>
-            <button className="px-6 py-3 text-secondary hover:text-primary transition-colors duration-200">
-              Learn More →
+              Get Yours Now
             </button>
           </div>
         </div>
-        <div className="mt-16 relative">
-          <div className="aspect-[16/9] max-w-3xl mx-auto">
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="relative group">
             <img
-              src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=1200&q=80"
-              alt="Product showcase"
-              className="w-full h-full object-cover rounded-lg shadow-2xl animate-float"
+              src="/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png"
+              alt="Product showcase 1"
+              className="w-full h-full object-cover rounded-lg shadow-2xl transition-transform duration-500 group-hover:scale-105"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-white to-transparent bottom-0 h-20" />
+          <div className="relative group">
+            <img
+              src="/lovable-uploads/d6daae6b-a26c-4424-a049-ee61f42f02c3.png"
+              alt="Product showcase 2"
+              className="w-full h-full object-cover rounded-lg shadow-2xl transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+          <div className="relative group">
+            <img
+              src="/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
+              alt="Product showcase 3"
+              className="w-full h-full object-cover rounded-lg shadow-2xl transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
         </div>
       </div>
     </div>
