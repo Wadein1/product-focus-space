@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -22,9 +23,9 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
-            <a href="#" className="text-xl font-semibold">
+            <Link to="/" className="text-xl font-semibold">
               Gimmie Drip
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -38,9 +39,9 @@ const Navbar = () => {
             <a href="#gallery" className="nav-link">
               Gallery
             </a>
-            <button className="button-primary">
+            <Link to="/product" className="button-primary">
               Buy Now
-            </button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -83,12 +84,13 @@ const Navbar = () => {
               >
                 Gallery
               </a>
-              <button
+              <Link
+                to="/product"
                 className="block w-full text-left px-3 py-2 rounded-md text-base font-medium button-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Buy Now
-              </button>
+              </Link>
             </div>
           </div>
         )}

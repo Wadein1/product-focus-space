@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -42,9 +43,9 @@ const Hero = () => {
             Quick, Fast, and Easy
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="button-primary">
+            <Link to="/product" className="button-primary">
               Get Yours Now
-            </button>
+            </Link>
           </div>
         </div>
         <div className="mt-16 hidden md:grid md:grid-cols-3 gap-8">
