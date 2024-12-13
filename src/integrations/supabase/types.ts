@@ -9,7 +9,162 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      analytics: {
+        Row: {
+          date: string
+          id: string
+          material_cost: number
+          profit: number
+          shipping_cost: number
+          total_orders: number
+          total_sales: number
+        }
+        Insert: {
+          date?: string
+          id?: string
+          material_cost: number
+          profit?: number
+          shipping_cost: number
+          total_orders?: number
+          total_sales?: number
+        }
+        Update: {
+          date?: string
+          id?: string
+          material_cost?: number
+          profit?: number
+          shipping_cost?: number
+          total_orders?: number
+          total_sales?: number
+        }
+        Relationships: []
+      }
+      fundraising_requests: {
+        Row: {
+          company_name: string
+          contact_email: string
+          created_at: string
+          description: string | null
+          id: string
+          status: string
+        }
+        Insert: {
+          company_name: string
+          contact_email: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      gallery_images: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_path: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_path: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_path?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_email: string
+          id: string
+          image_path: string | null
+          price: number
+          product_name: string
+          shipping_address: Json
+          shipping_cost: number
+          status: string
+          stl_file_path: string | null
+          tax_amount: number
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          id?: string
+          image_path?: string | null
+          price: number
+          product_name: string
+          shipping_address: Json
+          shipping_cost?: number
+          status?: string
+          stl_file_path?: string | null
+          tax_amount: number
+          total_amount: number
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          id?: string
+          image_path?: string | null
+          price?: number
+          product_name?: string
+          shipping_address?: Json
+          shipping_cost?: number
+          status?: string
+          stl_file_path?: string | null
+          tax_amount?: number
+          total_amount?: number
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          created_at: string
+          customer_email: string
+          description: string
+          id: string
+          image_path: string | null
+          status: string
+          ticket_type: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          description: string
+          id?: string
+          image_path?: string | null
+          status?: string
+          ticket_type: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          description?: string
+          id?: string
+          image_path?: string | null
+          status?: string
+          ticket_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
