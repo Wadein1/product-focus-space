@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_access: {
+        Row: {
+          access_code: string
+          created_at: string
+          email: string
+          id: string
+          last_login: string | null
+        }
+        Insert: {
+          access_code: string
+          created_at?: string
+          email: string
+          id?: string
+          last_login?: string | null
+        }
+        Update: {
+          access_code?: string
+          created_at?: string
+          email?: string
+          id?: string
+          last_login?: string | null
+        }
+        Relationships: []
+      }
       analytics: {
         Row: {
           date: string
@@ -38,6 +62,44 @@ export type Database = {
           total_sales?: number
         }
         Relationships: []
+      }
+      cart_items: {
+        Row: {
+          cart_id: string | null
+          created_at: string
+          id: string
+          image_path: string | null
+          price: number
+          product_name: string
+          quantity: number | null
+        }
+        Insert: {
+          cart_id?: string | null
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          price: number
+          product_name: string
+          quantity?: number | null
+        }
+        Update: {
+          cart_id?: string | null
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          price?: number
+          product_name?: string
+          quantity?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_carts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fundraising_requests: {
         Row: {
@@ -92,10 +154,13 @@ export type Database = {
       }
       orders: {
         Row: {
+          cart_id: string | null
           created_at: string
           customer_email: string
+          design_notes: string | null
           id: string
           image_path: string | null
+          order_status: string | null
           price: number
           product_name: string
           shipping_address: Json
@@ -106,10 +171,13 @@ export type Database = {
           total_amount: number
         }
         Insert: {
+          cart_id?: string | null
           created_at?: string
           customer_email: string
+          design_notes?: string | null
           id?: string
           image_path?: string | null
+          order_status?: string | null
           price: number
           product_name: string
           shipping_address: Json
@@ -120,10 +188,13 @@ export type Database = {
           total_amount: number
         }
         Update: {
+          cart_id?: string | null
           created_at?: string
           customer_email?: string
+          design_notes?: string | null
           id?: string
           image_path?: string | null
+          order_status?: string | null
           price?: number
           product_name?: string
           shipping_address?: Json
@@ -132,6 +203,30 @@ export type Database = {
           stl_file_path?: string | null
           tax_amount?: number
           total_amount?: number
+        }
+        Relationships: []
+      }
+      shopping_carts: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          id: string
+          last_modified: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          id?: string
+          last_modified?: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          id?: string
+          last_modified?: string
+          status?: string | null
         }
         Relationships: []
       }
