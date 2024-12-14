@@ -39,18 +39,22 @@ const Gallery = () => {
       <div className="container mx-auto px-4 py-8 mt-16">
         <h1 className="text-4xl font-bold mb-8">Gallery</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {images?.map((image) => (
-            <div
-              key={image.id}
-              className="relative group overflow-hidden rounded-lg shadow-lg"
-            >
-              <img
-                src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`}
-                alt="Gallery image"
-                className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-              />
-            </div>
-          ))}
+          {images?.map((image) => {
+            const imageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`;
+            return (
+              <div
+                key={image.id}
+                className="relative group overflow-hidden rounded-lg shadow-lg"
+              >
+                <img
+                  src={imageUrl}
+                  alt={`Gallery image ${image.id}`}
+                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                  loading="lazy"
+                />
+              </div>
+            );
+          })}
         </div>
         {images?.length === 0 && (
           <div className="text-center text-muted-foreground">
