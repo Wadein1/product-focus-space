@@ -11,21 +11,44 @@ const Navbar = () => {
   const { data: cartItemsCount = 0 } = useQuery({
     queryKey: ['cartItemsCount'],
     queryFn: async () => {
-      const { data: carts } = await supabase
-        .from('shopping_carts')
-        .select('id')
-        .eq('status', 'active')
-        .limit(1);
+      try {
+        // Get the most recent active cart
+        const { data: carts, error: cartsError } = await supabase
+          .from('shopping_carts')
+          .select('id')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1);
 
-      if (!carts || carts.length === 0) return 0;
+        if (cartsError) {
+          console.error('Error fetching cart:', cartsError);
+          return 0;
+        }
 
-      const { count } = await supabase
-        .from('cart_items')
-        .select('*', { count: 'exact', head: true })
-        .eq('cart_id', carts[0].id);
+        // If no active cart exists, return 0
+        if (!carts || carts.length === 0) {
+          return 0;
+        }
 
-      return count || 0;
-    }
+        // Get count of items in the cart
+        const { count, error: countError } = await supabase
+          .from('cart_items')
+          .select('*', { count: 'exact', head: true })
+          .eq('cart_id', carts[0].id);
+
+        if (countError) {
+          console.error('Error fetching cart items count:', countError);
+          return 0;
+        }
+
+        return count || 0;
+      } catch (error) {
+        console.error('Unexpected error in cartItemsCount query:', error);
+        return 0;
+      }
+    },
+    // Refresh every minute to keep count updated
+    refetchInterval: 60000,
   });
 
   useEffect(() => {
