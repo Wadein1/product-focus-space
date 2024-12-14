@@ -48,7 +48,7 @@ export function AdminAuth() {
       });
 
       // Navigate after successful login
-      navigate('/admin/dashboard', { replace: true });
+      navigate('/admin/dashboard');
     } catch (error) {
       toast({
         title: "Authentication failed",

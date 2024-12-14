@@ -38,7 +38,7 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Order ID</p>
-                <p className="font-medium">{order.id}</p>
+                <p className="font-medium">{order.id.slice(0, 8)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Date</p>
@@ -87,8 +87,12 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
             <h3 className="font-semibold mb-4">Shipping Information</h3>
             {shippingAddress && (
               <div className="space-y-2">
-                <p>{shippingAddress.street}</p>
-                <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}</p>
+                <p className="text-sm text-gray-500">Street Address</p>
+                <p className="font-medium">{shippingAddress.street}</p>
+                <p className="text-sm text-gray-500 mt-2">City, State, ZIP</p>
+                <p className="font-medium">
+                  {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}
+                </p>
               </div>
             )}
           </Card>
