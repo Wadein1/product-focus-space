@@ -11,7 +11,7 @@ const Cart = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: cartItems, isLoading } = useQuery({
+  const { data: cartItems = [], isLoading } = useQuery({
     queryKey: ['cartItems'],
     queryFn: async () => {
       try {
