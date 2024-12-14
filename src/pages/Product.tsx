@@ -36,40 +36,41 @@ const Product = () => {
 
   const addToCartMutation = useMutation({
     mutationFn: async () => {
-      // First get or create active cart
-      let { data: carts, error: cartError } = await supabase
+      // First, try to find an active cart
+      const { data: existingCarts, error: cartError } = await supabase
         .from('shopping_carts')
-        .select('id')
-        .eq('status', 'active')
-        .limit(1);
+        .select('*')
+        .eq('status', 'active');
 
       if (cartError) throw cartError;
 
       let cartId;
-      
-      if (!carts || carts.length === 0) {
+
+      // If no active cart exists, create one
+      if (!existingCarts || existingCarts.length === 0) {
         const { data: newCart, error: createError } = await supabase
           .from('shopping_carts')
-          .insert({ status: 'active' })
+          .insert([{ status: 'active' }])
           .select()
           .single();
-          
+
         if (createError) throw createError;
         cartId = newCart.id;
       } else {
-        cartId = carts[0].id;
+        // Use the first active cart found
+        cartId = existingCarts[0].id;
       }
 
       // Add item to cart
       const { error: addError } = await supabase
         .from('cart_items')
-        .insert({
+        .insert([{
           cart_id: cartId,
           product_name: 'Custom Medallion',
           price: 49.99,
           quantity: 1,
           image_path: imagePreview
-        });
+        }]);
 
       if (addError) throw addError;
       return cartId;
