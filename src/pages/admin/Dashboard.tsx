@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,19 +12,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
-import { Order, OrderStatus, ShippingAddress } from '@/types/admin';
+import { Order, OrderStatus } from '@/types/admin';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';
+import { Json } from '@/integrations/supabase/types';
 
-// Define a type for the raw order data from Supabase
-interface SupabaseOrder extends Omit<Order, 'shipping_address'> {
-  shipping_address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-  } | Record<string, unknown>;
+// Define interfaces for type safety
+interface RawOrder {
+  cart_id: string | null;
+  created_at: string;
+  customer_email: string;
+  design_notes: string | null;
+  id: string;
+  image_path: string | null;
+  order_status: string | null;
+  price: number;
+  product_name: string;
+  shipping_address: Json;
+  shipping_cost: number;
+  status: string;
+  stl_file_path: string | null;
+  tax_amount: number;
+  total_amount: number;
 }
 
 const Dashboard = () => {
@@ -77,16 +86,16 @@ const Dashboard = () => {
         throw error;
       }
 
-      // Transform the data to ensure shipping_address is properly typed
-      return (data || []).map((order: SupabaseOrder) => {
-        const shippingAddress = order.shipping_address as Record<string, unknown>;
+      // Transform the raw data into the expected Order type
+      return (data as RawOrder[]).map((order) => {
+        const shippingAddressData = order.shipping_address as Record<string, unknown>;
         return {
           ...order,
           shipping_address: {
-            street: String(shippingAddress.street || ''),
-            city: String(shippingAddress.city || ''),
-            state: String(shippingAddress.state || ''),
-            zipCode: String(shippingAddress.zipCode || '')
+            street: String(shippingAddressData.street || ''),
+            city: String(shippingAddressData.city || ''),
+            state: String(shippingAddressData.state || ''),
+            zipCode: String(shippingAddressData.zipCode || '')
           }
         } as Order;
       });
