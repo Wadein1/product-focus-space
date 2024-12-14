@@ -22,7 +22,8 @@ interface OrderDetailsDialogProps {
 export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: OrderDetailsDialogProps) {
   if (!order) return null;
 
-  const shippingAddress = order.shipping_address as ShippingAddress;
+  // Safely cast the shipping_address to ShippingAddress type
+  const shippingAddress = order.shipping_address as unknown as ShippingAddress;
 
   return (
     <Dialog open={!!order} onOpenChange={onOpenChange}>
