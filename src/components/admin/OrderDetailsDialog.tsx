@@ -93,7 +93,9 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
               <div className="space-y-2">
                 <div>
                   <p className="text-sm text-gray-500">Street Address</p>
-                  <p className="font-medium">{shippingAddress.address || shippingAddress.street}</p>
+                  <p className="font-medium">
+                    {(shippingAddress as any).address || shippingAddress.street || 'N/A'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">City</p>
