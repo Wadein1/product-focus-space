@@ -18,6 +18,7 @@ const Fundraising = () => {
     setIsSubmitting(true);
 
     try {
+      // First, save to database
       const { error } = await supabase
         .from('fundraising_requests')
         .insert({
@@ -27,6 +28,20 @@ const Fundraising = () => {
         });
 
       if (error) throw error;
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'fundraising',
+          data: {
+            companyName,
+            email,
+            description
+          }
+        }
+      });
+
+      if (emailError) throw emailError;
 
       toast({
         title: "Request submitted",

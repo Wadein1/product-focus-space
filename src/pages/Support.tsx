@@ -34,6 +34,7 @@ const Support = () => {
         imagePath = data.path;
       }
 
+      // Save to database
       const { error } = await supabase
         .from('support_tickets')
         .insert({
@@ -44,6 +45,21 @@ const Support = () => {
         });
 
       if (error) throw error;
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'support',
+          data: {
+            supportType,
+            email,
+            description,
+            imagePath
+          }
+        }
+      });
+
+      if (emailError) throw emailError;
 
       toast({
         title: "Support ticket submitted",
