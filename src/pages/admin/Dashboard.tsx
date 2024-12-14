@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
-import { Order, OrderStatus } from '@/types/admin';
+import { Order, OrderStatus, ShippingAddress } from '@/types/admin';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';
@@ -67,7 +67,11 @@ const Dashboard = () => {
         throw error;
       }
 
-      return data as Order[];
+      // Transform the data to ensure shipping_address is properly typed
+      return (data || []).map(order => ({
+        ...order,
+        shipping_address: order.shipping_address as ShippingAddress
+      })) as Order[];
     },
   });
 
