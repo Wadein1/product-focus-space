@@ -14,37 +14,44 @@ const Cart = () => {
   const { data: cartItems, isLoading } = useQuery({
     queryKey: ['cartItems'],
     queryFn: async () => {
-      // First get all active carts
-      const { data: carts, error: cartsError } = await supabase
-        .from('shopping_carts')
-        .select('id')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1);
+      try {
+        // First get the most recent active cart
+        const { data: carts, error: cartsError } = await supabase
+          .from('shopping_carts')
+          .select('id')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1);
 
-      if (cartsError) {
-        console.error('Error fetching carts:', cartsError);
-        throw cartsError;
-      }
+        if (cartsError) {
+          console.error('Error fetching cart:', cartsError);
+          return [];
+        }
 
-      // If no active cart exists, return empty array
-      if (!carts || carts.length === 0) {
+        // If no active cart exists, return empty array
+        if (!carts || carts.length === 0) {
+          return [];
+        }
+
+        // Get items from the cart
+        const { data: items, error: itemsError } = await supabase
+          .from('cart_items')
+          .select('*')
+          .eq('cart_id', carts[0].id);
+
+        if (itemsError) {
+          console.error('Error fetching cart items:', itemsError);
+          return [];
+        }
+
+        return items || [];
+      } catch (error) {
+        console.error('Unexpected error in cartItems query:', error);
         return [];
       }
-
-      // Get items from the most recent active cart
-      const { data: items, error: itemsError } = await supabase
-        .from('cart_items')
-        .select('*')
-        .eq('cart_id', carts[0].id);
-
-      if (itemsError) {
-        console.error('Error fetching cart items:', itemsError);
-        throw itemsError;
-      }
-
-      return items || [];
-    }
+    },
+    // Refresh every minute to keep cart updated
+    refetchInterval: 60000,
   });
 
   const removeItemMutation = useMutation({
