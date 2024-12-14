@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Order } from '@/types/admin';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
@@ -9,7 +8,6 @@ import { DashboardControls } from '@/components/admin/DashboardControls';
 import { useOrders } from '@/hooks/useOrders';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -20,7 +18,6 @@ const Dashboard = () => {
       const adminAuth = sessionStorage.getItem('adminAuthenticated');
       setIsAuthenticated(!!adminAuth);
     };
-
     checkAuth();
   }, []);
 
