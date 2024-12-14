@@ -55,7 +55,7 @@ export function useOrders(searchTerm: string, statusFilter: string) {
       return (data as RawOrder[]).map((order) => ({
         ...order,
         shipping_address: {
-          street: String(order.shipping_address?.street || ''),
+          address: String(order.shipping_address?.street || order.shipping_address?.address || ''),
           city: String(order.shipping_address?.city || ''),
           state: String(order.shipping_address?.state || ''),
           zipCode: String(order.shipping_address?.zipCode || '')
