@@ -1,39 +1,66 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Cart = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: cartItems, isLoading } = useQuery({
     queryKey: ['cartItems'],
     queryFn: async () => {
-      // First get active cart
-      const { data: carts, error: cartError } = await supabase
+      const { data: carts } = await supabase
         .from('shopping_carts')
         .select('id')
         .eq('status', 'active')
         .limit(1);
 
-      if (cartError) throw cartError;
-
-      // If no active cart exists, return empty array
       if (!carts || carts.length === 0) {
         return [];
       }
 
-      // Get cart items for the active cart
-      const { data: items, error: itemsError } = await supabase
+      const { data: items } = await supabase
         .from('cart_items')
         .select('*')
         .eq('cart_id', carts[0].id);
 
-      if (itemsError) throw itemsError;
       return items || [];
     }
   });
+
+  const removeItemMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
+      toast({
+        title: "Item removed",
+        description: "The item has been removed from your cart",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to remove item from cart",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRemoveItem = (itemId: string) => {
+    removeItemMutation.mutate(itemId);
+  };
 
   const handleCheckout = () => {
     navigate('/checkout');
@@ -72,6 +99,14 @@ const Cart = () => {
                   <p className="text-gray-600">${item.price}</p>
                   <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                 </div>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => handleRemoveItem(item.id)}
+                  className="flex-shrink-0"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
             

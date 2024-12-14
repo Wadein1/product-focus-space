@@ -22,8 +22,7 @@ interface OrderDetailsDialogProps {
 export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: OrderDetailsDialogProps) {
   if (!order) return null;
 
-  // Safely cast the shipping_address to ShippingAddress type
-  const shippingAddress = order.shipping_address as unknown as ShippingAddress;
+  const shippingAddress = order.shipping_address as ShippingAddress;
 
   return (
     <Dialog open={!!order} onOpenChange={onOpenChange}>
@@ -62,16 +61,28 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
             <span className="font-medium">Product:</span>
             <span className="col-span-3">{order.product_name}</span>
           </div>
+          {order.image_path && (
+            <div className="col-span-4">
+              <span className="font-medium mb-2 block">Product Image:</span>
+              <img
+                src={order.image_path}
+                alt="Product"
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            </div>
+          )}
           <div className="grid grid-cols-4 items-center gap-4">
             <span className="font-medium">Total:</span>
             <span className="col-span-3">${order.total_amount}</span>
           </div>
           {shippingAddress && (
-            <div className="grid grid-cols-4 items-center gap-4">
+            <div className="grid grid-cols-4 items-start gap-4">
               <span className="font-medium">Address:</span>
-              <span className="col-span-3">
-                {`${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}`}
-              </span>
+              <div className="col-span-3">
+                <p>{shippingAddress.name}</p>
+                <p>{shippingAddress.street}</p>
+                <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}</p>
+              </div>
             </div>
           )}
           {order.design_notes && (

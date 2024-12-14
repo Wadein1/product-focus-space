@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,15 +16,30 @@ import { Search } from "lucide-react";
 import { Order, OrderStatus } from '@/types/admin';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 import { OrdersTable } from '@/components/admin/OrdersTable';
+import { AdminAuth } from '@/components/admin/AdminAuth';
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Fetch orders with search and filter
+  useEffect(() => {
+    const checkAuth = () => {
+      const adminAuth = sessionStorage.getItem('adminAuthenticated');
+      if (!adminAuth) {
+        setIsAuthenticated(false);
+      } else {
+        setIsAuthenticated(true);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders', searchTerm, statusFilter],
     queryFn: async () => {
@@ -55,7 +71,6 @@ const Dashboard = () => {
     },
   });
 
-  // Update order status mutation
   const updateOrderStatus = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
       const { error } = await supabase
@@ -80,6 +95,10 @@ const Dashboard = () => {
       });
     },
   });
+
+  if (!isAuthenticated) {
+    return <AdminAuth />;
+  }
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
