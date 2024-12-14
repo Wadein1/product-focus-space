@@ -18,13 +18,14 @@ import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';
 
+// Define a type for the raw order data from Supabase
 interface SupabaseOrder extends Omit<Order, 'shipping_address'> {
   shipping_address: {
     street: string;
     city: string;
     state: string;
     zipCode: string;
-  };
+  } | Record<string, unknown>;
 }
 
 const Dashboard = () => {
@@ -77,10 +78,18 @@ const Dashboard = () => {
       }
 
       // Transform the data to ensure shipping_address is properly typed
-      return (data || []).map(order => ({
-        ...order,
-        shipping_address: order.shipping_address as ShippingAddress
-      })) as Order[];
+      return (data || []).map((order: SupabaseOrder) => {
+        const shippingAddress = order.shipping_address as Record<string, unknown>;
+        return {
+          ...order,
+          shipping_address: {
+            street: String(shippingAddress.street || ''),
+            city: String(shippingAddress.city || ''),
+            state: String(shippingAddress.state || ''),
+            zipCode: String(shippingAddress.zipCode || '')
+          }
+        } as Order;
+      });
     },
   });
 
