@@ -5,12 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const Product = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -32,6 +34,63 @@ const Product = () => {
     }
   };
 
+  const addToCartMutation = useMutation({
+    mutationFn: async () => {
+      // First get or create active cart
+      let { data: carts, error: cartError } = await supabase
+        .from('shopping_carts')
+        .select('id')
+        .eq('status', 'active')
+        .limit(1);
+
+      if (cartError) throw cartError;
+
+      let cartId;
+      
+      if (!carts || carts.length === 0) {
+        const { data: newCart, error: createError } = await supabase
+          .from('shopping_carts')
+          .insert({ status: 'active' })
+          .select()
+          .single();
+          
+        if (createError) throw createError;
+        cartId = newCart.id;
+      } else {
+        cartId = carts[0].id;
+      }
+
+      // Add item to cart
+      const { error: addError } = await supabase
+        .from('cart_items')
+        .insert({
+          cart_id: cartId,
+          product_name: 'Custom Medallion',
+          price: 49.99,
+          quantity: 1,
+          image_path: imagePreview
+        });
+
+      if (addError) throw addError;
+      return cartId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
+      toast({
+        title: "Added to cart",
+        description: "Your medallion has been added to the cart"
+      });
+    },
+    onError: (error) => {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleAddToCart = async () => {
     if (!selectedFile) {
       toast({
@@ -42,11 +101,7 @@ const Product = () => {
       return;
     }
 
-    // Add to cart logic will be implemented later
-    toast({
-      title: "Added to cart",
-      description: "Your medallion has been added to the cart"
-    });
+    addToCartMutation.mutate();
   };
 
   const handleBuyNow = () => {
@@ -129,8 +184,9 @@ const Product = () => {
                   onClick={handleAddToCart}
                   variant="outline"
                   className="w-full border-primary text-primary hover:bg-primary/10"
+                  disabled={addToCartMutation.isPending}
                 >
-                  Add to Cart
+                  {addToCartMutation.isPending ? 'Adding to Cart...' : 'Add to Cart'}
                 </Button>
               </div>
             </div>

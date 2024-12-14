@@ -14,7 +14,8 @@ const Cart = () => {
       let { data: carts, error: cartError } = await supabase
         .from('shopping_carts')
         .select('id')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .limit(1);
 
       if (cartError) throw cartError;
 
