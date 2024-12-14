@@ -22,6 +22,7 @@ interface OrderDetailsDialogProps {
 export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: OrderDetailsDialogProps) {
   if (!order) return null;
 
+  // Cast the shipping_address to ShippingAddress type after validating its structure
   const shippingAddress = order.shipping_address as ShippingAddress;
 
   return (
@@ -79,7 +80,6 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
             <div className="grid grid-cols-4 items-start gap-4">
               <span className="font-medium">Address:</span>
               <div className="col-span-3">
-                <p>{shippingAddress.name}</p>
                 <p>{shippingAddress.street}</p>
                 <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}</p>
               </div>

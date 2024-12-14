@@ -7,7 +7,7 @@ export interface Order {
   product_name: string;
   total_amount: number;
   status: string;
-  shipping_address: Json;
+  shipping_address: ShippingAddress;
   design_notes?: string;
   cart_id?: string;
   image_path?: string;
