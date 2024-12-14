@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Order, OrderStatus } from "@/types/admin";
+import { Order, OrderStatus } from "@/types/order";
 import { OrderInformation } from "./order-details/OrderInformation";
 import { ProductDetails } from "./order-details/ProductDetails";
 import { ShippingInformation } from "./order-details/ShippingInformation";

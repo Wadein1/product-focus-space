@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Order } from "@/types/admin";
+import { Order } from "@/types/order";
 
 interface ProductDetailsProps {
   order: Order;

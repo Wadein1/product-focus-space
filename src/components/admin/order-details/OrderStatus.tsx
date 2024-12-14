@@ -6,10 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { OrderStatus } from "@/types/admin";
+import { OrderStatus } from "@/types/order";
 
 interface OrderStatusProps {
-  currentStatus: string;
+  currentStatus: OrderStatus;
   onStatusUpdate: (newStatus: OrderStatus) => void;
 }
 

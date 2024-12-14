@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { ShippingAddress } from "@/types/admin";
+import { ShippingAddress } from "@/types/order";
 
 interface ShippingInformationProps {
   shippingAddress: ShippingAddress;

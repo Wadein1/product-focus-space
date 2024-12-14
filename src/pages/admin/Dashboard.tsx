@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Order } from '@/types/admin';
+import { Order } from '@/types/order';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';

@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Order } from "@/types/admin";
+import { Order } from "@/types/order";
 import { Download } from "lucide-react";
 
 interface OrdersTableProps {

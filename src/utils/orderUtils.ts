@@ -1,4 +1,4 @@
-import { RawOrder, Order } from '@/types/order';
+import { RawOrder, Order, OrderStatus } from '@/types/order';
 
 export const formatShippingAddress = (rawAddress: Record<string, unknown>) => ({
   address: String(rawAddress?.street || rawAddress?.address || ''),
@@ -9,5 +9,6 @@ export const formatShippingAddress = (rawAddress: Record<string, unknown>) => ({
 
 export const mapRawOrderToOrder = (rawOrder: RawOrder): Order => ({
   ...rawOrder,
-  shipping_address: formatShippingAddress(rawOrder.shipping_address)
+  shipping_address: formatShippingAddress(rawOrder.shipping_address),
+  status: rawOrder.status as OrderStatus
 });
