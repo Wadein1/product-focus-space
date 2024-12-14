@@ -1,5 +1,3 @@
-import { Json } from "@/integrations/supabase/types";
-
 export interface Order {
   id: string;
   created_at: string;

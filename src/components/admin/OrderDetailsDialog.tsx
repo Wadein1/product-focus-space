@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -30,7 +31,11 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Order Details</DialogTitle>
+          <DialogDescription>
+            View and manage order information
+          </DialogDescription>
         </DialogHeader>
+        
         <div className="grid gap-6 py-4">
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Order Information</h3>
@@ -68,7 +73,7 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
                   <p className="text-sm text-gray-500 mb-2">Product Image</p>
                   <img
                     src={order.image_path}
-                    alt="Product"
+                    alt={order.product_name}
                     className="w-full max-w-md h-48 object-cover rounded-lg"
                   />
                 </div>
@@ -86,12 +91,22 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
             <h3 className="font-semibold mb-4">Shipping Information</h3>
             {shippingAddress && (
               <div className="space-y-2">
-                <p className="text-sm text-gray-500">Street Address</p>
-                <p className="font-medium">{shippingAddress.street}</p>
-                <p className="text-sm text-gray-500 mt-2">City, State, ZIP</p>
-                <p className="font-medium">
-                  {shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}
-                </p>
+                <div>
+                  <p className="text-sm text-gray-500">Street Address</p>
+                  <p className="font-medium">{shippingAddress.street}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">City</p>
+                  <p className="font-medium">{shippingAddress.city}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">State</p>
+                  <p className="font-medium">{shippingAddress.state}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">ZIP Code</p>
+                  <p className="font-medium">{shippingAddress.zipCode}</p>
+                </div>
               </div>
             )}
           </Card>
