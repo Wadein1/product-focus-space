@@ -11,27 +11,36 @@ const Cart = () => {
     queryKey: ['cartItems'],
     queryFn: async () => {
       // First get or create active cart
-      let { data: cart } = await supabase
+      let { data: carts, error: cartError } = await supabase
         .from('shopping_carts')
         .select('id')
-        .eq('status', 'active')
-        .single();
+        .eq('status', 'active');
 
-      if (!cart) {
-        const { data: newCart } = await supabase
+      if (cartError) throw cartError;
+
+      let cartId;
+      
+      // If no active cart exists, create one
+      if (!carts || carts.length === 0) {
+        const { data: newCart, error: createError } = await supabase
           .from('shopping_carts')
           .insert({ status: 'active' })
           .select()
           .single();
-        cart = newCart;
+          
+        if (createError) throw createError;
+        cartId = newCart.id;
+      } else {
+        cartId = carts[0].id;
       }
 
       // Then get cart items
-      const { data: items } = await supabase
+      const { data: items, error: itemsError } = await supabase
         .from('cart_items')
         .select('*')
-        .eq('cart_id', cart.id);
+        .eq('cart_id', cartId);
 
+      if (itemsError) throw itemsError;
       return items || [];
     }
   });
