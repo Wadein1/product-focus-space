@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Product from "./pages/Product";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import Dashboard from "./pages/admin/Dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,7 @@ const App: React.FC = () => {
               <Route path="/product" element={<Product />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/admin/dashboard" element={<Dashboard />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
