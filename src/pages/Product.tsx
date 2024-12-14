@@ -39,10 +39,15 @@ const Product = () => {
       // First, try to find an active cart
       const { data: existingCarts, error: cartError } = await supabase
         .from('shopping_carts')
-        .select('*')
-        .eq('status', 'active');
+        .select('id')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (cartError) throw cartError;
+      if (cartError) {
+        console.error('Error fetching cart:', cartError);
+        throw cartError;
+      }
 
       let cartId;
 
@@ -57,7 +62,6 @@ const Product = () => {
         if (createError) throw createError;
         cartId = newCart.id;
       } else {
-        // Use the first active cart found
         cartId = existingCarts[0].id;
       }
 
