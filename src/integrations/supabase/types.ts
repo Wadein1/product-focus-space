@@ -228,6 +228,7 @@ export type Database = {
           stl_file_path: string | null
           tax_amount: number
           total_amount: number
+          tracking_number: string | null
         }
         Insert: {
           cart_id?: string | null
@@ -245,6 +246,7 @@ export type Database = {
           stl_file_path?: string | null
           tax_amount: number
           total_amount: number
+          tracking_number?: string | null
         }
         Update: {
           cart_id?: string | null
@@ -262,6 +264,7 @@ export type Database = {
           stl_file_path?: string | null
           tax_amount?: number
           total_amount?: number
+          tracking_number?: string | null
         }
         Relationships: []
       }

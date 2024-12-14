@@ -5,7 +5,7 @@ export interface ShippingAddress {
   zipCode: string;
 }
 
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus = 'received' | 'processed' | 'designed' | 'producing' | 'shipped' | 'delivered';
 
 export interface Order {
   id: string;
@@ -23,6 +23,7 @@ export interface Order {
   shipping_cost: number;
   tax_amount: number;
   stl_file_path?: string;
+  tracking_number?: string;
 }
 
 export interface RawOrder {
@@ -41,4 +42,5 @@ export interface RawOrder {
   stl_file_path: string | null;
   tax_amount: number;
   total_amount: number;
+  tracking_number: string | null;
 }

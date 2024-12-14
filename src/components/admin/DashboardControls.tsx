@@ -42,11 +42,12 @@ export function DashboardControls({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Status</SelectItem>
-          <SelectItem value="pending">Pending</SelectItem>
-          <SelectItem value="processing">Processing</SelectItem>
+          <SelectItem value="received">Received</SelectItem>
+          <SelectItem value="processed">Processed</SelectItem>
+          <SelectItem value="designed">Designed</SelectItem>
+          <SelectItem value="producing">Producing</SelectItem>
           <SelectItem value="shipped">Shipped</SelectItem>
           <SelectItem value="delivered">Delivered</SelectItem>
-          <SelectItem value="cancelled">Cancelled</SelectItem>
         </SelectContent>
       </Select>
     </div>
