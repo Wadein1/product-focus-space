@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, MinusIcon, PlusIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -50,7 +50,6 @@ const Cart = () => {
         return [];
       }
     },
-    // Refresh every minute to keep cart updated
     refetchInterval: 60000,
   });
 
@@ -79,6 +78,33 @@ const Cart = () => {
       });
     },
   });
+
+  const updateQuantityMutation = useMutation({
+    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
+      const { error } = await supabase
+        .from('cart_items')
+        .update({ quantity })
+        .eq('id', itemId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
+    },
+    onError: (error) => {
+      console.error('Error updating quantity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update item quantity",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleQuantityChange = (itemId: string, currentQuantity: number, increment: boolean) => {
+    const newQuantity = increment ? currentQuantity + 1 : Math.max(1, currentQuantity - 1);
+    updateQuantityMutation.mutate({ itemId, quantity: newQuantity });
+  };
 
   const handleRemoveItem = (itemId: string) => {
     removeItemMutation.mutate(itemId);
@@ -119,7 +145,24 @@ const Cart = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold">{item.product_name}</h3>
                   <p className="text-gray-600">${item.price}</p>
-                  <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange(item.id, item.quantity || 1, false)}
+                      disabled={item.quantity <= 1}
+                    >
+                      <MinusIcon className="h-4 w-4" />
+                    </Button>
+                    <span className="w-12 text-center">{item.quantity || 1}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange(item.id, item.quantity || 1, true)}
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <Button
                   variant="destructive"

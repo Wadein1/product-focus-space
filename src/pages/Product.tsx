@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { MinusIcon, PlusIcon } from 'lucide-react';
 
 const Product = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -65,14 +67,14 @@ const Product = () => {
         cartId = existingCarts[0].id;
       }
 
-      // Add item to cart
+      // Add item to cart with quantity
       const { error: addError } = await supabase
         .from('cart_items')
         .insert([{
           cart_id: cartId,
           product_name: 'Custom Medallion',
           price: 49.99,
-          quantity: 1,
+          quantity: quantity,
           image_path: imagePreview
         }]);
 
@@ -96,6 +98,13 @@ const Product = () => {
     }
   });
 
+  const handleQuantityChange = (increment: boolean) => {
+    setQuantity(prev => {
+      const newValue = increment ? prev + 1 : prev - 1;
+      return Math.max(1, newValue); // Ensure quantity doesn't go below 1
+    });
+  };
+
   const handleAddToCart = async () => {
     if (!selectedFile) {
       toast({
@@ -107,18 +116,6 @@ const Product = () => {
     }
 
     addToCartMutation.mutate();
-  };
-
-  const handleBuyNow = () => {
-    if (!selectedFile) {
-      toast({
-        title: "Missing image",
-        description: "Please upload an image for your medallion",
-        variant: "destructive"
-      });
-      return;
-    }
-    navigate('/checkout');
   };
 
   return (
@@ -178,9 +175,33 @@ const Product = () => {
                 <p className="text-2xl font-bold">$49.99</p>
                 <p className="text-sm text-gray-500">(+$8.00 shipping & 5% tax)</p>
               </div>
+              
+              {/* Quantity Selector */}
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-gray-700">Quantity:</span>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(false)}
+                    disabled={quantity <= 1}
+                  >
+                    <MinusIcon className="h-4 w-4" />
+                  </Button>
+                  <span className="w-12 text-center">{quantity}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(true)}
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <Button 
-                  onClick={handleBuyNow}
+                  onClick={() => navigate('/checkout')}
                   className="w-full bg-primary text-white hover:bg-primary/90"
                 >
                   Buy Now
