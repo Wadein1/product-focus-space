@@ -8,15 +8,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Order } from "@/types/order";
-import { Download } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 
 interface OrdersTableProps {
   orders: Order[];
   onViewDetails: (order: Order) => void;
+  onDeleteOrder: (orderId: string) => void;
 }
 
-export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
+export function OrdersTable({ orders, onViewDetails, onDeleteOrder }: OrdersTableProps) {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'received':
@@ -101,6 +113,34 @@ export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
                   <Download className="h-4 w-4" />
                 </Button>
               )}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Order</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this order? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDeleteOrder(order.id)}
+                      className="bg-red-500 hover:bg-red-600"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </TableCell>
           </TableRow>
         ))}

@@ -64,9 +64,24 @@ export function useOrders(searchTerm: string, statusFilter: string) {
     },
   });
 
+  const deleteOrder = useMutation({
+    mutationFn: async (orderId: string) => {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+    },
+  });
+
   return {
     orders,
     isLoading,
-    updateOrderStatus
+    updateOrderStatus,
+    deleteOrder
   };
 }
