@@ -52,15 +52,15 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="nav-link">
-              Features
-            </a>
-            <a href="#specs" className="nav-link">
-              Specs
-            </a>
-            <a href="#gallery" className="nav-link">
+            <Link to="/gallery" className="nav-link">
               Gallery
-            </a>
+            </Link>
+            <Link to="/fundraising" className="nav-link">
+              Fundraising
+            </Link>
+            <Link to="/support" className="nav-link">
+              Support
+            </Link>
             <Link to="/product" className="button-primary">
               Buy Now
             </Link>
@@ -107,27 +107,27 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg">
-              <a
-                href="#features"
-                className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Features
-              </a>
-              <a
-                href="#specs"
-                className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Specs
-              </a>
-              <a
-                href="#gallery"
+              <Link
+                to="/gallery"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Gallery
-              </a>
+              </Link>
+              <Link
+                to="/fundraising"
+                className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Fundraising
+              </Link>
+              <Link
+                to="/support"
+                className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Support
+              </Link>
               <Link
                 to="/product"
                 className="block w-full text-left px-3 py-2 rounded-md text-base font-medium button-primary"
