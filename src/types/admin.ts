@@ -20,6 +20,7 @@ export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | '
 
 export interface ShippingAddress {
   street: string;
+  address?: string;  // Added this to support both formats
   city: string;
   state: string;
   zipCode: string;
