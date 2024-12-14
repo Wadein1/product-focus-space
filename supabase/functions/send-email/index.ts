@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts"
+import { Resend } from 'resend'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const resend = new Resend(RESEND_API_KEY)
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -34,24 +36,19 @@ serve(async (req) => {
       throw new Error('Invalid notification type')
     }
 
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Gimme Drip <onboarding@resend.dev>',
-        to: ['wadergonz@gmail.com'],
-        subject,
-        html,
-      }),
-    })
+    const { data: emailData, error } = await resend.emails.send({
+      from: 'Gimme Drip <onboarding@resend.dev>',
+      to: ['wadergonz@gmail.com'],
+      subject,
+      html,
+    });
 
-    const data = await response.json()
+    if (error) {
+      throw error;
+    }
 
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(emailData),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
