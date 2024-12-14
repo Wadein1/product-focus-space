@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Order, OrderStatus, ShippingAddress } from "@/types/admin";
+import { Card } from "@/components/ui/card";
 
 interface OrderDetailsDialogProps {
   order: Order | null;
@@ -27,70 +28,91 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
 
   return (
     <Dialog open={!!order} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Order Details</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Order Details</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="font-medium">Status:</span>
-            <div className="col-span-3">
-              <Select
-                value={order.status}
-                onValueChange={(newStatus) => {
-                  onStatusUpdate(order.id, newStatus as OrderStatus);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+        <div className="grid gap-6 py-4">
+          <Card className="p-4">
+            <h3 className="font-semibold mb-4">Order Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Order ID</p>
+                <p className="font-medium">{order.id}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Date</p>
+                <p className="font-medium">
+                  {new Date(order.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Customer Email</p>
+                <p className="font-medium">{order.customer_email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Total Amount</p>
+                <p className="font-medium">${order.total_amount}</p>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="font-medium">Customer:</span>
-            <span className="col-span-3">{order.customer_email}</span>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="font-medium">Product:</span>
-            <span className="col-span-3">{order.product_name}</span>
-          </div>
-          {order.image_path && (
-            <div className="col-span-4">
-              <span className="font-medium mb-2 block">Product Image:</span>
-              <img
-                src={order.image_path}
-                alt="Product"
-                className="w-full h-48 object-cover rounded-lg"
-              />
+          </Card>
+
+          <Card className="p-4">
+            <h3 className="font-semibold mb-4">Product Details</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Product Name</p>
+                <p className="font-medium">{order.product_name}</p>
+              </div>
+              {order.image_path && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Product Image</p>
+                  <img
+                    src={order.image_path}
+                    alt="Product"
+                    className="w-full max-w-md h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+              {order.design_notes && (
+                <div>
+                  <p className="text-sm text-gray-500">Design Notes</p>
+                  <p className="font-medium">{order.design_notes}</p>
+                </div>
+              )}
             </div>
-          )}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <span className="font-medium">Total:</span>
-            <span className="col-span-3">${order.total_amount}</span>
-          </div>
-          {shippingAddress && (
-            <div className="grid grid-cols-4 items-start gap-4">
-              <span className="font-medium">Address:</span>
-              <div className="col-span-3">
+          </Card>
+
+          <Card className="p-4">
+            <h3 className="font-semibold mb-4">Shipping Information</h3>
+            {shippingAddress && (
+              <div className="space-y-2">
                 <p>{shippingAddress.street}</p>
                 <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}</p>
               </div>
-            </div>
-          )}
-          {order.design_notes && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <span className="font-medium">Notes:</span>
-              <span className="col-span-3">{order.design_notes}</span>
-            </div>
-          )}
+            )}
+          </Card>
+
+          <Card className="p-4">
+            <h3 className="font-semibold mb-4">Order Status</h3>
+            <Select
+              value={order.status}
+              onValueChange={(newStatus) => {
+                onStatusUpdate(order.id, newStatus as OrderStatus);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="shipped">Shipped</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>

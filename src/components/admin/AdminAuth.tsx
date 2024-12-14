@@ -41,12 +41,14 @@ export function AdminAuth() {
 
       // Store admin session
       sessionStorage.setItem('adminAuthenticated', 'true');
-      navigate('/admin/dashboard');
       
       toast({
         title: "Login successful",
         description: "Welcome to the admin dashboard",
       });
+
+      // Navigate after successful login
+      navigate('/admin/dashboard', { replace: true });
     } catch (error) {
       toast({
         title: "Authentication failed",

@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Order } from "@/types/admin";
+import { Download } from "lucide-react";
 
 interface OrdersTableProps {
   orders: Order[];
@@ -30,6 +31,23 @@ export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleDownload = async (imageUrl: string, productName: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${productName}-image.${blob.type.split('/')[1]}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading image:', error);
     }
   };
 
@@ -64,7 +82,7 @@ export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
                 {order.status}
               </Badge>
             </TableCell>
-            <TableCell>
+            <TableCell className="space-x-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -72,6 +90,15 @@ export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
               >
                 View Details
               </Button>
+              {order.image_path && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDownload(order.image_path!, order.product_name)}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              )}
             </TableCell>
           </TableRow>
         ))}
