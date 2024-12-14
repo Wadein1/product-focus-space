@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Order, OrderStatus } from "@/types/admin";
+import { Order, OrderStatus, ShippingAddress } from "@/types/admin";
 
 interface OrderDetailsDialogProps {
   order: Order | null;
@@ -21,6 +21,8 @@ interface OrderDetailsDialogProps {
 
 export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: OrderDetailsDialogProps) {
   if (!order) return null;
+
+  const shippingAddress = order.shipping_address as ShippingAddress;
 
   return (
     <Dialog open={!!order} onOpenChange={onOpenChange}>
@@ -63,11 +65,11 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
             <span className="font-medium">Total:</span>
             <span className="col-span-3">${order.total_amount}</span>
           </div>
-          {order.shipping_address && (
+          {shippingAddress && (
             <div className="grid grid-cols-4 items-center gap-4">
               <span className="font-medium">Address:</span>
               <span className="col-span-3">
-                {`${order.shipping_address.street}, ${order.shipping_address.city}, ${order.shipping_address.state} ${order.shipping_address.zipCode}`}
+                {`${shippingAddress.street}, ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}`}
               </span>
             </div>
           )}
