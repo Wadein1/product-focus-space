@@ -57,3 +57,17 @@
 .section-fade.visible {
   @apply opacity-100 translate-y-0;
 }
+
+/* Toast styling */
+[data-sonner-toaster][data-theme="light"] {
+  @apply bg-white/95 backdrop-blur-sm shadow-lg !important;
+}
+
+[data-sonner-toast] {
+  @apply bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 !important;
+}
+
+/* Dropdown styling */
+[data-radix-popper-content-wrapper] {
+  @apply bg-white/95 backdrop-blur-sm shadow-lg !important;
+}
