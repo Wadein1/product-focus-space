@@ -33,6 +33,65 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          permissions: Json
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          permissions?: Json
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          permissions?: Json
+        }
+        Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          last_login: string | null
+          password_hash: string
+          role_id: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          last_login?: string | null
+          password_hash: string
+          role_id?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          last_login?: string | null
+          password_hash?: string
+          role_id?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "admin_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics: {
         Row: {
           date: string
@@ -211,6 +270,7 @@ export type Database = {
           created_at: string
           customer_email: string | null
           id: string
+          last_activity: string | null
           last_modified: string
           status: string | null
         }
@@ -218,6 +278,7 @@ export type Database = {
           created_at?: string
           customer_email?: string | null
           id?: string
+          last_activity?: string | null
           last_modified?: string
           status?: string | null
         }
@@ -225,6 +286,7 @@ export type Database = {
           created_at?: string
           customer_email?: string | null
           id?: string
+          last_activity?: string | null
           last_modified?: string
           status?: string | null
         }
@@ -265,7 +327,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_inactive_carts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
