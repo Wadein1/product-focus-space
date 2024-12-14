@@ -27,8 +27,6 @@ export function AdminAuth() {
 
       if (error) throw error;
 
-      // For development purposes, we're using a simple password check
-      // In production, this should be replaced with proper password hashing
       if (!data || password !== 'thanksculvers') {
         throw new Error('Invalid credentials');
       }
@@ -47,8 +45,8 @@ export function AdminAuth() {
         description: "Welcome to the admin dashboard",
       });
 
-      // Navigate after successful login
-      navigate('/admin/dashboard');
+      // Navigate after successful login with replace to prevent going back to login
+      navigate('/admin/dashboard', { replace: true });
     } catch (error) {
       toast({
         title: "Authentication failed",

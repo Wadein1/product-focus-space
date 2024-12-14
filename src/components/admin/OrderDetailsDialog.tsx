@@ -23,7 +23,6 @@ interface OrderDetailsDialogProps {
 export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: OrderDetailsDialogProps) {
   if (!order) return null;
 
-  // Cast the shipping_address to ShippingAddress type after validating its structure
   const shippingAddress = order.shipping_address as ShippingAddress;
 
   return (
@@ -100,7 +99,7 @@ export function OrderDetailsDialog({ order, onOpenChange, onStatusUpdate }: Orde
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Order Status</h3>
             <Select
-              value={order.status}
+              defaultValue={order.status}
               onValueChange={(newStatus) => {
                 onStatusUpdate(order.id, newStatus as OrderStatus);
               }}
