@@ -36,14 +36,16 @@ serve(async (req) => {
       throw new Error('Invalid notification type')
     }
 
+    // For testing, send to the verified email
     const { data: emailData, error } = await resend.emails.send({
-      from: 'Gimme Drip <onboarding@resend.dev>',
-      to: ['wadergonz@gmail.com'],
+      from: 'wadesportssolutions@gmail.com',
+      to: ['wadesportssolutions@gmail.com'],
       subject,
       html,
     });
 
     if (error) {
+      console.error('Resend API error:', error);
       throw error;
     }
 
@@ -55,6 +57,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
+    console.error('Error in send-email function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
