@@ -70,7 +70,12 @@ const Dashboard = () => {
       // Transform the data to ensure shipping_address is properly typed
       return (data || []).map(order => ({
         ...order,
-        shipping_address: order.shipping_address as ShippingAddress
+        shipping_address: {
+          street: (order.shipping_address as any)?.street || '',
+          city: (order.shipping_address as any)?.city || '',
+          state: (order.shipping_address as any)?.state || '',
+          zipCode: (order.shipping_address as any)?.zipCode || ''
+        } as ShippingAddress
       })) as Order[];
     },
   });
