@@ -211,48 +211,14 @@ export type Database = {
         }
         Relationships: []
       }
-      order_images: {
-        Row: {
-          created_at: string
-          id: string
-          image_path: string
-          order_id: string | null
-          quantity: number | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          image_path: string
-          order_id?: string | null
-          quantity?: number | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          image_path?: string
-          order_id?: string | null
-          quantity?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_images_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       orders: {
         Row: {
           cart_id: string | null
           created_at: string
           customer_email: string
           design_notes: string | null
-          first_name: string | null
           id: string
           image_path: string | null
-          last_name: string | null
           order_status: string | null
           price: number
           product_name: string
@@ -269,10 +235,8 @@ export type Database = {
           created_at?: string
           customer_email: string
           design_notes?: string | null
-          first_name?: string | null
           id?: string
           image_path?: string | null
-          last_name?: string | null
           order_status?: string | null
           price: number
           product_name: string
@@ -289,10 +253,8 @@ export type Database = {
           created_at?: string
           customer_email?: string
           design_notes?: string | null
-          first_name?: string | null
           id?: string
           image_path?: string | null
-          last_name?: string | null
           order_status?: string | null
           price?: number
           product_name?: string
