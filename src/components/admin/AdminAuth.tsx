@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Eye, EyeOff } from "lucide-react";
 
 export function AdminAuth() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -23,7 +25,11 @@ export function AdminAuth() {
         .eq('username', username)
         .single();
 
-      if (error || !data || data.password_hash !== '$2a$10$xLxAWx0xJ1xh9X9X9O1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q1Q') {
+      if (error) throw error;
+
+      // For development purposes, we're using a simple password check
+      // In production, this should be replaced with proper password hashing
+      if (!data || password !== 'thanksculvers') {
         throw new Error('Invalid credentials');
       }
 
@@ -36,6 +42,11 @@ export function AdminAuth() {
       // Store admin session
       sessionStorage.setItem('adminAuthenticated', 'true');
       navigate('/admin/dashboard');
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome to the admin dashboard",
+      });
     } catch (error) {
       toast({
         title: "Authentication failed",
@@ -45,6 +56,10 @@ export function AdminAuth() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -64,14 +79,25 @@ export function AdminAuth() {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-            <div>
+            <div className="relative">
               <Input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
             </div>
           </div>
           <Button
