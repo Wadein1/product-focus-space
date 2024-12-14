@@ -1,25 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Order, OrderStatus } from '@/types/admin';
+import { Order, OrderStatus, RawOrder } from '@/types/order';
+import { mapRawOrderToOrder } from '@/utils/orderUtils';
 import { useToast } from "@/hooks/use-toast";
-
-interface RawOrder {
-  cart_id: string | null;
-  created_at: string;
-  customer_email: string;
-  design_notes: string | null;
-  id: string;
-  image_path: string | null;
-  order_status: string | null;
-  price: number;
-  product_name: string;
-  shipping_address: Record<string, unknown>;
-  shipping_cost: number;
-  status: string;
-  stl_file_path: string | null;
-  tax_amount: number;
-  total_amount: number;
-}
 
 export function useOrders(searchTerm: string, statusFilter: string) {
   const { toast } = useToast();
@@ -52,15 +35,7 @@ export function useOrders(searchTerm: string, statusFilter: string) {
         throw error;
       }
 
-      return (data as RawOrder[]).map((order) => ({
-        ...order,
-        shipping_address: {
-          address: String(order.shipping_address?.street || order.shipping_address?.address || ''),
-          city: String(order.shipping_address?.city || ''),
-          state: String(order.shipping_address?.state || ''),
-          zipCode: String(order.shipping_address?.zipCode || '')
-        }
-      })) as Order[];
+      return (data as RawOrder[]).map(mapRawOrderToOrder);
     },
   });
 
