@@ -6,6 +6,7 @@ import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';
 import { DashboardControls } from '@/components/admin/DashboardControls';
 import { PhotoManagement } from '@/components/admin/PhotoManagement';
+import { AnalyticsSection } from '@/components/admin/analytics/AnalyticsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from '@/hooks/useOrders';
 
@@ -39,6 +40,7 @@ const Dashboard = () => {
         <TabsList>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="photos">Photo Gallery</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="orders">
@@ -78,6 +80,10 @@ const Dashboard = () => {
               <PhotoManagement />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AnalyticsSection />
         </TabsContent>
       </Tabs>
     </div>
