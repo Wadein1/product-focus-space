@@ -21,6 +21,14 @@ export function OrderInformation({ order }: OrderInformationProps) {
           </p>
         </div>
         <div>
+          <p className="text-sm text-gray-500">Customer Name</p>
+          <p className="font-medium">
+            {order.first_name && order.last_name 
+              ? `${order.first_name} ${order.last_name}`
+              : 'Not provided'}
+          </p>
+        </div>
+        <div>
           <p className="text-sm text-gray-500">Customer Email</p>
           <p className="font-medium">{order.customer_email}</p>
         </div>

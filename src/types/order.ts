@@ -11,6 +11,8 @@ export interface Order {
   id: string;
   created_at: string;
   customer_email: string;
+  first_name?: string;
+  last_name?: string;
   product_name: string;
   total_amount: number;
   status: OrderStatus;
@@ -31,6 +33,8 @@ export interface RawOrder {
   created_at: string;
   customer_email: string;
   design_notes: string | null;
+  first_name: string | null;
+  last_name: string | null;
   id: string;
   image_path: string | null;
   order_status: string | null;
