@@ -75,9 +75,6 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/gallery" className="nav-link">
-              Gallery
-            </Link>
             <Link to="/fundraising" className="nav-link">
               Fundraising
             </Link>
@@ -130,13 +127,6 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg">
-              <Link
-                to="/gallery"
-                className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Gallery
-              </Link>
               <Link
                 to="/fundraising"
                 className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"

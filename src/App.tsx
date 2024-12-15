@@ -11,7 +11,6 @@ import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/admin/Dashboard";
 import Support from "./pages/Support";
 import Fundraising from "./pages/Fundraising";
-import Gallery from "./pages/Gallery";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,7 +37,6 @@ const App: React.FC = () => {
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/support" element={<Support />} />
               <Route path="/fundraising" element={<Fundraising />} />
-              <Route path="/gallery" element={<Gallery />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

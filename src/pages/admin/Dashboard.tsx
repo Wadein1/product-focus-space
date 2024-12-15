@@ -5,7 +5,6 @@ import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';
 import { DashboardControls } from '@/components/admin/DashboardControls';
-import { PhotoManagement } from '@/components/admin/PhotoManagement';
 import { AnalyticsSection } from '@/components/admin/analytics/AnalyticsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from '@/hooks/useOrders';
@@ -57,7 +56,6 @@ const Dashboard = () => {
       <Tabs defaultValue="orders" className="space-y-4">
         <TabsList>
           <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="photos">Photo Gallery</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -88,17 +86,6 @@ const Dashboard = () => {
               updateOrderStatus.mutate({ orderId, newStatus });
             }}
           />
-        </TabsContent>
-
-        <TabsContent value="photos">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Photo Gallery Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PhotoManagement />
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="analytics">
