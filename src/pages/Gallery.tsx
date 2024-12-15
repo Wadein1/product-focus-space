@@ -23,10 +23,6 @@ const Gallery = () => {
     }
   });
 
-  const getImageUrl = (imagePath: string) => {
-    return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${imagePath}`;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar />
@@ -50,14 +46,14 @@ const Gallery = () => {
               >
                 <div className="aspect-w-4 aspect-h-3">
                   <img
-                    src={getImageUrl(image.image_path)}
+                    src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`}
                     alt="Gallery image"
                     className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       console.error(`Failed to load image: ${target.src}`);
-                      target.src = '/placeholder.svg'; // Fallback image
+                      target.src = '/placeholder.svg';
                     }}
                   />
                 </div>
