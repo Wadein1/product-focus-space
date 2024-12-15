@@ -7,10 +7,8 @@ const Hero = () => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    // Show initial content after a brief delay
-    const contentTimer = setTimeout(() => {
-      setShowContent(true);
-    }, 300);
+    // Show initial content immediately
+    setShowContent(true);
 
     // Load images
     const imageUrls = [
@@ -30,8 +28,6 @@ const Hero = () => {
     Promise.all(imagePromises).then(() => {
       setImagesLoaded(true);
     });
-
-    return () => clearTimeout(contentTimer);
   }, []);
 
   return (
@@ -42,8 +38,8 @@ const Hero = () => {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10"
       >
         <div 
-          className={`text-center transform transition-all duration-700 ${
-            showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          className={`text-center transform transition-all duration-1000 ${
+            imagesLoaded ? 'translate-y-0' : 'translate-y-32'
           }`}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
@@ -64,8 +60,8 @@ const Hero = () => {
           </div>
         </div>
         <div 
-          className={`mt-16 hidden md:grid md:grid-cols-3 gap-8 transform transition-all duration-1000 ${
-            imagesLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+          className={`mt-16 hidden md:grid md:grid-cols-3 gap-8 transition-opacity duration-1000 ${
+            imagesLoaded ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <div className="relative group">
@@ -97,8 +93,8 @@ const Hero = () => {
           </div>
         </div>
         <div 
-          className={`mt-16 md:hidden transform transition-all duration-1000 ${
-            imagesLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+          className={`mt-16 md:hidden transition-opacity duration-1000 ${
+            imagesLoaded ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <div className="relative group">
