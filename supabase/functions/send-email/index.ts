@@ -37,20 +37,24 @@ serve(async (req) => {
 
       if (image && imageName) {
         try {
-          // Convert base64 to buffer
+          console.log('Processing image attachment...');
           const base64Data = String(image).split(',')[1];
           const binaryStr = atob(base64Data);
           const bytes = new Uint8Array(binaryStr.length);
+          
           for (let i = 0; i < binaryStr.length; i++) {
             bytes[i] = binaryStr.charCodeAt(i);
           }
           
           attachments.push({
             filename: String(imageName),
-            content: bytes,
+            content: Array.from(bytes), // Convert Uint8Array to regular array
           });
+          
+          console.log('Image processed successfully');
         } catch (error) {
           console.error('Error processing image attachment:', error);
+          throw new Error(`Failed to process image: ${error.message}`);
         }
       }
     } else if (type === 'fundraising') {
@@ -69,7 +73,13 @@ serve(async (req) => {
       throw new Error('Invalid notification type');
     }
 
-    console.log('Sending email with attachments:', attachments);
+    console.log('Preparing to send email with attachments:', {
+      attachmentsCount: attachments.length,
+      attachmentsSizes: attachments.map(a => ({
+        name: a.filename,
+        contentLength: a.content?.length
+      }))
+    });
 
     const { data: emailData, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
