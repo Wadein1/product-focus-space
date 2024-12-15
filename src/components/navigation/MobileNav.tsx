@@ -4,10 +4,9 @@ import { Menu, X, ShoppingCart } from "lucide-react";
 interface MobileNavProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (isOpen: boolean) => void;
-  cartItemsCount: number;
 }
 
-export const MobileNav = ({ isMenuOpen, setIsMenuOpen, cartItemsCount }: MobileNavProps) => {
+export const MobileNav = ({ isMenuOpen, setIsMenuOpen }: MobileNavProps) => {
   return (
     <>
       <div className="md:hidden flex items-center gap-4">
@@ -16,11 +15,6 @@ export const MobileNav = ({ isMenuOpen, setIsMenuOpen, cartItemsCount }: MobileN
           className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
         >
           <ShoppingCart className="h-6 w-6" />
-          {cartItemsCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              {cartItemsCount}
-            </span>
-          )}
         </Link>
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
