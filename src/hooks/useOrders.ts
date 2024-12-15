@@ -9,6 +9,7 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
   const { data: orders, isLoading, error } = useQuery({
     queryKey: ['orders', searchTerm, statusFilter],
     queryFn: async () => {
+      console.log('Fetching orders with:', { searchTerm, statusFilter });
       try {
         let query = supabase
           .from('orders')
@@ -23,22 +24,33 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
           query = query.eq('status', statusFilter);
         }
 
-        // Limit to 50 orders initially for better performance
-        query = query.limit(50);
-
-        const { data, error } = await query;
+        console.log('Executing Supabase query...');
+        const { data, error } = await query.limit(50);
         
         if (error) {
-          console.error('Error fetching orders:', error);
+          console.error('Supabase error:', error);
           throw error;
         }
 
         if (!data) {
+          console.log('No data returned from Supabase');
           return [];
         }
         
+        console.log('Raw data from Supabase:', data);
+        
         // Map the raw database response to our Order type
-        return data.map((rawOrder: any) => mapRawOrderToOrder(rawOrder));
+        const mappedOrders = data.map((rawOrder: RawOrder) => {
+          try {
+            return mapRawOrderToOrder(rawOrder);
+          } catch (err) {
+            console.error('Error mapping order:', err, rawOrder);
+            throw err;
+          }
+        });
+
+        console.log('Mapped orders:', mappedOrders);
+        return mappedOrders;
       } catch (error) {
         console.error('Error in useOrders query:', error);
         throw error;
@@ -49,28 +61,38 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
 
   const updateOrderStatus = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
+      console.log('Updating order status:', { orderId, newStatus });
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating order status:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
+      console.log('Status update successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 
   const deleteOrder = useMutation({
     mutationFn: async (orderId: string) => {
+      console.log('Deleting order:', orderId);
       const { error } = await supabase
         .from('orders')
         .delete()
         .eq('id', orderId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting order:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
+      console.log('Order deletion successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
