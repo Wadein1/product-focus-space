@@ -18,15 +18,20 @@ const Navbar = () => {
           .select('id')
           .eq('status', 'active')
           .order('created_at', { ascending: false })
-          .limit(1);
+          .limit(1)
+          .single(); // This ensures we get a single object or null
 
         if (cartsError) {
+          if (cartsError.code === 'PGRST116') {
+            // No active cart exists
+            return 0;
+          }
           console.error('Error fetching cart:', cartsError);
           return 0;
         }
 
         // If no active cart exists, return 0
-        if (!carts || carts.length === 0) {
+        if (!carts) {
           return 0;
         }
 
@@ -34,7 +39,7 @@ const Navbar = () => {
         const { count, error: countError } = await supabase
           .from('cart_items')
           .select('*', { count: 'exact', head: true })
-          .eq('cart_id', carts[0].id);
+          .eq('cart_id', carts.id);
 
         if (countError) {
           console.error('Error fetching cart items count:', countError);
