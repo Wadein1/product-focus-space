@@ -28,14 +28,14 @@ export function AdminAuth() {
 
       if (adminError) throw adminError;
 
-      if (!adminUser || password !== 'thanksculvers') {
+      if (!adminUser) {
         throw new Error('Invalid credentials');
       }
 
-      // Sign in with Supabase Auth
+      // Sign in with Supabase Auth using email
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: adminUser.email,
-        password: 'thanksculvers' // Using the same password for now
+        password: password
       });
 
       if (authError) throw authError;
