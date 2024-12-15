@@ -24,10 +24,19 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
           query = query.eq('status', statusFilter);
         }
 
-        console.log('Query built:', query);
-        console.log('Executing Supabase query...');
+        console.log('Query built, executing...');
         
-        const { data: rawData, error: queryError } = await query;
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Query timeout after 10s')), 10000);
+        });
+
+        const queryPromise = query;
+        
+        const { data: rawData, error: queryError } = await Promise.race([
+          queryPromise,
+          timeoutPromise
+        ]) as any;
         
         console.log('Query completed');
         
@@ -37,73 +46,56 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
         }
 
         if (!rawData) {
-          console.log('No data returned from Supabase');
+          console.log('No data returned');
           return [];
         }
         
-        console.log('Raw data from Supabase:', rawData);
-        console.log('Number of records:', rawData.length);
+        console.log('Raw data received, count:', rawData.length);
         
         const mappedOrders = rawData.map((rawOrder: RawOrder) => {
           try {
-            console.log('Mapping order:', rawOrder);
-            const mappedOrder = mapRawOrderToOrder(rawOrder);
-            console.log('Successfully mapped order:', mappedOrder);
-            return mappedOrder;
+            return mapRawOrderToOrder(rawOrder);
           } catch (err) {
-            console.error('Error mapping specific order:', err, rawOrder);
+            console.error('Error mapping order:', err, rawOrder);
             throw new Error(`Failed to map order: ${err instanceof Error ? err.message : 'Unknown error'}`);
           }
         });
 
-        console.log('All orders mapped successfully. Total orders:', mappedOrders.length);
+        console.log('Orders mapped successfully, count:', mappedOrders.length);
         return mappedOrders;
       } catch (error) {
         console.error('Error in useOrders query:', error);
         throw error;
       }
     },
-    staleTime: 1000 * 60, // Consider data fresh for 1 minute
     retry: 1,
-    meta: {
-      errorMessage: 'Failed to fetch orders'
-    }
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const updateOrderStatus = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
-      console.log('Updating order status:', { orderId, newStatus });
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId);
       
-      if (error) {
-        console.error('Error updating order status:', error);
-        throw error;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
-      console.log('Status update successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 
   const deleteOrder = useMutation({
     mutationFn: async (orderId: string) => {
-      console.log('Deleting order:', orderId);
       const { error } = await supabase
         .from('orders')
         .delete()
         .eq('id', orderId);
       
-      if (error) {
-        console.error('Error deleting order:', error);
-        throw error;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
-      console.log('Order deletion successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
