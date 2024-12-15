@@ -36,14 +36,22 @@ serve(async (req) => {
       `;
 
       if (image && imageName) {
-        // Convert base64 to buffer
-        const base64Data = String(image).split(',')[1];
-        const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-        
-        attachments.push({
-          filename: String(imageName),
-          content: imageBuffer,
-        });
+        try {
+          // Convert base64 to buffer
+          const base64Data = String(image).split(',')[1];
+          const binaryStr = atob(base64Data);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+          
+          attachments.push({
+            filename: String(imageName),
+            content: bytes,
+          });
+        } catch (error) {
+          console.error('Error processing image attachment:', error);
+        }
       }
     } else if (type === 'fundraising') {
       const companyName = formData.get('companyName');
@@ -60,6 +68,8 @@ serve(async (req) => {
     } else {
       throw new Error('Invalid notification type');
     }
+
+    console.log('Sending email with attachments:', attachments);
 
     const { data: emailData, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
