@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import { Loader2 } from "lucide-react";
 
 const Fundraising = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +19,6 @@ const Fundraising = () => {
     setIsSubmitting(true);
 
     try {
-      // First, save to database
       const { error } = await supabase
         .from('fundraising_requests')
         .insert({
@@ -29,7 +29,6 @@ const Fundraising = () => {
 
       if (error) throw error;
 
-      // Send email notification
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
           type: 'fundraising',
@@ -44,11 +43,10 @@ const Fundraising = () => {
       if (emailError) throw emailError;
 
       toast({
-        title: "Request submitted",
-        description: "We will talk to you shortly.",
+        title: "Request submitted successfully",
+        description: "We'll be in touch with you shortly.",
       });
 
-      // Reset form
       setEmail("");
       setCompanyName("");
       setDescription("");
@@ -65,54 +63,85 @@ const Fundraising = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 mt-16">
-        <h1 className="text-4xl font-bold mb-8">Fundraising</h1>
-        <div className="max-w-2xl mx-auto">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="companyName" className="text-sm font-medium">Company/Organization Name</label>
-              <Input
-                id="companyName"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                required
-                placeholder="Enter your company or organization name"
-              />
-            </div>
+      <div className="container mx-auto px-4 py-16 mt-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Fundraising Opportunities
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Partner with us to create meaningful fundraising campaigns for your organization
+            </p>
+          </div>
 
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">Email</label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter your email"
-              />
-            </div>
+          <div className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm backdrop-filter">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label htmlFor="companyName" className="text-sm font-medium text-gray-700">
+                  Organization Name
+                </label>
+                <Input
+                  id="companyName"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  required
+                  className="w-full"
+                  placeholder="Enter your organization name"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <label htmlFor="description" className="text-sm font-medium">Additional Information (Optional)</label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Tell us more about your fundraising needs"
-                className="min-h-[120px]"
-              />
-            </div>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Contact Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full"
+                  placeholder="Enter your email address"
+                />
+              </div>
 
-            <div className="text-sm text-muted-foreground mb-4">
-              We will talk to you shortly.
-            </div>
+              <div className="space-y-2">
+                <label htmlFor="description" className="text-sm font-medium text-gray-700">
+                  Tell us about your fundraising needs
+                </label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="min-h-[120px] w-full"
+                  placeholder="Describe your organization and fundraising goals"
+                />
+              </div>
 
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? "Submitting..." : "Submit Request"}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-12 text-lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Request"
+                )}
+              </Button>
+            </form>
+          </div>
+
+          <div className="mt-12 text-center text-gray-600">
+            <p className="text-sm">
+              We typically respond to fundraising requests within 2-3 business days.
+            </p>
+          </div>
         </div>
       </div>
     </div>

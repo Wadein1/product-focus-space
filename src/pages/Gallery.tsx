@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import { Loader2 } from "lucide-react";
 
 interface GalleryImage {
   id: string;
@@ -22,43 +23,54 @@ const Gallery = () => {
     }
   });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 mt-16">
-          <div className="text-center">Loading gallery...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 mt-16">
-        <h1 className="text-4xl font-bold mb-8">Gallery</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {images?.map((image) => {
-            const imageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`;
-            return (
-              <div
-                key={image.id}
-                className="relative group overflow-hidden rounded-lg shadow-lg"
-              >
-                <img
-                  src={imageUrl}
-                  alt={`Gallery image ${image.id}`}
-                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                  loading="lazy"
-                />
-              </div>
-            );
-          })}
+      <div className="container mx-auto px-4 py-16 mt-8">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            Our Gallery
+          </h1>
+          <p className="text-gray-600 text-lg">
+            Explore our collection of stunning designs and creations
+          </p>
         </div>
+
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {images?.map((image) => {
+              const imageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`;
+              return (
+                <div
+                  key={image.id}
+                  className="group relative overflow-hidden rounded-xl shadow-lg bg-white hover:shadow-xl transition-all duration-300 animate-fade-in"
+                >
+                  <div className="aspect-w-4 aspect-h-3">
+                    <img
+                      src={imageUrl}
+                      alt={`Gallery image ${image.id}`}
+                      className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                    <div className="p-6 text-white">
+                      <p className="font-medium">View Details</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        
         {images?.length === 0 && (
-          <div className="text-center text-muted-foreground">
-            No images available in the gallery yet.
+          <div className="text-center text-gray-500 py-16">
+            <p className="text-lg">No images available in the gallery yet.</p>
           </div>
         )}
       </div>
