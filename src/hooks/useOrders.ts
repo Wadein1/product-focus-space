@@ -1,123 +1,87 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { Order, OrderStatus, RawOrder } from "@/types/order";
-import { mapRawOrderToOrder } from "@/utils/orderUtils";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Order, OrderStatus, RawOrder } from '@/types/order';
+import { mapRawOrderToOrder } from '@/utils/orderUtils';
+import { useToast } from "@/hooks/use-toast";
 
-export function useOrders(searchTerm: string = "", statusFilter: string = "all", page: number = 1) {
+export function useOrders(searchTerm: string, statusFilter: string) {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const PAGE_SIZE = 20;
 
-  const { data: orders, isLoading, error } = useQuery({
-    queryKey: ['orders', searchTerm, statusFilter, page],
+  const { data: orders, isLoading } = useQuery({
+    queryKey: ['admin-orders', searchTerm, statusFilter],
     queryFn: async () => {
-      console.log('Starting order fetch with params:', { searchTerm, statusFilter, page });
-      try {
-        let query = supabase
-          .from('orders')
-          .select('*', { count: 'exact' })
-          .order('created_at', { ascending: false });
+      let query = supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-        console.log('Base query constructed');
+      if (searchTerm) {
+        query = query.or(`customer_email.ilike.%${searchTerm}%,product_name.ilike.%${searchTerm}%`);
+      }
 
-        // Add pagination
-        query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-        console.log('Pagination added to query');
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
 
-        // Add filters if present
-        if (searchTerm) {
-          query = query.or(`customer_email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
-          console.log('Search filter added:', searchTerm);
-        }
+      const { data, error } = await query;
 
-        if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter);
-          console.log('Status filter added:', statusFilter);
-        }
-
-        console.log('Executing query...');
-        const { data: rawData, error: queryError, count } = await query;
-        
-        if (queryError) {
-          console.error('Query error:', queryError);
-          throw queryError;
-        }
-
-        console.log('Query completed. Raw data count:', rawData?.length);
-
-        if (!rawData) {
-          console.log('No data returned from query');
-          return { orders: [], totalCount: 0 };
-        }
-
-        console.log('Mapping orders...');
-        const mappedOrders = rawData.map((rawOrder: RawOrder) => {
-          try {
-            return mapRawOrderToOrder(rawOrder);
-          } catch (err) {
-            console.error('Error mapping order:', err, rawOrder);
-            return null;
-          }
-        }).filter(Boolean) as Order[];
-
-        console.log('Orders mapped successfully. Count:', mappedOrders.length);
-
-        return { 
-          orders: mappedOrders,
-          totalCount: count || 0
-        };
-      } catch (error) {
-        console.error('Error in useOrders query:', error);
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching orders",
+          description: error.message,
+        });
         throw error;
       }
+
+      return (data as RawOrder[]).map(mapRawOrderToOrder);
     },
-    retry: 1,
-    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
-      console.log('Updating order status:', { orderId, newStatus });
+    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId);
-      
-      if (error) {
-        console.error('Error updating order status:', error);
-        throw error;
-      }
-      console.log('Order status updated successfully');
+
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast({
+        title: "Order status updated",
+        description: "The order status has been successfully updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error updating order status",
+        description: error.message,
+      });
     },
   });
 
   const deleteOrder = useMutation({
     mutationFn: async (orderId: string) => {
-      console.log('Deleting order:', orderId);
       const { error } = await supabase
         .from('orders')
         .delete()
         .eq('id', orderId);
-      
-      if (error) {
-        console.error('Error deleting order:', error);
-        throw error;
-      }
-      console.log('Order deleted successfully');
+
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
   });
 
   return {
-    orders: orders?.orders || [],
-    totalCount: orders?.totalCount || 0,
+    orders,
     isLoading,
-    error,
     updateOrderStatus,
-    deleteOrder,
+    deleteOrder
   };
 }

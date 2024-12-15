@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Order } from '@/types/order';
+import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
+import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';
+import { DashboardControls } from '@/components/admin/DashboardControls';
 import { AnalyticsSection } from '@/components/admin/analytics/AnalyticsSection';
 import { FundraiserManagement } from '@/components/admin/fundraiser/FundraiserManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { OrdersTabContent } from '@/components/admin/OrdersTabContent';
-import { LoadingSpinner } from '@/components/admin/LoadingSpinner';
 
 const Dashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -18,22 +19,8 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("orders");
-  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const { 
-    orders, 
-    totalCount, 
-    isLoading: ordersLoading, 
-    updateOrderStatus, 
-    deleteOrder 
-  } = useOrders(
-    activeTab === "orders" ? searchTerm : "",
-    activeTab === "orders" ? statusFilter : "all",
-    currentPage
-  );
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,9 +33,10 @@ const Dashboard = () => {
           return;
         }
 
+        // Check if user is an admin
         const { data: adminUser, error: adminError } = await supabase
           .from('admin_users')
-          .select('email')
+          .select('*')
           .eq('email', session.user.email)
           .single();
 
@@ -78,6 +66,7 @@ const Dashboard = () => {
 
     checkAuth();
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
@@ -85,7 +74,7 @@ const Dashboard = () => {
       } else if (event === 'SIGNED_IN' && session) {
         const { data: adminUser } = await supabase
           .from('admin_users')
-          .select('email')
+          .select('*')
           .eq('email', session.user.email)
           .single();
 
@@ -102,8 +91,10 @@ const Dashboard = () => {
     };
   }, [navigate, toast]);
 
+  const { orders, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(searchTerm, statusFilter);
+
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   if (!isAuthenticated) {
@@ -126,16 +117,9 @@ const Dashboard = () => {
     }
   };
 
-  const totalPages = Math.ceil(totalCount / 20);
-
   return (
     <div className="container mx-auto p-6">
-      <Tabs 
-        defaultValue="orders" 
-        className="space-y-4"
-        value={activeTab}
-        onValueChange={setActiveTab}
-      >
+      <Tabs defaultValue="orders" className="space-y-4">
         <TabsList>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -143,42 +127,47 @@ const Dashboard = () => {
         </TabsList>
 
         <TabsContent value="orders">
-          {activeTab === "orders" && (
-            <OrdersTabContent
-              orders={orders || []}
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              selectedOrder={selectedOrder}
-              setSelectedOrder={setSelectedOrder}
-              onDeleteOrder={handleDeleteOrder}
-              onStatusUpdate={(orderId, newStatus) => {
-                updateOrderStatus.mutate({ orderId, newStatus });
-              }}
-              isLoading={ordersLoading}
-            />
-          )}
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Order Tracking</CardTitle>
+              <DashboardControls
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+              />
+            </CardHeader>
+            <CardContent>
+              <OrdersTable 
+                orders={orders || []} 
+                onViewDetails={setSelectedOrder}
+                onDeleteOrder={handleDeleteOrder}
+              />
+            </CardContent>
+          </Card>
+
+          <OrderDetailsDialog
+            order={selectedOrder}
+            onOpenChange={() => setSelectedOrder(null)}
+            onStatusUpdate={(orderId, newStatus) => {
+              updateOrderStatus.mutate({ orderId, newStatus });
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="analytics">
-          {activeTab === "analytics" && <AnalyticsSection />}
+          <AnalyticsSection />
         </TabsContent>
 
         <TabsContent value="fundraisers">
-          {activeTab === "fundraisers" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Fundraiser Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FundraiserManagement />
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Fundraiser Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FundraiserManagement />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

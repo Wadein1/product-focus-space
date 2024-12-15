@@ -1,126 +1,254 @@
 import React from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useForm } from 'react-hook-form';
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Form } from "@/components/ui/form";
-import { FundraiserFormFields } from './FundraiserFormFields';
+import { PlusIcon, X } from "lucide-react";
 
-const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  customLink: z.string().min(1, "Custom link is required"),
-  basePrice: z.string().min(1, "Base price is required"),
-  donationPercentage: z.string().min(1, "Donation percentage is required"),
-  image: z.any(),
-});
+interface FundraiserFormData {
+  title: string;
+  description: string;
+  customLink: string;
+  basePrice: number;
+  donationPercentage: number;
+  variations: {
+    title: string;
+    image: File | null;
+  }[];
+}
 
 export const FundraiserForm = () => {
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FundraiserFormData>({
     defaultValues: {
-      title: "",
-      description: "",
-      customLink: "",
-      basePrice: "",
-      donationPercentage: "",
-    },
+      variations: [{ title: '', image: null }]
+    }
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log("Starting form submission with values:", values);
+  const onSubmit = async (data: FundraiserFormData) => {
     try {
-      // Check admin authentication
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      console.log("Auth session check:", { session, authError });
-      
-      if (!session) {
-        console.error("No auth session found");
-        throw new Error("You must be logged in as an admin to create fundraisers");
-      }
-
-      // Create the fundraiser
+      // Insert fundraiser
       const { data: fundraiser, error: fundraiserError } = await supabase
         .from('fundraisers')
         .insert({
-          title: values.title,
-          description: values.description || null,
-          custom_link: values.customLink,
-          base_price: parseFloat(values.basePrice),
-          donation_percentage: parseInt(values.donationPercentage),
-          status: 'active'
+          title: data.title,
+          description: data.description,
+          custom_link: data.customLink,
+          base_price: data.basePrice,
+          donation_percentage: data.donationPercentage
         })
         .select()
         .single();
 
-      console.log("Fundraiser creation response:", { fundraiser, fundraiserError });
+      if (fundraiserError) throw fundraiserError;
 
-      if (fundraiserError) {
-        console.error("Error creating fundraiser:", fundraiserError);
-        throw fundraiserError;
-      }
+      // Upload images and create variations
+      for (const variation of data.variations) {
+        if (!variation.image) continue;
 
-      // Handle image upload if provided
-      if (values.image && values.image[0]) {
-        console.log("Starting image upload");
-        const file = values.image[0];
-        const fileExt = file.name.split('.').pop();
-        const filePath = `${fundraiser.id}/${crypto.randomUUID()}.${fileExt}`;
+        const fileExt = variation.image.name.split('.').pop();
+        const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('gallery')
-          .upload(filePath, file);
+          .upload(filePath, variation.image);
 
-        console.log("Image upload response:", { filePath, uploadError });
+        if (uploadError) throw uploadError;
 
-        if (uploadError) {
-          console.error("Error uploading image:", uploadError);
-          throw uploadError;
-        }
-
-        // Create variation with uploaded image
         const { error: variationError } = await supabase
           .from('fundraiser_variations')
           .insert({
             fundraiser_id: fundraiser.id,
-            title: 'Default Variation',
+            title: variation.title,
             image_path: filePath,
-            is_default: true
+            is_default: data.variations.indexOf(variation) === 0
           });
 
-        console.log("Variation creation response:", { variationError });
-
-        if (variationError) {
-          console.error("Error creating variation:", variationError);
-          throw variationError;
-        }
+        if (variationError) throw variationError;
       }
 
       toast({
-        title: "Success",
-        description: "Fundraiser created successfully!",
+        title: "Fundraiser created",
+        description: "Your fundraiser has been created successfully."
       });
 
-      // Reset form
       form.reset();
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error('Error creating fundraiser:', error);
       toast({
-        variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to create fundraiser. Please try again.",
+        description: "Failed to create fundraiser. Please try again.",
+        variant: "destructive"
       });
+    }
+  };
+
+  const addVariation = () => {
+    const variations = form.getValues('variations');
+    form.setValue('variations', [...variations, { title: '', image: null }]);
+  };
+
+  const removeVariation = (index: number) => {
+    const variations = form.getValues('variations');
+    if (variations.length > 1) {
+      form.setValue('variations', variations.filter((_, i) => i !== index));
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FundraiserFormFields form={form} />
-        <Button type="submit">Create Fundraiser</Button>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="customLink"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Custom Link</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="my-fundraiser" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="basePrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Base Price ($)</FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="donationPercentage"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Donation Percentage (%)</FormLabel>
+                <FormControl>
+                  <Input type="number" min="0" max="100" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Variations</h3>
+            <Button type="button" onClick={addVariation} variant="outline" size="sm">
+              <PlusIcon className="w-4 h-4 mr-2" />
+              Add Variation
+            </Button>
+          </div>
+
+          {form.watch('variations').map((variation, index) => (
+            <div key={index} className="p-4 border rounded-lg space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="font-medium">Variation {index + 1}</h4>
+                {index > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeVariation(index)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+
+              <FormField
+                control={form.control}
+                name={`variations.${index}.title`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name={`variations.${index}.image`}
+                render={({ field: { value, onChange, ...field } }) => (
+                  <FormItem>
+                    <FormLabel>Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            onChange(file);
+                          }
+                        }}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          ))}
+        </div>
+
+        <Button type="submit" className="w-full">
+          Create Fundraiser
+        </Button>
       </form>
     </Form>
   );

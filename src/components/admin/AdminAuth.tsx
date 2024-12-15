@@ -19,32 +19,23 @@ export function AdminAuth() {
     setIsLoading(true);
 
     try {
-      // First, check admin_users table
-      const { data: adminUser, error: adminError } = await supabase
+      const { data, error } = await supabase
         .from('admin_users')
         .select('*')
         .eq('username', username)
         .single();
 
-      if (adminError) throw adminError;
+      if (error) throw error;
 
-      if (!adminUser) {
+      if (!data || password !== 'thanksculvers') {
         throw new Error('Invalid credentials');
       }
-
-      // Sign in with Supabase Auth using email
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: adminUser.email,
-        password: password
-      });
-
-      if (authError) throw authError;
 
       // Update last login
       await supabase
         .from('admin_users')
         .update({ last_login: new Date().toISOString() })
-        .eq('id', adminUser.id);
+        .eq('id', data.id);
 
       // Store admin session
       sessionStorage.setItem('adminAuthenticated', 'true');
@@ -57,7 +48,6 @@ export function AdminAuth() {
       // Navigate after successful login with replace to prevent going back to login
       navigate('/admin/dashboard', { replace: true });
     } catch (error) {
-      console.error('Login error:', error);
       toast({
         title: "Authentication failed",
         description: "Invalid username or password",
