@@ -14,12 +14,26 @@ const Product = () => {
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  const validateImage = () => {
+    if (!imagePreview) {
+      toast({
+        title: "Image required",
+        description: "Please upload an image before adding to cart",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const addToCart = async () => {
+    if (!validateImage()) return;
+
     setIsAddingToCart(true);
     try {
       const newItem: CartItem = {
         id: uuidv4(),
-        cart_id: uuidv4(), // Add cart_id as required by CartItem type
+        cart_id: uuidv4(),
         product_name: "Custom Medallion",
         price: 49.99,
         quantity: quantity,
@@ -51,10 +65,12 @@ const Product = () => {
   };
 
   const buyNow = async () => {
+    if (!validateImage()) return;
+
     try {
       const item: CartItem = {
         id: uuidv4(),
-        cart_id: uuidv4(), // Add cart_id as required by CartItem type
+        cart_id: uuidv4(),
         product_name: "Custom Medallion",
         price: 49.99,
         quantity: quantity,
