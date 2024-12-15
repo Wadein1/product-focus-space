@@ -16,36 +16,53 @@ serve(async (req) => {
   }
 
   try {
-    const { type, data } = await req.json();
-    let subject, html;
+    const formData = await req.formData();
+    const type = formData.get('type');
+    let subject, html, attachments = [];
 
     if (type === 'support') {
-      subject = `New Support Ticket: ${data.supportType}`;
+      const supportType = formData.get('supportType');
+      const email = formData.get('email');
+      const description = formData.get('description');
+      const image = formData.get('image');
+
+      subject = `New Support Ticket: ${supportType}`;
       html = `
         <h2>New Support Ticket</h2>
-        <p><strong>Type:</strong> ${data.supportType}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        <p><strong>Description:</strong> ${data.description}</p>
-        ${data.imagePath ? `<p><strong>Image:</strong> ${data.imagePath}</p>` : ''}
+        <p><strong>Type:</strong> ${supportType}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Description:</strong> ${description}</p>
       `;
+
+      if (image && image instanceof File) {
+        const buffer = await image.arrayBuffer();
+        attachments.push({
+          filename: image.name,
+          content: buffer,
+        });
+      }
     } else if (type === 'fundraising') {
-      subject = `New Fundraising Request: ${data.companyName}`;
+      const companyName = formData.get('companyName');
+      const email = formData.get('email');
+      const description = formData.get('description');
+
+      subject = `New Fundraising Request: ${companyName}`;
       html = `
         <h2>New Fundraising Request</h2>
-        <p><strong>Company:</strong> ${data.companyName}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        ${data.description ? `<p><strong>Description:</strong> ${data.description}</p>` : ''}
+        <p><strong>Company:</strong> ${companyName}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
       `;
     } else {
       throw new Error('Invalid notification type');
     }
 
-    // For testing, send to the verified email
     const { data: emailData, error } = await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: ['wadesportssolutions@gmail.com'],
       subject,
       html,
+      attachments,
     });
 
     if (error) {
@@ -56,7 +73,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify(emailData),
       { 
-        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );

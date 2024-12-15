@@ -45,24 +45,25 @@ const Support = () => {
 
       if (error) throw error;
 
-      // Send email notification
+      // Send email notification with image
+      const formData = new FormData();
+      formData.append('type', 'support');
+      formData.append('supportType', supportType);
+      formData.append('email', email);
+      formData.append('description', description);
+      if (image) {
+        formData.append('image', image);
+      }
+
       const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          type: 'support',
-          data: {
-            supportType,
-            email,
-            description,
-            imagePath
-          }
-        }
+        body: formData
       });
 
       if (emailError) throw emailError;
 
       toast({
         title: "Support ticket submitted",
-        description: "We will get back to you within 3 days.",
+        description: "We will get back to you within 24-48 hours.",
       });
 
       // Reset form
