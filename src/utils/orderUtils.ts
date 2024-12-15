@@ -1,17 +1,19 @@
 import { RawOrder, Order, OrderStatus, ShippingAddress } from '@/types/order';
 import { Json } from '@/integrations/supabase/types';
 
+type JsonObject = { [key: string]: Json | undefined };
+
 export const formatShippingAddress = (rawAddress: Json): ShippingAddress => {
-  // Ensure rawAddress is an object
-  const addressObj = typeof rawAddress === 'object' && rawAddress !== null 
-    ? rawAddress 
+  // Ensure rawAddress is an object and cast it to JsonObject
+  const addressObj = (typeof rawAddress === 'object' && rawAddress !== null && !Array.isArray(rawAddress))
+    ? rawAddress as JsonObject
     : {};
 
   return {
-    address: String(addressObj?.street || addressObj?.address || ''),
-    city: String(addressObj?.city || ''),
-    state: String(addressObj?.state || ''),
-    zipCode: String(addressObj?.zipCode || '')
+    address: String(addressObj.street || addressObj.address || ''),
+    city: String(addressObj.city || ''),
+    state: String(addressObj.state || ''),
+    zipCode: String(addressObj.zipCode || '')
   };
 };
 
