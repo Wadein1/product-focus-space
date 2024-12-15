@@ -52,7 +52,13 @@ const Support = () => {
       formData.append('email', email);
       formData.append('description', description);
       if (image) {
-        formData.append('image', image);
+        const base64Image = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(image);
+        });
+        formData.append('image', String(base64Image));
+        formData.append('imageName', image.name);
       }
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {

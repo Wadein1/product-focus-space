@@ -25,6 +25,7 @@ serve(async (req) => {
       const email = formData.get('email');
       const description = formData.get('description');
       const image = formData.get('image');
+      const imageName = formData.get('imageName');
 
       subject = `New Support Ticket: ${supportType}`;
       html = `
@@ -34,11 +35,14 @@ serve(async (req) => {
         <p><strong>Description:</strong> ${description}</p>
       `;
 
-      if (image && image instanceof File) {
-        const buffer = await image.arrayBuffer();
+      if (image && imageName) {
+        // Convert base64 to buffer
+        const base64Data = String(image).split(',')[1];
+        const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+        
         attachments.push({
-          filename: image.name,
-          content: buffer,
+          filename: String(imageName),
+          content: imageBuffer,
         });
       }
     } else if (type === 'fundraising') {
