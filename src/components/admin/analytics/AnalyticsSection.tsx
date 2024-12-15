@@ -42,27 +42,39 @@ export function AnalyticsSection() {
       const calculateTotal = (ordersList: any[]) => 
         ordersList.reduce((sum, order) => sum + Number(order.total_amount), 0);
 
+      const calculateOrderCount = (ordersList: any[]) => ordersList.length;
+
       return {
         daily: calculateTotal(dailyOrders || []),
         weekly: calculateTotal(weeklyOrders || []),
         monthly: calculateTotal(monthlyOrders || []),
         yearly: calculateTotal(orders || []),
-        orderCount: orders?.length || 0
+        dailyCount: calculateOrderCount(dailyOrders || []),
+        weeklyCount: calculateOrderCount(weeklyOrders || []),
+        monthlyCount: calculateOrderCount(monthlyOrders || []),
+        yearlyCount: calculateOrderCount(orders || [])
       };
     }
   });
 
   const updateCostsMutation = useMutation({
     mutationFn: async ({ shipping, material }: { shipping: number; material: number }) => {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Calculate daily profit
+      const dailyProfit = analytics ? 
+        analytics.daily - (shipping * analytics.dailyCount) - (material * analytics.dailyCount) : 0;
+
       const { error } = await supabase
         .from('analytics')
         .insert([
           {
+            date: today,
             shipping_cost: shipping,
             material_cost: material,
-            total_sales: analytics?.monthly || 0,
-            total_orders: analytics?.orderCount || 0,
-            profit: (analytics?.monthly || 0) - (shipping * (analytics?.orderCount || 0)) - (material * (analytics?.orderCount || 0))
+            total_sales: analytics?.daily || 0,
+            total_orders: analytics?.dailyCount || 0,
+            profit: dailyProfit
           }
         ]);
       
@@ -70,6 +82,7 @@ export function AnalyticsSection() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['profit-analytics'] });
       toast({
         title: "Costs updated",
         description: "The costs have been updated successfully.",
@@ -185,4 +198,4 @@ export function AnalyticsSection() {
       <ProfitChart />
     </div>
   );
-};
+}

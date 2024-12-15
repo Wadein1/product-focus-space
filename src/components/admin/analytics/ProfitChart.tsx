@@ -23,13 +23,31 @@ export function ProfitChart() {
         .limit(30);
       
       if (error) throw error;
-      return data;
+
+      // Format dates and ensure numbers are properly formatted
+      return data.map(item => ({
+        ...item,
+        date: new Date(item.date).toLocaleDateString(),
+        profit: Number(item.profit),
+        total_sales: Number(item.total_sales),
+        shipping_cost: Number(item.shipping_cost),
+        material_cost: Number(item.material_cost)
+      }));
     }
   });
 
   if (isLoading) {
     return <div>Loading profit data...</div>;
   }
+
+  // Calculate aggregated metrics
+  const calculateTotal = (data: any[], key: string) => 
+    data?.reduce((sum, item) => sum + Number(item[key]), 0) || 0;
+
+  const dailyProfit = profitData?.[profitData.length - 1]?.profit || 0;
+  const weeklyProfit = calculateTotal(profitData?.slice(-7) || [], 'profit');
+  const monthlyProfit = calculateTotal(profitData?.slice(-30) || [], 'profit');
+  const yearlyProfit = calculateTotal(profitData || [], 'profit');
 
   return (
     <Card>
@@ -51,7 +69,9 @@ export function ProfitChart() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip />
+              <Tooltip 
+                formatter={(value: number) => [`$${value.toFixed(2)}`, 'Profit']}
+              />
               <Line
                 type="monotone"
                 dataKey="profit"
@@ -66,25 +86,25 @@ export function ProfitChart() {
           <div className="p-4 bg-background rounded-lg border">
             <p className="text-sm text-muted-foreground">Daily Profit</p>
             <p className="text-2xl font-bold">
-              ${profitData?.[profitData.length - 1]?.profit.toFixed(2) || "0.00"}
+              ${dailyProfit.toFixed(2)}
             </p>
           </div>
           <div className="p-4 bg-background rounded-lg border">
             <p className="text-sm text-muted-foreground">Weekly Profit</p>
             <p className="text-2xl font-bold">
-              ${(profitData?.slice(-7)?.reduce((acc, curr) => acc + curr.profit, 0) || 0).toFixed(2)}
+              ${weeklyProfit.toFixed(2)}
             </p>
           </div>
           <div className="p-4 bg-background rounded-lg border">
             <p className="text-sm text-muted-foreground">Monthly Profit</p>
             <p className="text-2xl font-bold">
-              ${(profitData?.slice(-30)?.reduce((acc, curr) => acc + curr.profit, 0) || 0).toFixed(2)}
+              ${monthlyProfit.toFixed(2)}
             </p>
           </div>
           <div className="p-4 bg-background rounded-lg border">
             <p className="text-sm text-muted-foreground">Yearly Profit</p>
             <p className="text-2xl font-bold">
-              ${(profitData?.reduce((acc, curr) => acc + curr.profit, 0) || 0).toFixed(2)}
+              ${yearlyProfit.toFixed(2)}
             </p>
           </div>
         </div>
