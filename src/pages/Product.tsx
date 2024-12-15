@@ -36,25 +36,79 @@ const Product = () => {
     }
   };
 
+  const addToCartForCheckout = async () => {
+    if (!selectedFile) {
+      throw new Error("Please upload an image for your medallion");
+    }
+
+    // Create a new cart specifically for this purchase
+    const { data: newCart, error: cartError } = await supabase
+      .from('shopping_carts')
+      .insert([{ 
+        status: 'active',
+        last_activity: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (cartError) throw cartError;
+
+    // Add item to the new cart
+    const { error: addError } = await supabase
+      .from('cart_items')
+      .insert([{
+        cart_id: newCart.id,
+        product_name: 'Custom Medallion',
+        price: 49.99,
+        quantity: quantity,
+        image_path: imagePreview
+      }]);
+
+    if (addError) throw addError;
+    
+    return newCart.id;
+  };
+
+  const buyNowMutation = useMutation({
+    mutationFn: addToCartForCheckout,
+    onSuccess: (cartId) => {
+      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
+      // Navigate to checkout with the specific cart ID
+      navigate('/checkout', { state: { cartId, isBuyNow: true } });
+    },
+    onError: (error: Error) => {
+      console.error('Error processing buy now:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process purchase",
+        variant: "destructive"
+      });
+    }
+  });
+
   const addToCartMutation = useMutation({
     mutationFn: async () => {
+      if (!selectedFile) {
+        throw new Error("Please upload an image for your medallion");
+      }
+
       // First, try to find an active cart
       const { data: existingCarts, error: cartError } = await supabase
         .from('shopping_carts')
         .select('id')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(1);
+        .limit(1)
+        .single();
 
-      if (cartError) {
-        console.error('Error fetching cart:', cartError);
+      if (cartError && cartError.code !== 'PGRST116') {
         throw cartError;
       }
 
       let cartId;
 
       // If no active cart exists, create one
-      if (!existingCarts || existingCarts.length === 0) {
+      if (!existingCarts) {
         const { data: newCart, error: createError } = await supabase
           .from('shopping_carts')
           .insert([{ status: 'active' }])
@@ -64,7 +118,7 @@ const Product = () => {
         if (createError) throw createError;
         cartId = newCart.id;
       } else {
-        cartId = existingCarts[0].id;
+        cartId = existingCarts.id;
       }
 
       // Add item to cart with quantity
@@ -88,11 +142,11 @@ const Product = () => {
         description: "Your medallion has been added to the cart"
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error('Error adding to cart:', error);
       toast({
         title: "Error",
-        description: "Failed to add item to cart",
+        description: error.message || "Failed to add item to cart",
         variant: "destructive"
       });
     }
@@ -101,11 +155,11 @@ const Product = () => {
   const handleQuantityChange = (increment: boolean) => {
     setQuantity(prev => {
       const newValue = increment ? prev + 1 : prev - 1;
-      return Math.max(1, newValue); // Ensure quantity doesn't go below 1
+      return Math.max(1, newValue);
     });
   };
 
-  const handleAddToCart = async () => {
+  const handleBuyNow = () => {
     if (!selectedFile) {
       toast({
         title: "Missing image",
@@ -115,7 +169,7 @@ const Product = () => {
       return;
     }
 
-    addToCartMutation.mutate();
+    buyNowMutation.mutate();
   };
 
   return (
@@ -201,13 +255,13 @@ const Product = () => {
 
               <div className="space-y-3">
                 <Button 
-                  onClick={() => navigate('/checkout')}
+                  onClick={handleBuyNow}
                   className="w-full bg-primary text-white hover:bg-primary/90"
                 >
                   Buy Now
                 </Button>
                 <Button 
-                  onClick={handleAddToCart}
+                  onClick={addToCartMutation.mutate}
                   variant="outline"
                   className="w-full border-primary text-primary hover:bg-primary/10"
                   disabled={addToCartMutation.isPending}

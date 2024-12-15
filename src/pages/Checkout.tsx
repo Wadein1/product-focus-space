@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,17 +8,22 @@ import type { CheckoutFormData } from "@/types/checkout";
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Get the cartId and isBuyNow flag from location state
+  const { cartId, isBuyNow } = location.state || {};
 
   const handleSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
     try {
-      // Get active cart
+      // Get cart (either from location state or find active cart)
       const { data: cart } = await supabase
         .from('shopping_carts')
         .select('id')
-        .eq('status', 'active')
+        .eq('status', cartId ? 'active' : 'completed')
+        .eq(cartId ? 'id' : 'status', cartId || 'active')
         .single();
 
       if (!cart) {
@@ -77,11 +82,13 @@ const Checkout = () => {
 
       if (orderError) throw orderError;
 
-      // Update cart status
-      await supabase
-        .from('shopping_carts')
-        .update({ status: 'completed' })
-        .eq('id', cart.id);
+      // If this was a "Buy Now" purchase, mark only this cart as completed
+      if (isBuyNow) {
+        await supabase
+          .from('shopping_carts')
+          .update({ status: 'completed' })
+          .eq('id', cart.id);
+      }
 
       toast({
         title: "Order placed successfully!",
