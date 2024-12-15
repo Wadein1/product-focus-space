@@ -23,6 +23,10 @@ const Gallery = () => {
     }
   });
 
+  const getImageUrl = (imagePath: string) => {
+    return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${imagePath}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar />
@@ -39,29 +43,31 @@ const Gallery = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {images?.map((image) => {
-              const imageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`;
-              return (
-                <div
-                  key={image.id}
-                  className="group relative overflow-hidden rounded-xl shadow-lg bg-white hover:shadow-xl transition-all duration-300 animate-fade-in"
-                >
-                  <div className="aspect-w-4 aspect-h-3">
-                    <img
-                      src={imageUrl}
-                      alt={`Gallery image ${image.id}`}
-                      className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                    <div className="p-6 text-white">
-                      <p className="font-medium">View Details</p>
-                    </div>
+            {images?.map((image) => (
+              <div
+                key={image.id}
+                className="group relative overflow-hidden rounded-xl shadow-lg bg-white hover:shadow-xl transition-all duration-300 animate-fade-in"
+              >
+                <div className="aspect-w-4 aspect-h-3">
+                  <img
+                    src={getImageUrl(image.image_path)}
+                    alt="Gallery image"
+                    className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-110"
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      console.error(`Failed to load image: ${target.src}`);
+                      target.src = '/placeholder.svg'; // Fallback image
+                    }}
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                  <div className="p-6 text-white">
+                    <p className="font-medium">View Details</p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
         
