@@ -1,60 +1,66 @@
 import { Link } from "react-router-dom";
 import { useHeroImages } from "@/hooks/useHeroImages";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const HeroGallery = () => {
-  const { imagesLoaded } = useHeroImages();
+  const { imagesLoaded, images, loadedCount } = useHeroImages();
   
-  const images = [
-    {
-      src: "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png",
-      alt: "Product showcase 1"
-    },
-    {
-      src: "/lovable-uploads/d6daae6b-a26c-4424-a049-ee61f42f02c3.png",
-      alt: "Product showcase 2"
-    },
-    {
-      src: "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
-      alt: "Product showcase 3"
-    }
-  ];
-
   const renderDesktopGallery = () => (
     <div className="hidden md:grid md:grid-cols-3 gap-8">
-      {images.map((image, index) => (
-        <GalleryItem key={index} {...image} />
+      {images.map((src, index) => (
+        <GalleryItem 
+          key={src} 
+          src={src} 
+          alt={`Product showcase ${index + 1}`}
+          isLoaded={loadedCount > index}
+        />
       ))}
     </div>
   );
 
   const renderMobileGallery = () => (
     <div className="md:hidden">
-      <GalleryItem {...images[2]} />
+      <GalleryItem 
+        src={images[2]} 
+        alt="Product showcase" 
+        isLoaded={loadedCount > 2}
+      />
     </div>
   );
 
   return (
-    <div 
-      className={`mt-16 transition-all duration-1000 ${
-        imagesLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-      }`}
-    >
+    <div className={`mt-16 transition-all duration-1000 ${
+      imagesLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+    }`}>
       {renderDesktopGallery()}
       {renderMobileGallery()}
     </div>
   );
 };
 
-const GalleryItem = ({ src, alt }: { src: string; alt: string }) => (
+const GalleryItem = ({ 
+  src, 
+  alt,
+  isLoaded 
+}: { 
+  src: string; 
+  alt: string;
+  isLoaded: boolean;
+}) => (
   <Link 
     to="/product"
-    className="relative group overflow-hidden rounded-lg shadow-2xl block"
+    className="relative group overflow-hidden rounded-lg shadow-2xl block aspect-square bg-gray-100"
   >
+    {!isLoaded && (
+      <Skeleton className="absolute inset-0" />
+    )}
     <img
       src={src}
       alt={alt}
-      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       loading="lazy"
+      className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+        isLoaded ? 'opacity-100' : 'opacity-0'
+      }`}
     />
   </Link>
 );
