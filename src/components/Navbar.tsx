@@ -13,6 +13,7 @@ const Navbar = () => {
     queryKey: ['cartItemsCount'],
     queryFn: async () => {
       try {
+        // Get the most recent active cart
         const { data: carts, error: cartsError } = await supabase
           .from('shopping_carts')
           .select('id')
@@ -25,10 +26,12 @@ const Navbar = () => {
           return 0;
         }
 
+        // If no active cart exists, return 0
         if (!carts || carts.length === 0) {
           return 0;
         }
 
+        // Get count of items in the cart
         const { count, error: countError } = await supabase
           .from('cart_items')
           .select('*', { count: 'exact', head: true })
@@ -47,9 +50,9 @@ const Navbar = () => {
     },
   });
 
-  // Subscribe to real-time changes in cart_items and shopping_carts
+  // Subscribe to real-time changes in cart_items
   useEffect(() => {
-    const cartChannel = supabase
+    const channel = supabase
       .channel('cart-changes')
       .on(
         'postgres_changes',
@@ -62,21 +65,10 @@ const Navbar = () => {
           refetchCartCount();
         }
       )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'shopping_carts'
-        },
-        () => {
-          refetchCartCount();
-        }
-      )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(cartChannel);
+      supabase.removeChannel(channel);
     };
   }, [refetchCartCount]);
 

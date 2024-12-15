@@ -38,7 +38,9 @@ const Hero = () => {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10"
       >
         <div 
-          className={`text-center opacity-0 animate-fade-in`}
+          className={`text-center transform transition-all duration-1000 ${
+            imagesLoaded ? 'translate-y-0' : 'translate-y-32'
+          }`}
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
             Exclusive Drip
@@ -58,8 +60,8 @@ const Hero = () => {
           </div>
         </div>
         <div 
-          className={`mt-16 hidden md:grid md:grid-cols-3 gap-8 opacity-0 ${
-            imagesLoaded ? 'animate-fade-in' : ''
+          className={`mt-16 hidden md:grid md:grid-cols-3 gap-8 transition-opacity duration-1000 ${
+            imagesLoaded ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <div className="relative group">
@@ -91,8 +93,8 @@ const Hero = () => {
           </div>
         </div>
         <div 
-          className={`mt-16 md:hidden opacity-0 ${
-            imagesLoaded ? 'animate-fade-in' : ''
+          className={`mt-16 md:hidden transition-opacity duration-1000 ${
+            imagesLoaded ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <div className="relative group">
