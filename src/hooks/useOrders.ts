@@ -24,12 +24,16 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
           query = query.eq('status', statusFilter);
         }
 
+        console.log('Query built:', query);
         console.log('Executing Supabase query...');
-        const { data: rawData, error: queryError } = await query.limit(50);
+        
+        const { data: rawData, error: queryError } = await query;
+        
+        console.log('Query completed');
         
         if (queryError) {
           console.error('Supabase query error:', queryError);
-          throw queryError;
+          throw new Error(`Supabase query failed: ${queryError.message}`);
         }
 
         if (!rawData) {
@@ -38,6 +42,7 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
         }
         
         console.log('Raw data from Supabase:', rawData);
+        console.log('Number of records:', rawData.length);
         
         const mappedOrders = rawData.map((rawOrder: RawOrder) => {
           try {
@@ -47,11 +52,11 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
             return mappedOrder;
           } catch (err) {
             console.error('Error mapping specific order:', err, rawOrder);
-            throw err;
+            throw new Error(`Failed to map order: ${err instanceof Error ? err.message : 'Unknown error'}`);
           }
         });
 
-        console.log('All orders mapped successfully:', mappedOrders);
+        console.log('All orders mapped successfully. Total orders:', mappedOrders.length);
         return mappedOrders;
       } catch (error) {
         console.error('Error in useOrders query:', error);
