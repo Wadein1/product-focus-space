@@ -1,30 +1,37 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 const Hero = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("opacity-100", "translate-y-0");
-        }
-      },
-      {
-        threshold: 0.1,
-      }
-    );
+    // Show initial content after a brief delay
+    const contentTimer = setTimeout(() => {
+      setShowContent(true);
+    }, 300);
 
-    if (heroRef.current) {
-      observer.observe(heroRef.current);
-    }
+    // Load images
+    const imageUrls = [
+      "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png",
+      "/lovable-uploads/d6daae6b-a26c-4424-a049-ee61f42f02c3.png",
+      "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
+    ];
 
-    return () => {
-      if (heroRef.current) {
-        observer.unobserve(heroRef.current);
-      }
-    };
+    const imagePromises = imageUrls.map(url => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => resolve(true);
+      });
+    });
+
+    Promise.all(imagePromises).then(() => {
+      setImagesLoaded(true);
+    });
+
+    return () => clearTimeout(contentTimer);
   }, []);
 
   return (
@@ -32,9 +39,13 @@ const Hero = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-white/95 backdrop-blur-sm" />
       <div
         ref={heroRef}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 opacity-0 translate-y-4 transition-all duration-1000 relative z-10"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10"
       >
-        <div className="text-center">
+        <div 
+          className={`text-center transform transition-all duration-700 ${
+            showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
             Exclusive Drip
             <br />
@@ -52,7 +63,11 @@ const Hero = () => {
             </Link>
           </div>
         </div>
-        <div className="mt-16 hidden md:grid md:grid-cols-3 gap-8">
+        <div 
+          className={`mt-16 hidden md:grid md:grid-cols-3 gap-8 transform transition-all duration-1000 ${
+            imagesLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+          }`}
+        >
           <div className="relative group">
             <Link to="/product">
               <img
@@ -81,7 +96,11 @@ const Hero = () => {
             </Link>
           </div>
         </div>
-        <div className="mt-16 md:hidden">
+        <div 
+          className={`mt-16 md:hidden transform transition-all duration-1000 ${
+            imagesLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+          }`}
+        >
           <div className="relative group">
             <Link to="/product">
               <img
