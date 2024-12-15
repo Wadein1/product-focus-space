@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Order, OrderStatus } from "@/types/order";
+import type { Order, OrderStatus, RawOrder } from "@/types/order";
 import { mapRawOrderToOrder } from "@/utils/orderUtils";
 
 export function useOrders(searchTerm: string = "", statusFilter: string = "all") {
@@ -29,7 +29,7 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
       if (error) throw error;
       
       // Map the raw database response to our Order type
-      return (data || []).map(mapRawOrderToOrder);
+      return (data as RawOrder[]).map(mapRawOrderToOrder);
     },
     staleTime: 1000 * 60, // Consider data fresh for 1 minute
   });

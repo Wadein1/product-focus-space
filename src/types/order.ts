@@ -1,3 +1,5 @@
+import { Json } from "@/integrations/supabase/types";
+
 export interface ShippingAddress {
   address: string;
   city: string;
@@ -36,7 +38,7 @@ export interface RawOrder {
   order_status: string | null;
   price: number;
   product_name: string;
-  shipping_address: Record<string, unknown>;
+  shipping_address: Json;
   shipping_cost: number;
   status: string;
   stl_file_path: string | null;
