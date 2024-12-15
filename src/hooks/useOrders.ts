@@ -3,18 +3,20 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Order, OrderStatus, RawOrder } from "@/types/order";
 import { mapRawOrderToOrder } from "@/utils/orderUtils";
 
-export function useOrders(searchTerm: string = "", statusFilter: string = "all") {
+export function useOrders(searchTerm: string = "", statusFilter: string = "all", page: number = 1) {
   const queryClient = useQueryClient();
+  const PAGE_SIZE = 20;
 
   const { data: orders, isLoading, error } = useQuery({
-    queryKey: ['orders', searchTerm, statusFilter],
+    queryKey: ['orders', searchTerm, statusFilter, page],
     queryFn: async () => {
-      console.log('Fetching orders with:', { searchTerm, statusFilter });
+      console.log('Fetching orders with:', { searchTerm, statusFilter, page });
       try {
         let query = supabase
           .from('orders')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false })
+          .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
         if (searchTerm) {
           query = query.or(`customer_email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
@@ -24,45 +26,35 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
           query = query.eq('status', statusFilter);
         }
 
-        console.log('Query built, executing...');
+        console.log('Executing paginated query...');
         
-        // Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Query timeout after 10s')), 10000);
-        });
-
-        const queryPromise = query;
-        
-        const { data: rawData, error: queryError } = await Promise.race([
-          queryPromise,
-          timeoutPromise
-        ]) as any;
-        
-        console.log('Query completed');
+        const { data: rawData, error: queryError, count } = await query;
         
         if (queryError) {
-          console.error('Supabase query error:', queryError);
-          throw new Error(`Supabase query failed: ${queryError.message}`);
+          console.error('Query error:', queryError);
+          throw queryError;
         }
 
         if (!rawData) {
           console.log('No data returned');
-          return [];
+          return { orders: [], totalCount: 0 };
         }
         
-        console.log('Raw data received, count:', rawData.length);
+        console.log(`Retrieved ${rawData.length} orders`);
         
         const mappedOrders = rawData.map((rawOrder: RawOrder) => {
           try {
             return mapRawOrderToOrder(rawOrder);
           } catch (err) {
             console.error('Error mapping order:', err, rawOrder);
-            throw new Error(`Failed to map order: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            return null;
           }
-        });
+        }).filter(Boolean) as Order[];
 
-        console.log('Orders mapped successfully, count:', mappedOrders.length);
-        return mappedOrders;
+        return { 
+          orders: mappedOrders,
+          totalCount: count || 0
+        };
       } catch (error) {
         console.error('Error in useOrders query:', error);
         throw error;
@@ -101,7 +93,8 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
   });
 
   return {
-    orders: orders || [],
+    orders: orders?.orders || [],
+    totalCount: orders?.totalCount || 0,
     isLoading,
     error,
     updateOrderStatus,

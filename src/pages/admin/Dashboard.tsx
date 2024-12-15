@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -21,6 +22,7 @@ const Dashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("orders");
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -94,9 +96,10 @@ const Dashboard = () => {
   }, [navigate, toast]);
 
   // Only fetch orders data when orders tab is active
-  const { orders, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(
+  const { orders, totalCount, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(
     activeTab === "orders" ? searchTerm : "",
-    activeTab === "orders" ? statusFilter : "all"
+    activeTab === "orders" ? statusFilter : "all",
+    currentPage
   );
 
   if (isLoading) {
@@ -128,6 +131,8 @@ const Dashboard = () => {
     }
   };
 
+  const totalPages = Math.ceil(totalCount / 20);
+
   return (
     <div className="container mx-auto p-6">
       <Tabs 
@@ -149,9 +154,15 @@ const Dashboard = () => {
                 <CardTitle>Order Tracking</CardTitle>
                 <DashboardControls
                   searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
+                  onSearchChange={(value) => {
+                    setSearchTerm(value);
+                    setCurrentPage(1);
+                  }}
                   statusFilter={statusFilter}
-                  onStatusFilterChange={setStatusFilter}
+                  onStatusFilterChange={(value) => {
+                    setStatusFilter(value);
+                    setCurrentPage(1);
+                  }}
                 />
               </CardHeader>
               <CardContent>
@@ -160,6 +171,27 @@ const Dashboard = () => {
                   onViewDetails={setSelectedOrder}
                   onDeleteOrder={handleDeleteOrder}
                 />
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <span className="py-2">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
