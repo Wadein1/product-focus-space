@@ -25,31 +25,33 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
         }
 
         console.log('Executing Supabase query...');
-        const { data, error } = await query.limit(50);
+        const { data: rawData, error: queryError } = await query.limit(50);
         
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
+        if (queryError) {
+          console.error('Supabase query error:', queryError);
+          throw queryError;
         }
 
-        if (!data) {
+        if (!rawData) {
           console.log('No data returned from Supabase');
           return [];
         }
         
-        console.log('Raw data from Supabase:', data);
+        console.log('Raw data from Supabase:', rawData);
         
-        // Map the raw database response to our Order type
-        const mappedOrders = data.map((rawOrder: RawOrder) => {
+        const mappedOrders = rawData.map((rawOrder: RawOrder) => {
           try {
-            return mapRawOrderToOrder(rawOrder);
+            console.log('Mapping order:', rawOrder);
+            const mappedOrder = mapRawOrderToOrder(rawOrder);
+            console.log('Successfully mapped order:', mappedOrder);
+            return mappedOrder;
           } catch (err) {
-            console.error('Error mapping order:', err, rawOrder);
+            console.error('Error mapping specific order:', err, rawOrder);
             throw err;
           }
         });
 
-        console.log('Mapped orders:', mappedOrders);
+        console.log('All orders mapped successfully:', mappedOrders);
         return mappedOrders;
       } catch (error) {
         console.error('Error in useOrders query:', error);
@@ -57,6 +59,10 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all")
       }
     },
     staleTime: 1000 * 60, // Consider data fresh for 1 minute
+    retry: 1,
+    meta: {
+      errorMessage: 'Failed to fetch orders'
+    }
   });
 
   const updateOrderStatus = useMutation({
