@@ -18,15 +18,17 @@ const Checkout = () => {
   const handleSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
     try {
-      // Get cart (either from location state or find active cart)
-      const { data: cart } = await supabase
+      // Get cart based on whether it's a "buy now" or regular cart checkout
+      const { data: cart, error: cartError } = await supabase
         .from('shopping_carts')
         .select('id')
-        .eq('status', cartId ? 'active' : 'completed')
-        .eq(cartId ? 'id' : 'status', cartId || 'active')
-        .single();
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (!cart) {
+      if (cartError) throw cartError;
+
+      if (!cart || cart.length === 0) {
         toast({
           title: "Cart not found",
           description: "Please add items to your cart first",
@@ -36,11 +38,15 @@ const Checkout = () => {
         return;
       }
 
+      const currentCartId = cartId || cart[0].id;
+
       // Get cart items
-      const { data: cartItems } = await supabase
+      const { data: cartItems, error: itemsError } = await supabase
         .from('cart_items')
         .select('*')
-        .eq('cart_id', cart.id);
+        .eq('cart_id', currentCartId);
+
+      if (itemsError) throw itemsError;
 
       if (!cartItems?.length) {
         toast({
@@ -71,7 +77,7 @@ const Checkout = () => {
             state: data.state,
             zipCode: data.zipCode,
           },
-          cart_id: cart.id,
+          cart_id: currentCartId,
           product_name: cartItems[0].product_name,
           price: subtotal,
           shipping_cost: shippingCost,
@@ -82,13 +88,13 @@ const Checkout = () => {
 
       if (orderError) throw orderError;
 
-      // If this was a "Buy Now" purchase, mark only this cart as completed
-      if (isBuyNow) {
-        await supabase
-          .from('shopping_carts')
-          .update({ status: 'completed' })
-          .eq('id', cart.id);
-      }
+      // Mark the cart as completed
+      const { error: updateCartError } = await supabase
+        .from('shopping_carts')
+        .update({ status: 'completed' })
+        .eq('id', currentCartId);
+
+      if (updateCartError) throw updateCartError;
 
       toast({
         title: "Order placed successfully!",
