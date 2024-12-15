@@ -24,8 +24,7 @@ const FundraiserPage = () => {
           fundraiser_variations (
             id,
             title,
-            image_path,
-            is_default
+            image_path
           ),
           fundraiser_orders (
             amount,

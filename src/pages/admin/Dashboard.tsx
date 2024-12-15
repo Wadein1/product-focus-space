@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Order } from '@/types/order';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
@@ -11,95 +10,23 @@ import { FundraiserManagement } from '@/components/admin/fundraiser/FundraiserMa
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
-        }
-
-        // Check if user is an admin
-        const { data: adminUser, error: adminError } = await supabase
-          .from('admin_users')
-          .select('*')
-          .eq('email', session.user.email)
-          .single();
-
-        if (adminError || !adminUser) {
-          toast({
-            title: "Unauthorized",
-            description: "You don't have permission to access this area.",
-            variant: "destructive"
-          });
-          navigate('/');
-          return;
-        }
-
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Auth error:', error);
-        toast({
-          title: "Authentication Error",
-          description: "Please try logging in again.",
-          variant: "destructive"
-        });
-        navigate('/');
-      } finally {
-        setIsLoading(false);
-      }
+    const checkAuth = () => {
+      const adminAuth = sessionStorage.getItem('adminAuthenticated');
+      setIsAuthenticated(!!adminAuth);
     };
-
     checkAuth();
+  }, []);
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setIsAuthenticated(false);
-        navigate('/');
-      } else if (event === 'SIGNED_IN' && session) {
-        const { data: adminUser } = await supabase
-          .from('admin_users')
-          .select('*')
-          .eq('email', session.user.email)
-          .single();
-
-        if (!adminUser) {
-          navigate('/');
-        } else {
-          setIsAuthenticated(true);
-        }
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
-
-  const { orders, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(searchTerm, statusFilter);
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <AdminAuth />;
-  }
+  const { orders, isLoading, updateOrderStatus, deleteOrder } = useOrders(searchTerm, statusFilter);
 
   const handleDeleteOrder = async (orderId: string) => {
     try {
@@ -116,6 +43,14 @@ const Dashboard = () => {
       });
     }
   };
+
+  if (!isAuthenticated) {
+    return <AdminAuth />;
+  }
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto p-6">
