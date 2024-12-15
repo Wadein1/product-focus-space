@@ -29,12 +29,14 @@ export function ImageGrid() {
 
   const deleteImageMutation = useMutation({
     mutationFn: async (image: GalleryImage) => {
+      // Delete from storage
       const { error: storageError } = await supabase.storage
         .from('gallery')
         .remove([image.image_path]);
       
       if (storageError) throw storageError;
 
+      // Delete from database
       const { error: dbError } = await supabase
         .from('gallery_images')
         .delete()
@@ -65,30 +67,39 @@ export function ImageGrid() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {images?.map((image) => (
-        <div
-          key={image.id}
-          className="relative group overflow-hidden rounded-lg border"
-        >
-          <img
-            src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`}
-            alt={`Gallery image ${image.id}`}
-            className="w-full h-48 object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => deleteImageMutation.mutate(image)}
-              disabled={deleteImageMutation.isPending}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
+      {images?.map((image) => {
+        const imageUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${image.image_path}`;
+        
+        return (
+          <div
+            key={image.id}
+            className="relative group overflow-hidden rounded-lg border"
+          >
+            <img
+              src={imageUrl}
+              alt={`Gallery image ${image.id}`}
+              className="w-full h-48 object-cover"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/placeholder.svg';
+                console.error('Failed to load image:', imageUrl);
+              }}
+            />
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => deleteImageMutation.mutate(image)}
+                disabled={deleteImageMutation.isPending}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -40,20 +40,22 @@ export function UploadForm() {
 
     setUploading(true);
     try {
+      // Upload file to Supabase Storage
       const fileExt = selectedFile.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(filePath, selectedFile);
+        .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
 
+      if (!uploadData?.path) throw new Error('Upload path is undefined');
+
+      // Create database record
       const { error: dbError } = await supabase
         .from('gallery_images')
-        .insert({
-          image_path: filePath
-        });
+        .insert([{ image_path: uploadData.path }]);
 
       if (dbError) throw dbError;
 
@@ -63,6 +65,7 @@ export function UploadForm() {
         description: "Image uploaded successfully"
       });
 
+      // Reset form
       setSelectedFile(null);
       if (document.querySelector<HTMLInputElement>('input[type="file"]')) {
         document.querySelector<HTMLInputElement>('input[type="file"]')!.value = '';
