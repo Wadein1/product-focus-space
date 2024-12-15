@@ -7,16 +7,13 @@ export const HeroTitle = () => {
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
         Exclusive Drip
         <br />
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary/80 to-primary">
+        <span className="text-secondary/60 text-2xl sm:text-3xl md:text-4xl block mt-2">
           For Any Application
         </span>
       </h1>
-      <p className="text-secondary text-lg sm:text-xl max-w-2xl mx-auto">
-        Quick, Fast, and Easy
-      </p>
       <Link 
         to="/product" 
-        className="inline-flex items-center gap-2 button-primary transform hover:scale-105 transition-all duration-300 text-lg px-8 py-4 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30"
+        className="inline-flex items-center gap-2 button-primary transform hover:scale-105 transition-all duration-300 text-lg px-8 py-4 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 text-white"
       >
         Get Yours Now
         <ArrowRight className="w-5 h-5" />
