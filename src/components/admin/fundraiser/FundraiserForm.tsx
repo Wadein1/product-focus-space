@@ -1,8 +1,12 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Form,
   FormControl,
@@ -11,103 +15,109 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { PlusIcon, X } from "lucide-react";
 
-interface FundraiserFormData {
-  title: string;
-  description: string;
-  customLink: string;
-  basePrice: number;
-  donationPercentage: number;
-  variations: {
-    title: string;
-    image: File | null;
-  }[];
-}
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  customLink: z.string().min(1, "Custom link is required"),
+  basePrice: z.string().min(1, "Base price is required"),
+  donationPercentage: z.string().min(1, "Donation percentage is required"),
+  image: z.any(),
+});
 
 export const FundraiserForm = () => {
   const { toast } = useToast();
-  const form = useForm<FundraiserFormData>({
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      variations: [{ title: '', image: null }]
-    }
+      title: "",
+      description: "",
+      customLink: "",
+      basePrice: "",
+      donationPercentage: "",
+    },
   });
 
-  const onSubmit = async (data: FundraiserFormData) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log("Starting form submission with values:", values);
     try {
-      // Insert fundraiser
+      // Create the fundraiser
       const { data: fundraiser, error: fundraiserError } = await supabase
         .from('fundraisers')
         .insert({
-          title: data.title,
-          description: data.description,
-          custom_link: data.customLink,
-          base_price: data.basePrice,
-          donation_percentage: data.donationPercentage
+          title: values.title,
+          description: values.description || null,
+          custom_link: values.customLink,
+          base_price: parseFloat(values.basePrice),
+          donation_percentage: parseInt(values.donationPercentage),
+          status: 'active'
         })
         .select()
         .single();
 
-      if (fundraiserError) throw fundraiserError;
+      console.log("Fundraiser creation response:", { fundraiser, fundraiserError });
 
-      // Upload images and create variations
-      for (const variation of data.variations) {
-        if (!variation.image) continue;
+      if (fundraiserError) {
+        console.error("Error creating fundraiser:", fundraiserError);
+        throw fundraiserError;
+      }
 
-        const fileExt = variation.image.name.split('.').pop();
-        const filePath = `${crypto.randomUUID()}.${fileExt}`;
+      // Handle image upload if provided
+      if (values.image && values.image[0]) {
+        console.log("Starting image upload");
+        const file = values.image[0];
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${fundraiser.id}/${crypto.randomUUID()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('gallery')
-          .upload(filePath, variation.image);
+          .upload(filePath, file);
 
-        if (uploadError) throw uploadError;
+        console.log("Image upload response:", { filePath, uploadError });
 
+        if (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          throw uploadError;
+        }
+
+        // Create variation with uploaded image
         const { error: variationError } = await supabase
           .from('fundraiser_variations')
           .insert({
             fundraiser_id: fundraiser.id,
-            title: variation.title,
+            title: 'Default Variation',
             image_path: filePath,
-            is_default: data.variations.indexOf(variation) === 0
+            is_default: true
           });
 
-        if (variationError) throw variationError;
+        console.log("Variation creation response:", { variationError });
+
+        if (variationError) {
+          console.error("Error creating variation:", variationError);
+          throw variationError;
+        }
       }
 
       toast({
-        title: "Fundraiser created",
-        description: "Your fundraiser has been created successfully."
+        title: "Success",
+        description: "Fundraiser created successfully!",
       });
 
+      // Reset form
       form.reset();
     } catch (error) {
-      console.error('Error creating fundraiser:', error);
+      console.error("Form submission error:", error);
       toast({
+        variant: "destructive",
         title: "Error",
         description: "Failed to create fundraiser. Please try again.",
-        variant: "destructive"
       });
-    }
-  };
-
-  const addVariation = () => {
-    const variations = form.getValues('variations');
-    form.setValue('variations', [...variations, { title: '', image: null }]);
-  };
-
-  const removeVariation = (index: number) => {
-    const variations = form.getValues('variations');
-    if (variations.length > 1) {
-      form.setValue('variations', variations.filter((_, i) => i !== index));
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="title"
@@ -143,112 +153,61 @@ export const FundraiserForm = () => {
             <FormItem>
               <FormLabel>Custom Link</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="my-fundraiser" />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="basePrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Base Price ($)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="basePrice"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Base Price ($)</FormLabel>
+              <FormControl>
+                <Input type="number" step="0.01" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="donationPercentage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Donation Percentage (%)</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" max="100" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="donationPercentage"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Donation Percentage</FormLabel>
+              <FormControl>
+                <Input type="number" min="0" max="100" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Variations</h3>
-            <Button type="button" onClick={addVariation} variant="outline" size="sm">
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Add Variation
-            </Button>
-          </div>
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field: { onChange, value, ...field } }) => (
+            <FormItem>
+              <FormLabel>Default Image</FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => onChange(e.target.files)}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          {form.watch('variations').map((variation, index) => (
-            <div key={index} className="p-4 border rounded-lg space-y-4">
-              <div className="flex justify-between items-center">
-                <h4 className="font-medium">Variation {index + 1}</h4>
-                {index > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeVariation(index)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-
-              <FormField
-                control={form.control}
-                name={`variations.${index}.title`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`variations.${index}.image`}
-                render={({ field: { value, onChange, ...field } }) => (
-                  <FormItem>
-                    <FormLabel>Image</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            onChange(file);
-                          }
-                        }}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          ))}
-        </div>
-
-        <Button type="submit" className="w-full">
-          Create Fundraiser
-        </Button>
+        <Button type="submit">Create Fundraiser</Button>
       </form>
     </Form>
   );
