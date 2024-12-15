@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Order } from '@/types/order';
-import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
-import { OrdersTable } from '@/components/admin/OrdersTable';
 import { AdminAuth } from '@/components/admin/AdminAuth';
-import { DashboardControls } from '@/components/admin/DashboardControls';
 import { AnalyticsSection } from '@/components/admin/analytics/AnalyticsSection';
 import { FundraiserManagement } from '@/components/admin/fundraiser/FundraiserManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrders } from '@/hooks/useOrders';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { OrdersTabContent } from '@/components/admin/OrdersTabContent';
+import { LoadingSpinner } from '@/components/admin/LoadingSpinner';
 
 const Dashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -26,7 +23,18 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Optimize auth check by using session from localStorage first
+  const { 
+    orders, 
+    totalCount, 
+    isLoading: ordersLoading, 
+    updateOrderStatus, 
+    deleteOrder 
+  } = useOrders(
+    activeTab === "orders" ? searchTerm : "",
+    activeTab === "orders" ? statusFilter : "all",
+    currentPage
+  );
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -38,10 +46,9 @@ const Dashboard = () => {
           return;
         }
 
-        // Check if user is an admin
         const { data: adminUser, error: adminError } = await supabase
           .from('admin_users')
-          .select('email')  // Only select needed fields
+          .select('email')
           .eq('email', session.user.email)
           .single();
 
@@ -95,20 +102,8 @@ const Dashboard = () => {
     };
   }, [navigate, toast]);
 
-  // Only fetch orders data when orders tab is active
-  const { orders, totalCount, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(
-    activeTab === "orders" ? searchTerm : "",
-    activeTab === "orders" ? statusFilter : "all",
-    currentPage
-  );
-
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 space-y-4">
-        <Skeleton className="h-10 w-[200px]" />
-        <Skeleton className="h-[500px] w-full" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!isAuthenticated) {
@@ -149,60 +144,24 @@ const Dashboard = () => {
 
         <TabsContent value="orders">
           {activeTab === "orders" && (
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle>Order Tracking</CardTitle>
-                <DashboardControls
-                  searchTerm={searchTerm}
-                  onSearchChange={(value) => {
-                    setSearchTerm(value);
-                    setCurrentPage(1);
-                  }}
-                  statusFilter={statusFilter}
-                  onStatusFilterChange={(value) => {
-                    setStatusFilter(value);
-                    setCurrentPage(1);
-                  }}
-                />
-              </CardHeader>
-              <CardContent>
-                <OrdersTable 
-                  orders={orders || []} 
-                  onViewDetails={setSelectedOrder}
-                  onDeleteOrder={handleDeleteOrder}
-                />
-                {totalPages > 1 && (
-                  <div className="flex justify-center gap-2 mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </Button>
-                    <span className="py-2">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <OrdersTabContent
+              orders={orders || []}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              selectedOrder={selectedOrder}
+              setSelectedOrder={setSelectedOrder}
+              onDeleteOrder={handleDeleteOrder}
+              onStatusUpdate={(orderId, newStatus) => {
+                updateOrderStatus.mutate({ orderId, newStatus });
+              }}
+              isLoading={ordersLoading}
+            />
           )}
-
-          <OrderDetailsDialog
-            order={selectedOrder}
-            onOpenChange={() => setSelectedOrder(null)}
-            onStatusUpdate={(orderId, newStatus) => {
-              updateOrderStatus.mutate({ orderId, newStatus });
-            }}
-          />
         </TabsContent>
 
         <TabsContent value="analytics">
