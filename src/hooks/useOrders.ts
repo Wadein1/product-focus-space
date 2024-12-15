@@ -10,24 +10,31 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all",
   const { data: orders, isLoading, error } = useQuery({
     queryKey: ['orders', searchTerm, statusFilter, page],
     queryFn: async () => {
-      console.log('Fetching orders with:', { searchTerm, statusFilter, page });
+      console.log('Starting order fetch with params:', { searchTerm, statusFilter, page });
       try {
         let query = supabase
           .from('orders')
           .select('*', { count: 'exact' })
-          .order('created_at', { ascending: false })
-          .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+          .order('created_at', { ascending: false });
 
+        console.log('Base query constructed');
+
+        // Add pagination
+        query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+        console.log('Pagination added to query');
+
+        // Add filters if present
         if (searchTerm) {
           query = query.or(`customer_email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
+          console.log('Search filter added:', searchTerm);
         }
 
         if (statusFilter !== 'all') {
           query = query.eq('status', statusFilter);
+          console.log('Status filter added:', statusFilter);
         }
 
-        console.log('Executing paginated query...');
-        
+        console.log('Executing query...');
         const { data: rawData, error: queryError, count } = await query;
         
         if (queryError) {
@@ -35,13 +42,14 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all",
           throw queryError;
         }
 
+        console.log('Query completed. Raw data count:', rawData?.length);
+
         if (!rawData) {
-          console.log('No data returned');
+          console.log('No data returned from query');
           return { orders: [], totalCount: 0 };
         }
-        
-        console.log(`Retrieved ${rawData.length} orders`);
-        
+
+        console.log('Mapping orders...');
         const mappedOrders = rawData.map((rawOrder: RawOrder) => {
           try {
             return mapRawOrderToOrder(rawOrder);
@@ -50,6 +58,8 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all",
             return null;
           }
         }).filter(Boolean) as Order[];
+
+        console.log('Orders mapped successfully. Count:', mappedOrders.length);
 
         return { 
           orders: mappedOrders,
@@ -66,12 +76,17 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all",
 
   const updateOrderStatus = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
+      console.log('Updating order status:', { orderId, newStatus });
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating order status:', error);
+        throw error;
+      }
+      console.log('Order status updated successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -80,12 +95,17 @@ export function useOrders(searchTerm: string = "", statusFilter: string = "all",
 
   const deleteOrder = useMutation({
     mutationFn: async (orderId: string) => {
+      console.log('Deleting order:', orderId);
       const { error } = await supabase
         .from('orders')
         .delete()
         .eq('id', orderId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting order:', error);
+        throw error;
+      }
+      console.log('Order deleted successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
