@@ -1,112 +1,61 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import { CartItem } from "@/components/cart/CartItem";
 import { CartSummary } from "@/components/cart/CartSummary";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { CartItem as CartItemType } from "@/types/cart";
 
 const Cart = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [cartItems, setCartItems] = useState<CartItemType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ['cartItems'],
-    queryFn: async () => {
-      try {
-        // First get the most recent active cart
-        const { data: carts, error: cartsError } = await supabase
-          .from('shopping_carts')
-          .select('id')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (cartsError) throw cartsError;
-
-        // If no active cart exists, return empty array
-        if (!carts || carts.length === 0) {
-          return [];
-        }
-
-        // Get items from the cart
-        const { data: items, error: itemsError } = await supabase
-          .from('cart_items')
-          .select('*')
-          .eq('cart_id', carts[0].id);
-
-        if (itemsError) throw itemsError;
-
-        return items || [];
-      } catch (error) {
-        console.error('Error fetching cart items:', error);
-        return [];
+  useEffect(() => {
+    // Load cart items from localStorage
+    const loadCartItems = () => {
+      const savedCart = localStorage.getItem('cartItems');
+      if (savedCart) {
+        setCartItems(JSON.parse(savedCart));
       }
-    },
-  });
+      setIsLoading(false);
+    };
 
-  const removeItemMutation = useMutation({
-    mutationFn: async (itemId: string) => {
-      const { error } = await supabase
-        .from('cart_items')
-        .delete()
-        .eq('id', itemId);
+    loadCartItems();
+  }, []);
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
-      toast({
-        title: "Item removed",
-        description: "The item has been removed from your cart",
-      });
-    },
-    onError: (error) => {
-      console.error('Error removing item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to remove item from cart",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateQuantityMutation = useMutation({
-    mutationFn: async ({ itemId, quantity }: { itemId: string; quantity: number }) => {
-      const { error } = await supabase
-        .from('cart_items')
-        .update({ quantity })
-        .eq('id', itemId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
-    },
-    onError: (error) => {
-      console.error('Error updating quantity:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update item quantity",
-        variant: "destructive",
-      });
-    },
-  });
+  const saveCartToLocalStorage = (items: CartItemType[]) => {
+    localStorage.setItem('cartItems', JSON.stringify(items));
+  };
 
   const handleQuantityChange = (itemId: string, currentQuantity: number, increment: boolean) => {
     const newQuantity = increment ? currentQuantity + 1 : Math.max(1, currentQuantity - 1);
-    updateQuantityMutation.mutate({ itemId, quantity: newQuantity });
+    const updatedItems = cartItems.map(item =>
+      item.id === itemId ? { ...item, quantity: newQuantity } : item
+    );
+    setCartItems(updatedItems);
+    saveCartToLocalStorage(updatedItems);
   };
 
   const handleRemoveItem = (itemId: string) => {
-    removeItemMutation.mutate(itemId);
+    const updatedItems = cartItems.filter(item => item.id !== itemId);
+    setCartItems(updatedItems);
+    saveCartToLocalStorage(updatedItems);
+    toast({
+      title: "Item removed",
+      description: "The item has been removed from your cart",
+    });
   };
 
   const handleCheckout = () => {
-    navigate('/checkout');
+    navigate('/checkout', { 
+      state: { 
+        cartItems,
+        isLocalCart: true 
+      } 
+    });
   };
 
   if (isLoading) {

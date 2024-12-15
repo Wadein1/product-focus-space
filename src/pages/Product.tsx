@@ -1,177 +1,89 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ProductImage } from '@/components/product/ProductImage';
-import { ProductDetails } from '@/components/product/ProductDetails';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
+import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/Navbar";
+import { ProductImage } from "@/components/product/ProductImage";
+import { ProductDetails } from "@/components/product/ProductDetails";
+import type { CartItem } from "@/types/cart";
 
 const Product = () => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const handleFileChange = (file: File) => {
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+  const addToCart = async () => {
+    setIsAddingToCart(true);
+    try {
+      const newItem: CartItem = {
+        id: uuidv4(),
+        product_name: "Gimme Drip Water Bottle",
+        price: 24.99,
+        quantity: 1,
+        image_path: "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png"
+      };
 
-  const addToCartForCheckout = async () => {
-    if (!selectedFile) {
-      throw new Error("Please upload an image for your medallion");
-    }
+      // Get existing cart items from localStorage
+      const existingCartJson = localStorage.getItem('cartItems');
+      const existingCart = existingCartJson ? JSON.parse(existingCartJson) : [];
+      
+      // Add new item to cart
+      const updatedCart = [...existingCart, newItem];
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
 
-    const { data: newCart, error: cartError } = await supabase
-      .from('shopping_carts')
-      .insert([{ 
-        status: 'active',
-        last_activity: new Date().toISOString()
-      }])
-      .select()
-      .single();
-
-    if (cartError) throw cartError;
-
-    const { error: addError } = await supabase
-      .from('cart_items')
-      .insert([{
-        cart_id: newCart.id,
-        product_name: 'Custom Medallion',
-        price: 49.99,
-        quantity: quantity,
-        image_path: imagePreview
-      }]);
-
-    if (addError) throw addError;
-    
-    return newCart.id;
-  };
-
-  const buyNowMutation = useMutation({
-    mutationFn: addToCartForCheckout,
-    onSuccess: (cartId) => {
-      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
-      navigate('/checkout', { state: { cartId, isBuyNow: true } });
-    },
-    onError: (error: Error) => {
-      console.error('Error processing buy now:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to process purchase",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const addToCartMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedFile) {
-        throw new Error("Please upload an image for your medallion");
-      }
-
-      const { data: existingCarts, error: cartError } = await supabase
-        .from('shopping_carts')
-        .select('id')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (cartError && cartError.code !== 'PGRST116') {
-        throw cartError;
-      }
-
-      let cartId;
-
-      if (!existingCarts) {
-        const { data: newCart, error: createError } = await supabase
-          .from('shopping_carts')
-          .insert([{ status: 'active' }])
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        cartId = newCart.id;
-      } else {
-        cartId = existingCarts.id;
-      }
-
-      const { error: addError } = await supabase
-        .from('cart_items')
-        .insert([{
-          cart_id: cartId,
-          product_name: 'Custom Medallion',
-          price: 49.99,
-          quantity: quantity,
-          image_path: imagePreview
-        }]);
-
-      if (addError) throw addError;
-      return cartId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cartItems'] });
       toast({
         title: "Added to cart",
-        description: "Your medallion has been added to the cart"
+        description: "The item has been added to your cart",
       });
-    },
-    onError: (error: Error) => {
+    } catch (error) {
       console.error('Error adding to cart:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to add item to cart",
-        variant: "destructive"
+        description: "Failed to add item to cart",
+        variant: "destructive",
       });
+    } finally {
+      setIsAddingToCart(false);
     }
-  });
-
-  const handleQuantityChange = (increment: boolean) => {
-    setQuantity(prev => {
-      const newValue = increment ? prev + 1 : prev - 1;
-      return Math.max(1, newValue);
-    });
   };
 
-  const handleBuyNow = () => {
-    if (!selectedFile) {
+  const buyNow = async () => {
+    try {
+      const item: CartItem = {
+        id: uuidv4(),
+        product_name: "Gimme Drip Water Bottle",
+        price: 24.99,
+        quantity: 1,
+        image_path: "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png"
+      };
+
+      navigate('/checkout', { 
+        state: { 
+          cartItems: [item],
+          isLocalCart: true,
+          isBuyNow: true 
+        } 
+      });
+    } catch (error) {
+      console.error('Error processing buy now:', error);
       toast({
-        title: "Missing image",
-        description: "Please upload an image for your medallion",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to process purchase",
+        variant: "destructive",
       });
-      return;
     }
-    buyNowMutation.mutate();
-  };
-
-  const handleAddToCart = () => {
-    addToCartMutation.mutate();
   };
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-8 items-start">
-          <ProductImage 
-            imagePreview={imagePreview}
-            onFileChange={handleFileChange}
-          />
-          <ProductDetails 
-            quantity={quantity}
-            onQuantityChange={handleQuantityChange}
-            onBuyNow={handleBuyNow}
-            onAddToCart={handleAddToCart}
-            isAddingToCart={addToCartMutation.isPending}
+      <div className="container mx-auto px-4 pt-24 pb-16">
+        <div className="grid md:grid-cols-2 gap-8">
+          <ProductImage />
+          <ProductDetails
+            onAddToCart={addToCart}
+            onBuyNow={buyNow}
+            isAddingToCart={isAddingToCart}
           />
         </div>
       </div>
