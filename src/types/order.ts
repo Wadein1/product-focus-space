@@ -26,6 +26,8 @@ export interface Order {
   tax_amount: number;
   stl_file_path?: string;
   tracking_number?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export interface RawOrder {
@@ -45,4 +47,6 @@ export interface RawOrder {
   tax_amount: number;
   total_amount: number;
   tracking_number: string | null;
+  first_name: string | null;
+  last_name: string | null;
 }
