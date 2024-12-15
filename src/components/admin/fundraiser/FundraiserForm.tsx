@@ -3,18 +3,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
+import { FundraiserFormFields } from './FundraiserFormFields';
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -41,6 +33,15 @@ export const FundraiserForm = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log("Starting form submission with values:", values);
     try {
+      // Check admin authentication
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      console.log("Auth session check:", { session, authError });
+      
+      if (!session) {
+        console.error("No auth session found");
+        throw new Error("You must be logged in as an admin to create fundraisers");
+      }
+
       // Create the fundraiser
       const { data: fundraiser, error: fundraiserError } = await supabase
         .from('fundraisers')
@@ -110,7 +111,7 @@ export const FundraiserForm = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create fundraiser. Please try again.",
+        description: error.message || "Failed to create fundraiser. Please try again.",
       });
     }
   };
@@ -118,95 +119,7 @@ export const FundraiserForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="customLink"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Custom Link</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="basePrice"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Base Price ($)</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="donationPercentage"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Donation Percentage</FormLabel>
-              <FormControl>
-                <Input type="number" min="0" max="100" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field: { onChange, value, ...field } }) => (
-            <FormItem>
-              <FormLabel>Default Image</FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => onChange(e.target.files)}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+        <FundraiserFormFields form={form} />
         <Button type="submit">Create Fundraiser</Button>
       </form>
     </Form>
