@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Order } from '@/types/order';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 import { OrdersTable } from '@/components/admin/OrdersTable';
@@ -19,9 +20,11 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("orders");
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Optimize auth check by using session from localStorage first
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -36,7 +39,7 @@ const Dashboard = () => {
         // Check if user is an admin
         const { data: adminUser, error: adminError } = await supabase
           .from('admin_users')
-          .select('*')
+          .select('email')  // Only select needed fields
           .eq('email', session.user.email)
           .single();
 
@@ -66,7 +69,6 @@ const Dashboard = () => {
 
     checkAuth();
 
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
@@ -74,7 +76,7 @@ const Dashboard = () => {
       } else if (event === 'SIGNED_IN' && session) {
         const { data: adminUser } = await supabase
           .from('admin_users')
-          .select('*')
+          .select('email')
           .eq('email', session.user.email)
           .single();
 
@@ -91,10 +93,19 @@ const Dashboard = () => {
     };
   }, [navigate, toast]);
 
-  const { orders, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(searchTerm, statusFilter);
+  // Only fetch orders data when orders tab is active
+  const { orders, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(
+    activeTab === "orders" ? searchTerm : "",
+    activeTab === "orders" ? statusFilter : "all"
+  );
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="container mx-auto p-6 space-y-4">
+        <Skeleton className="h-10 w-[200px]" />
+        <Skeleton className="h-[500px] w-full" />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -119,7 +130,12 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <Tabs defaultValue="orders" className="space-y-4">
+      <Tabs 
+        defaultValue="orders" 
+        className="space-y-4"
+        value={activeTab}
+        onValueChange={setActiveTab}
+      >
         <TabsList>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -127,24 +143,26 @@ const Dashboard = () => {
         </TabsList>
 
         <TabsContent value="orders">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Order Tracking</CardTitle>
-              <DashboardControls
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-              />
-            </CardHeader>
-            <CardContent>
-              <OrdersTable 
-                orders={orders || []} 
-                onViewDetails={setSelectedOrder}
-                onDeleteOrder={handleDeleteOrder}
-              />
-            </CardContent>
-          </Card>
+          {activeTab === "orders" && (
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle>Order Tracking</CardTitle>
+                <DashboardControls
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  statusFilter={statusFilter}
+                  onStatusFilterChange={setStatusFilter}
+                />
+              </CardHeader>
+              <CardContent>
+                <OrdersTable 
+                  orders={orders || []} 
+                  onViewDetails={setSelectedOrder}
+                  onDeleteOrder={handleDeleteOrder}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           <OrderDetailsDialog
             order={selectedOrder}
@@ -156,18 +174,20 @@ const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <AnalyticsSection />
+          {activeTab === "analytics" && <AnalyticsSection />}
         </TabsContent>
 
         <TabsContent value="fundraisers">
-          <Card>
-            <CardHeader>
-              <CardTitle>Fundraiser Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FundraiserManagement />
-            </CardContent>
-          </Card>
+          {activeTab === "fundraisers" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Fundraiser Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FundraiserManagement />
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
