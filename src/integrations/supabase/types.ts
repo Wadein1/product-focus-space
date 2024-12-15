@@ -160,6 +160,129 @@ export type Database = {
           },
         ]
       }
+      fundraiser_orders: {
+        Row: {
+          amount: number
+          created_at: string
+          donation_amount: number
+          fundraiser_id: string
+          id: string
+          order_id: string
+          variation_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          donation_amount: number
+          fundraiser_id: string
+          id?: string
+          order_id: string
+          variation_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          donation_amount?: number
+          fundraiser_id?: string
+          id?: string
+          order_id?: string
+          variation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraiser_orders_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fundraiser_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fundraiser_orders_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fundraiser_variations: {
+        Row: {
+          created_at: string
+          fundraiser_id: string
+          id: string
+          image_path: string
+          is_default: boolean
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          fundraiser_id: string
+          id?: string
+          image_path: string
+          is_default?: boolean
+          title: string
+        }
+        Update: {
+          created_at?: string
+          fundraiser_id?: string
+          id?: string
+          image_path?: string
+          is_default?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraiser_variations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fundraisers: {
+        Row: {
+          base_price: number
+          created_at: string
+          custom_link: string
+          description: string | null
+          donation_percentage: number
+          id: string
+          status: string
+          title: string
+          total_raised: number
+        }
+        Insert: {
+          base_price: number
+          created_at?: string
+          custom_link: string
+          description?: string | null
+          donation_percentage: number
+          id?: string
+          status?: string
+          title: string
+          total_raised?: number
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          custom_link?: string
+          description?: string | null
+          donation_percentage?: number
+          id?: string
+          status?: string
+          title?: string
+          total_raised?: number
+        }
+        Relationships: []
+      }
       fundraising_requests: {
         Row: {
           company_name: string
