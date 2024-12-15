@@ -11,16 +11,19 @@ const Product = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const addToCart = async () => {
     setIsAddingToCart(true);
     try {
       const newItem: CartItem = {
         id: uuidv4(),
-        product_name: "Gimme Drip Water Bottle",
-        price: 24.99,
-        quantity: 1,
-        image_path: "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png"
+        cart_id: uuidv4(), // Add cart_id as required by CartItem type
+        product_name: "Custom Medallion",
+        price: 49.99,
+        quantity: quantity,
+        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
       };
 
       // Get existing cart items from localStorage
@@ -51,10 +54,11 @@ const Product = () => {
     try {
       const item: CartItem = {
         id: uuidv4(),
-        product_name: "Gimme Drip Water Bottle",
-        price: 24.99,
-        quantity: 1,
-        image_path: "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png"
+        cart_id: uuidv4(), // Add cart_id as required by CartItem type
+        product_name: "Custom Medallion",
+        price: 49.99,
+        quantity: quantity,
+        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
       };
 
       navigate('/checkout', { 
@@ -74,13 +78,30 @@ const Product = () => {
     }
   };
 
+  const handleFileChange = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleQuantityChange = (increment: boolean) => {
+    setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16">
         <div className="grid md:grid-cols-2 gap-8">
-          <ProductImage />
+          <ProductImage 
+            imagePreview={imagePreview}
+            onFileChange={handleFileChange}
+          />
           <ProductDetails
+            quantity={quantity}
+            onQuantityChange={handleQuantityChange}
             onAddToCart={addToCart}
             onBuyNow={buyNow}
             isAddingToCart={isAddingToCart}
