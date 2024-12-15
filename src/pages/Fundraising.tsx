@@ -71,7 +71,7 @@ const Fundraising = () => {
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
               Fundraising Opportunities
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-lg md:block hidden">
               Partner with us to create meaningful fundraising campaigns for your organization
             </p>
           </div>

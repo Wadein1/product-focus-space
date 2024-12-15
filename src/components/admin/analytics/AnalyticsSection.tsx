@@ -13,17 +13,42 @@ export function AnalyticsSection() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: analytics, isLoading } = useQuery({
+  // Query for analytics data
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['analytics'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('analytics')
-        .select('*')
-        .order('date', { ascending: false })
-        .limit(1);
-      
-      if (error) throw error;
-      return data?.[0];
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('total_amount, shipping_cost, created_at')
+        .order('created_at', { ascending: false });
+
+      if (ordersError) throw ordersError;
+
+      const today = new Date();
+      const dailyOrders = orders?.filter(order => 
+        new Date(order.created_at).toDateString() === today.toDateString()
+      );
+
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const weeklyOrders = orders?.filter(order => 
+        new Date(order.created_at) >= weekAgo
+      );
+
+      const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const monthlyOrders = orders?.filter(order => 
+        new Date(order.created_at) >= monthAgo
+      );
+
+      const calculateTotal = (ordersList: any[]) => 
+        ordersList.reduce((sum, order) => sum + Number(order.total_amount), 0);
+
+      return {
+        daily: calculateTotal(dailyOrders || []),
+        weekly: calculateTotal(weeklyOrders || []),
+        monthly: calculateTotal(monthlyOrders || []),
+        yearly: calculateTotal(orders || []),
+        orderCount: orders?.length || 0
+      };
     }
   });
 
@@ -35,6 +60,9 @@ export function AnalyticsSection() {
           {
             shipping_cost: shipping,
             material_cost: material,
+            total_sales: analytics?.monthly || 0,
+            total_orders: analytics?.orderCount || 0,
+            profit: (analytics?.monthly || 0) - (shipping * (analytics?.orderCount || 0)) - (material * (analytics?.orderCount || 0))
           }
         ]);
       
@@ -72,7 +100,7 @@ export function AnalyticsSection() {
     updateCostsMutation.mutate({ shipping, material });
   };
 
-  if (isLoading) {
+  if (analyticsLoading) {
     return <div>Loading analytics...</div>;
   }
 
@@ -94,7 +122,7 @@ export function AnalyticsSection() {
                 step="0.01"
                 value={shippingCost}
                 onChange={(e) => setShippingCost(e.target.value)}
-                placeholder={analytics?.shipping_cost?.toString() || "0.00"}
+                placeholder="0.00"
               />
             </div>
             <div className="space-y-2">
@@ -107,7 +135,7 @@ export function AnalyticsSection() {
                 step="0.01"
                 value={materialCost}
                 onChange={(e) => setMaterialCost(e.target.value)}
-                placeholder={analytics?.material_cost?.toString() || "0.00"}
+                placeholder="0.00"
               />
             </div>
           </div>
@@ -120,7 +148,41 @@ export function AnalyticsSection() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Sales Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-4 bg-background rounded-lg border">
+              <p className="text-sm text-muted-foreground">Daily Sales</p>
+              <p className="text-2xl font-bold">
+                ${analytics?.daily.toFixed(2) || "0.00"}
+              </p>
+            </div>
+            <div className="p-4 bg-background rounded-lg border">
+              <p className="text-sm text-muted-foreground">Weekly Sales</p>
+              <p className="text-2xl font-bold">
+                ${analytics?.weekly.toFixed(2) || "0.00"}
+              </p>
+            </div>
+            <div className="p-4 bg-background rounded-lg border">
+              <p className="text-sm text-muted-foreground">Monthly Sales</p>
+              <p className="text-2xl font-bold">
+                ${analytics?.monthly.toFixed(2) || "0.00"}
+              </p>
+            </div>
+            <div className="p-4 bg-background rounded-lg border">
+              <p className="text-sm text-muted-foreground">Yearly Sales</p>
+              <p className="text-2xl font-bold">
+                ${analytics?.yearly.toFixed(2) || "0.00"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <ProfitChart />
     </div>
   );
-}
+};

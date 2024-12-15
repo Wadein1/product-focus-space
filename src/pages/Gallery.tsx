@@ -31,9 +31,6 @@ const Gallery = () => {
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
             Our Gallery
           </h1>
-          <p className="text-gray-600 text-lg">
-            Explore our collection of stunning designs and creations
-          </p>
         </div>
 
         {isLoading ? (
