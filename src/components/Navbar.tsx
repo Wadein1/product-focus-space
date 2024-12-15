@@ -9,7 +9,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const { data: cartItemsCount = 0 } = useQuery({
+  const { data: cartItemsCount = 0, refetch: refetchCartCount } = useQuery({
     queryKey: ['cartItemsCount'],
     queryFn: async () => {
       try {
@@ -48,9 +48,29 @@ const Navbar = () => {
         return 0;
       }
     },
-    // Refresh every minute to keep count updated
-    refetchInterval: 60000,
   });
+
+  // Subscribe to real-time changes in cart_items
+  useEffect(() => {
+    const channel = supabase
+      .channel('cart-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cart_items'
+        },
+        () => {
+          refetchCartCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetchCartCount]);
 
   useEffect(() => {
     const handleScroll = () => {
