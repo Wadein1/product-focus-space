@@ -27,12 +27,16 @@ const Checkout = () => {
   const handleSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
     try {
+      console.log('Starting checkout process...', { cartItems, fundraiserId, variationId });
+      
       // Calculate order totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
       const shippingCost = 8.00;
       const taxRate = 0.05;
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + shippingCost + taxAmount;
+
+      console.log('Calculated totals:', { subtotal, shippingCost, taxAmount, totalAmount });
 
       // Create order in database
       const { data: orderData, error: orderError } = await supabase
@@ -54,15 +58,22 @@ const Checkout = () => {
           image_path: cartItems[0].image_path,
           first_name: data.name.split(' ')[0],
           last_name: data.name.split(' ').slice(1).join(' '),
-          is_fundraiser: !!fundraiserId
+          is_fundraiser: !!fundraiserId,
+          status: 'received'
         })
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Error creating order:', orderError);
+        throw orderError;
+      }
+
+      console.log('Order created successfully:', orderData);
 
       // If this is a fundraiser order, create the fundraiser order record
       if (fundraiserId && variationId && orderData) {
+        console.log('Creating fundraiser order record...');
         const donationPercentage = 0.22; // 22% donation
         const donationAmount = subtotal * donationPercentage;
         
@@ -76,7 +87,12 @@ const Checkout = () => {
             donation_amount: donationAmount
           });
 
-        if (fundraiserOrderError) throw fundraiserOrderError;
+        if (fundraiserOrderError) {
+          console.error('Error creating fundraiser order:', fundraiserOrderError);
+          throw fundraiserOrderError;
+        }
+        
+        console.log('Fundraiser order created successfully');
       }
 
       // Clear cart if not a "Buy Now" purchase
@@ -92,7 +108,7 @@ const Checkout = () => {
       
       navigate('/');
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('Error in checkout process:', error);
       toast({
         title: "Error",
         description: "Failed to place order. Please try again.",
