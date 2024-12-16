@@ -5,7 +5,7 @@ interface Variation {
   id: string;
   title: string;
   image_path: string;
-  is_default: boolean;
+  is_default: boolean;  // Added this property to match the database schema
 }
 
 interface FundraiserVariationsProps {
