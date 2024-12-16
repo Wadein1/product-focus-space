@@ -16,8 +16,6 @@ const Checkout = () => {
   const cartItems = location.state?.cartItems as CartItem[];
   const isLocalCart = location.state?.isLocalCart as boolean;
   const isBuyNow = location.state?.isBuyNow as boolean;
-  const fundraiserId = location.state?.fundraiserId as string;
-  const variationId = location.state?.variationId as string;
 
   if (!cartItems || cartItems.length === 0) {
     navigate('/cart');
@@ -35,7 +33,7 @@ const Checkout = () => {
       const totalAmount = subtotal + shippingCost + taxAmount;
 
       // Create order in database
-      const { data: orderData, error: orderError } = await supabase
+      const { error: orderError } = await supabase
         .from('orders')
         .insert({
           customer_email: data.email,
@@ -54,27 +52,9 @@ const Checkout = () => {
           image_path: cartItems[0].image_path,
           first_name: data.name.split(' ')[0],
           last_name: data.name.split(' ').slice(1).join(' ')
-        })
-        .select()
-        .single();
+        });
 
       if (orderError) throw orderError;
-
-      // If this is a fundraiser purchase, create a fundraiser order
-      if (fundraiserId && variationId) {
-        const { error: fundraiserOrderError } = await supabase
-          .from('fundraiser_orders')
-          .insert({
-            fundraiser_id: fundraiserId,
-            variation_id: variationId,
-            order_id: orderData.id,
-            amount: subtotal,
-            // Calculate donation amount based on the fundraiser's donation percentage
-            donation_amount: (subtotal * 0.22) // Using 22% as shown in the image
-          });
-
-        if (fundraiserOrderError) throw fundraiserOrderError;
-      }
 
       // Clear cart if not a "Buy Now" purchase
       if (!isBuyNow) {

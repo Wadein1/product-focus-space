@@ -43,7 +43,10 @@ const FundraiserPage = () => {
     },
   });
 
-  const totalRaised = fundraiser?.total_raised || 0;
+  const totalRaised = fundraiser?.fundraiser_orders?.reduce(
+    (sum, order) => sum + Number(order.donation_amount),
+    0
+  ) || 0;
 
   const defaultVariation = fundraiser?.fundraiser_variations?.find(v => v.is_default);
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
