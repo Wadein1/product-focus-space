@@ -13,7 +13,13 @@ export const FundraiserImages = ({ mainImage, title }: FundraiserImagesProps) =>
 
   React.useEffect(() => {
     const loadImage = async () => {
-      if (!mainImage) return;
+      if (!mainImage) {
+        console.log('No main image provided');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Loading main image:', mainImage);
       
       try {
         const { data: { publicUrl } } = supabase
@@ -21,6 +27,7 @@ export const FundraiserImages = ({ mainImage, title }: FundraiserImagesProps) =>
           .from('gallery')
           .getPublicUrl(mainImage);
           
+        console.log('Generated public URL:', publicUrl);
         setImageUrl(publicUrl);
       } catch (error) {
         console.error('Error loading image:', error);

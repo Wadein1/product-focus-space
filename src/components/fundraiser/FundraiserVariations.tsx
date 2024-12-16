@@ -26,24 +26,31 @@ export const FundraiserVariations = ({
 
   React.useEffect(() => {
     const loadImages = async () => {
+      console.log('Loading variations:', variations);
       const urls: Record<string, string> = {};
       
       for (const variation of variations) {
         if (variation.image_path) {
+          console.log('Processing variation image:', variation.image_path);
           const { data: { publicUrl } } = supabase
             .storage
             .from('gallery')
             .getPublicUrl(variation.image_path);
+          console.log('Generated variation URL:', publicUrl);
           urls[variation.id] = publicUrl;
         }
       }
       
+      console.log('Final image URLs:', urls);
       setImageUrls(urls);
       setLoading(false);
     };
 
     if (variations?.length > 0) {
       loadImages();
+    } else {
+      console.log('No variations provided');
+      setLoading(false);
     }
   }, [variations]);
 
