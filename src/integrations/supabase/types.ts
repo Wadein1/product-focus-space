@@ -375,6 +375,7 @@ export type Database = {
           first_name: string | null
           id: string
           image_path: string | null
+          is_fundraiser: boolean | null
           last_name: string | null
           order_status: string | null
           price: number
@@ -395,6 +396,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           image_path?: string | null
+          is_fundraiser?: boolean | null
           last_name?: string | null
           order_status?: string | null
           price: number
@@ -415,6 +417,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           image_path?: string | null
+          is_fundraiser?: boolean | null
           last_name?: string | null
           order_status?: string | null
           price?: number
