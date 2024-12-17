@@ -51,17 +51,21 @@ const Support = () => {
         });
       }
 
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          type: 'support',
-          data: {
-            supportType,
-            email,
-            description,
-            image: base64Image,
-            imageName: image?.name
-          }
+      const emailPayload = {
+        type: 'support',
+        data: {
+          supportType,
+          email,
+          description,
+          image: base64Image,
+          imageName: image?.name
         }
+      };
+
+      console.log('Sending email payload:', JSON.stringify(emailPayload));
+
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: emailPayload
       });
 
       if (emailError) throw emailError;

@@ -16,8 +16,36 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    console.log('Raw request body:', rawBody);
+
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      return new Response(
+        JSON.stringify({ error: `Failed to parse JSON: ${parseError.message}` }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    console.log('Parsed body:', body);
     const { type, data } = body;
+
+    if (!type || !data) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: type and data' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     let subject, html, attachments = [];
 
     if (type === 'support') {
