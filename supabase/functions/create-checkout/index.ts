@@ -14,6 +14,8 @@ serve(async (req) => {
 
   try {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    console.log('Validating Stripe key configuration...');
+    
     if (!stripeKey) {
       console.error('Missing Stripe secret key in environment variables');
       throw new Error('Server configuration error: Missing Stripe secret key');
