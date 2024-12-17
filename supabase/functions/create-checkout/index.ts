@@ -14,22 +14,22 @@ serve(async (req) => {
 
   try {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-    if (!stripeKey || !stripeKey.startsWith('sk_')) {
-      console.error('Invalid or missing Stripe secret key');
-      throw new Error('Server configuration error: Invalid Stripe secret key format');
+    if (!stripeKey) {
+      console.error('Missing Stripe secret key');
+      throw new Error('Server configuration error: Missing Stripe secret key');
+    }
+
+    const { items, customerEmail, shippingAddress } = await req.json();
+    console.log('Received request data:', { items, customerEmail, shippingAddress });
+
+    if (!items?.length || !customerEmail || !shippingAddress) {
+      throw new Error('Missing required checkout information');
     }
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
     });
-
-    const { items, customerEmail, shippingAddress } = await req.json();
-
-    console.log('Received request data:', { items, customerEmail, shippingAddress });
-
-    if (!items || !items.length || !customerEmail || !shippingAddress) {
-      throw new Error('Missing required checkout information');
-    }
 
     const lineItems = items.map((item: any) => {
       // Truncate product name if too long
@@ -39,7 +39,7 @@ serve(async (req) => {
 
       // Create line item without image if URL is too long
       const imageUrl = item.image_path && item.image_path.length < 500 
-        ? item.image_path 
+        ? [item.image_path] 
         : undefined;
 
       return {
@@ -47,11 +47,11 @@ serve(async (req) => {
           currency: 'usd',
           product_data: {
             name,
-            images: imageUrl ? [imageUrl] : undefined,
+            images: imageUrl,
           },
           unit_amount: Math.round(item.price * 100),
         },
-        quantity: item.quantity,
+        quantity: item.quantity || 1,
       };
     });
 
@@ -95,7 +95,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
         status: 200,
       }
     );

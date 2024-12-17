@@ -63,11 +63,11 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
 
       console.log('Redirecting to Stripe checkout:', checkoutData.url);
       window.location.href = checkoutData.url;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Checkout error:', error);
       toast({
         title: "Error",
-        description: "Failed to create checkout session. Please try again.",
+        description: error.message || "Failed to create checkout session. Please try again.",
         variant: "destructive",
       });
     }
