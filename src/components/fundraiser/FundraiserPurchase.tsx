@@ -7,7 +7,6 @@ interface FundraiserPurchaseProps {
   basePrice: number;
   quantity: number;
   onQuantityChange: (increment: boolean) => void;
-  onBuyNow: () => void;
   fundraiserId: string;
   variationId: string;
   productName: string;
