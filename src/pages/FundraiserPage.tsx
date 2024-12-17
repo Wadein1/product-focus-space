@@ -57,31 +57,6 @@ const FundraiserPage = () => {
     }
   }, [defaultVariation]);
 
-  const handleBuyNow = async () => {
-    if (!fundraiser || !selectedVariation) return;
-
-    const variation = fundraiser.fundraiser_variations.find(v => v.id === selectedVariation);
-    if (!variation) return;
-
-    const cartItem = {
-      id: uuidv4(),
-      product_name: `${fundraiser.title} - ${variation.title}`,
-      price: fundraiser.base_price,
-      quantity: quantity,
-      image_path: variation.image_path
-    };
-
-    navigate('/checkout', { 
-      state: { 
-        cartItems: [cartItem],
-        isLocalCart: true,
-        isBuyNow: true,
-        fundraiserId: fundraiser.id,
-        variationId: variation.id
-      } 
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
@@ -148,7 +123,10 @@ const FundraiserPage = () => {
                 onQuantityChange={(increment) => 
                   setQuantity(increment ? quantity + 1 : Math.max(1, quantity - 1))
                 }
-                onBuyNow={handleBuyNow}
+                fundraiserId={fundraiser.id}
+                variationId={selectedVariation || defaultVariation?.id || ''}
+                productName={`${fundraiser.title} - ${selectedVariationData?.title || defaultVariation?.title || ''}`}
+                imagePath={selectedVariationData?.image_path || defaultVariation?.image_path}
               />
             </div>
           </div>
