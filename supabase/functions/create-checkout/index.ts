@@ -13,6 +13,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting checkout process...');
+    
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     console.log('Validating Stripe key configuration...');
     
