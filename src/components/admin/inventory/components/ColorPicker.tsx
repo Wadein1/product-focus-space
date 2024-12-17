@@ -9,21 +9,21 @@ interface ColorPickerProps {
 }
 
 const predefinedColors = [
-  '#8E9196', // Neutral Gray
-  '#9b87f5', // Primary Purple
-  '#7E69AB', // Secondary Purple
+  '#000000', // Black
+  '#FFFFFF', // White
+  '#ea384c', // Red
+  '#0EA5E9', // Blue
+  '#22c55e', // Green
+  '#9b87f5', // Purple
+  '#8E9196', // Gray
+  '#F97316', // Orange
+  '#D946EF', // Pink
+  '#0EA5E9', // Light Blue
   '#F2FCE2', // Soft Green
   '#FEF7CD', // Soft Yellow
   '#FEC6A1', // Soft Orange
   '#E5DEFF', // Soft Purple
   '#FFDEE2', // Soft Pink
-  '#FDE1D3', // Soft Peach
-  '#D3E4FD', // Soft Blue
-  '#F1F0FB', // Soft Gray
-  '#8B5CF6', // Vivid Purple
-  '#D946EF', // Magenta Pink
-  '#F97316', // Bright Orange
-  '#0EA5E9', // Ocean Blue
 ];
 
 export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
