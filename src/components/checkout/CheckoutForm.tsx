@@ -31,6 +31,8 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
 
   const handleSubmit = async (data: CheckoutFormData) => {
     try {
+      console.log('Submitting checkout form with data:', { data, cartItems });
+      
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           items: cartItems,
@@ -45,13 +47,17 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
-      if (checkoutData?.url) {
-        window.location.href = checkoutData.url;
-      } else {
+      if (!checkoutData?.url) {
         throw new Error('No checkout URL received');
       }
+
+      console.log('Redirecting to Stripe checkout:', checkoutData.url);
+      window.location.href = checkoutData.url;
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
