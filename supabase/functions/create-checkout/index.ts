@@ -1,0 +1,99 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import Stripe from 'https://esm.sh/stripe@14.21.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey || !stripeKey.startsWith('sk_')) {
+      throw new Error('Server configuration error: Invalid Stripe secret key format');
+    }
+
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+    });
+
+    const { items, customerEmail, shippingAddress } = await req.json();
+
+    if (!items || !items.length || !customerEmail || !shippingAddress) {
+      throw new Error('Missing required checkout information');
+    }
+
+    const lineItems = items.map((item: any) => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.product_name,
+          images: item.image_path ? [item.image_path] : undefined,
+        },
+        unit_amount: Math.round(item.price * 100), // Convert to cents
+      },
+      quantity: item.quantity,
+    }));
+
+    const session = await stripe.checkout.sessions.create({
+      customer_email: customerEmail,
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${req.headers.get('origin')}/checkout/success`,
+      cancel_url: `${req.headers.get('origin')}/cart`,
+      shipping_address_collection: {
+        allowed_countries: ['US'],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: 800, // $8.00
+              currency: 'usd',
+            },
+            display_name: 'Standard Shipping',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 5,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 7,
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    return new Response(
+      JSON.stringify({ url: session.url }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack,
+        hint: error.message.includes('Invalid Stripe secret key') 
+          ? 'Please ensure a valid Stripe secret key is set in the Edge Function secrets'
+          : undefined
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
+  }
+});
