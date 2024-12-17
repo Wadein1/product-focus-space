@@ -26,6 +26,15 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
+    // Test the Stripe connection
+    try {
+      await stripe.paymentMethods.list({ limit: 1 });
+      console.log('Successfully connected to Stripe API');
+    } catch (stripeError) {
+      console.error('Failed to connect to Stripe:', stripeError);
+      throw new Error('Failed to connect to Stripe API. Please check your API key.');
+    }
+
     const lineItems = items.map((item: any) => {
       const name = item.product_name.length > 100 
         ? item.product_name.substring(0, 97) + '...' 
