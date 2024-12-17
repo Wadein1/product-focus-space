@@ -12,33 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Trash, Plus, Package } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Plus } from "lucide-react";
 import { VariationDialog } from './VariationDialog';
-import { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Item {
-  id: string;
-  category_id: string;
-  name: string;
-  description: string | null;
-  par_level: number;
-  inventory_categories?: {
-    name: string;
-  };
-}
+import { DeleteItemDialog } from './components/DeleteItemDialog';
+import { ItemList } from './components/ItemList';
 
 interface NewItem {
   name: string;
@@ -50,8 +27,8 @@ interface NewItem {
 export const ItemManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [itemToDelete, setItemToDelete] = useState<Item | null>(null);
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [newItem, setNewItem] = useState<NewItem>({
     name: '',
     description: '',
@@ -86,7 +63,7 @@ export const ItemManagement = () => {
         .order('name');
       
       if (error) throw error;
-      return data as Item[];
+      return data;
     },
   });
 
@@ -95,12 +72,7 @@ export const ItemManagement = () => {
       const { data, error } = await supabase
         .from('inventory_items')
         .insert([item])
-        .select(`
-          *,
-          inventory_categories (
-            name
-          )
-        `)
+        .select()
         .single();
       
       if (error) throw error;
@@ -212,52 +184,18 @@ export const ItemManagement = () => {
         </Button>
       </form>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Par Level</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="w-[150px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items?.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.inventory_categories?.name}</TableCell>
-              <TableCell>{item.par_level}</TableCell>
-              <TableCell>{item.description}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedItem(item)}
-                  >
-                    <Package className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setItemToDelete(item)}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <ItemList 
+        items={items || []}
+        onViewDetails={setSelectedItem}
+        onDeleteItem={setItemToDelete}
+      />
 
       <VariationDialog
         item={selectedItem}
         onOpenChange={() => setSelectedItem(null)}
       />
 
-      <DeleteConfirmationDialog
+      <DeleteItemDialog
         isOpen={!!itemToDelete}
         onClose={() => setItemToDelete(null)}
         onConfirm={() => {
@@ -266,8 +204,10 @@ export const ItemManagement = () => {
             setItemToDelete(null);
           }
         }}
-        title="Delete Item"
-        description={`Are you sure you want to delete ${itemToDelete?.name}? This will also delete all variations of this item. This action cannot be undone.`}
+        itemName={itemToDelete?.name || ''}
+        isLocked={itemToDelete?.is_locked}
+        adminUsername="admin"
+        adminPassword="thanksculvers"
       />
     </div>
   );

@@ -361,6 +361,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_locked: boolean | null
           name: string
           par_level: number
         }
@@ -369,6 +370,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_locked?: boolean | null
           name: string
           par_level?: number
         }
@@ -377,6 +379,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_locked?: boolean | null
           name?: string
           par_level?: number
         }
