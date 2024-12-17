@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [orderTypeFilter, setOrderTypeFilter] = useState("regular");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
 
@@ -26,7 +27,7 @@ const Dashboard = () => {
     checkAuth();
   }, []);
 
-  const { orders, isLoading, updateOrderStatus, deleteOrder } = useOrders(searchTerm, statusFilter);
+  const { orders, isLoading, updateOrderStatus, deleteOrder } = useOrders(searchTerm, statusFilter, orderTypeFilter);
 
   const handleDeleteOrder = async (orderId: string) => {
     try {
@@ -70,6 +71,8 @@ const Dashboard = () => {
                 onSearchChange={setSearchTerm}
                 statusFilter={statusFilter}
                 onStatusFilterChange={setStatusFilter}
+                orderTypeFilter={orderTypeFilter}
+                onOrderTypeFilterChange={setOrderTypeFilter}
               />
             </CardHeader>
             <CardContent>

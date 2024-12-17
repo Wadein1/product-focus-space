@@ -14,6 +14,8 @@ interface DashboardControlsProps {
   onSearchChange: (value: string) => void;
   statusFilter: string;
   onStatusFilterChange: (value: string) => void;
+  orderTypeFilter: string;
+  onOrderTypeFilterChange: (value: string) => void;
 }
 
 export function DashboardControls({
@@ -21,6 +23,8 @@ export function DashboardControls({
   onSearchChange,
   statusFilter,
   onStatusFilterChange,
+  orderTypeFilter,
+  onOrderTypeFilterChange,
 }: DashboardControlsProps) {
   return (
     <div className="flex gap-4 mt-4">
@@ -33,6 +37,18 @@ export function DashboardControls({
           className="pl-8"
         />
       </div>
+      <Select
+        value={orderTypeFilter}
+        onValueChange={onOrderTypeFilterChange}
+      >
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Order type" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="regular">Regular Orders</SelectItem>
+          <SelectItem value="fundraiser">Fundraiser Orders</SelectItem>
+        </SelectContent>
+      </Select>
       <Select
         value={statusFilter}
         onValueChange={onStatusFilterChange}

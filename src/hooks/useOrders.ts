@@ -1,46 +1,47 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Order, OrderStatus, RawOrder } from '@/types/order';
-import { mapRawOrderToOrder } from '@/utils/orderUtils';
-import { useToast } from "@/hooks/use-toast";
+import { Order } from '@/types/order';
 
-export function useOrders(searchTerm: string, statusFilter: string) {
-  const { toast } = useToast();
+export const useOrders = (searchTerm: string, statusFilter: string, orderTypeFilter: string) => {
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['admin-orders', searchTerm, statusFilter],
+    queryKey: ['orders', searchTerm, statusFilter, orderTypeFilter],
     queryFn: async () => {
       let query = supabase
         .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
-      if (searchTerm) {
-        query = query.or(`customer_email.ilike.%${searchTerm}%,product_name.ilike.%${searchTerm}%`);
-      }
-
+      // Apply status filter if not "all"
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
 
-      const { data, error } = await query;
+      // Apply order type filter
+      if (orderTypeFilter === 'fundraiser') {
+        query = query.eq('is_fundraiser', true);
+      } else {
+        query = query.eq('is_fundraiser', false);
+      }
+
+      // Apply search filter if searchTerm exists
+      if (searchTerm) {
+        query = query.or(`customer_email.ilike.%${searchTerm}%,product_name.ilike.%${searchTerm}%`);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching orders",
-          description: error.message,
-        });
+        console.error('Error fetching orders:', error);
         throw error;
       }
 
-      return (data as RawOrder[]).map(mapRawOrderToOrder);
+      return data as Order[];
     },
   });
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
+    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
@@ -49,18 +50,7 @@ export function useOrders(searchTerm: string, statusFilter: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      toast({
-        title: "Order status updated",
-        description: "The order status has been successfully updated.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error updating order status",
-        description: error.message,
-      });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 
@@ -74,7 +64,7 @@ export function useOrders(searchTerm: string, statusFilter: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 
@@ -82,6 +72,6 @@ export function useOrders(searchTerm: string, statusFilter: string) {
     orders,
     isLoading,
     updateOrderStatus,
-    deleteOrder
+    deleteOrder,
   };
-}
+};
