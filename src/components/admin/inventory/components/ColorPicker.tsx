@@ -27,13 +27,24 @@ const predefinedColors = [
 ];
 
 export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
+  const handleHexInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value;
+    // Allow empty input or valid hex colors
+    if (newColor === '' || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor)) {
+      onChange(newColor);
+    }
+  };
+
+  const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button 
           variant="outline" 
           className="w-[60px] p-0 flex items-center justify-center"
-          style={{ backgroundColor: color || undefined }}
         >
           <div 
             className="w-full h-full rounded"
@@ -48,10 +59,10 @@ export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
         <div className="space-y-4">
           <div className="grid grid-cols-5 gap-2">
             {predefinedColors.map((presetColor) => (
-              <Button
+              <button
                 key={presetColor}
-                variant="outline"
-                className="w-8 h-8 p-0 cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary transition-all"
+                type="button"
+                className="w-8 h-8 rounded border border-gray-200 cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary transition-all"
                 style={{ backgroundColor: presetColor }}
                 onClick={() => onChange(presetColor)}
               />
@@ -62,19 +73,13 @@ export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
               type="text"
               placeholder="#000000"
               value={color || ''}
-              onChange={(e) => {
-                const newColor = e.target.value;
-                // Only update if it's a valid hex color or empty
-                if (newColor === '' || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor)) {
-                  onChange(newColor);
-                }
-              }}
+              onChange={handleHexInputChange}
               className="flex-1"
             />
             <Input
               type="color"
               value={color || '#000000'}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={handleColorPickerChange}
               className="w-10 p-0 cursor-pointer"
             />
           </div>
