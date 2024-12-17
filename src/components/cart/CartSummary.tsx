@@ -8,7 +8,7 @@ interface CartSummaryProps {
 
 export const CartSummary = ({ items, onCheckout }: CartSummaryProps) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  const shippingCost = 8.00;
+  const shippingCost = 0; // Temporarily set to 0 for testing
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;

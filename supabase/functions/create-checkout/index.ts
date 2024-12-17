@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -32,12 +31,10 @@ serve(async (req) => {
     });
 
     const lineItems = items.map((item: any) => {
-      // Truncate product name if too long
       const name = item.product_name.length > 100 
         ? item.product_name.substring(0, 97) + '...' 
         : item.product_name;
 
-      // Create line item without image if URL is too long
       const imageUrl = item.image_path && item.image_path.length < 500 
         ? [item.image_path] 
         : undefined;
@@ -66,28 +63,29 @@ serve(async (req) => {
       shipping_address_collection: {
         allowed_countries: ['US'],
       },
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: 'fixed_amount',
-            fixed_amount: {
-              amount: 800,
-              currency: 'usd',
-            },
-            display_name: 'Standard Shipping',
-            delivery_estimate: {
-              minimum: {
-                unit: 'business_day',
-                value: 5,
-              },
-              maximum: {
-                unit: 'business_day',
-                value: 7,
-              },
-            },
-          },
-        },
-      ],
+      // Temporarily removed shipping cost for testing
+      // shipping_options: [
+      //   {
+      //     shipping_rate_data: {
+      //       type: 'fixed_amount',
+      //       fixed_amount: {
+      //         amount: 800,
+      //         currency: 'usd',
+      //       },
+      //       display_name: 'Standard Shipping',
+      //       delivery_estimate: {
+      //         minimum: {
+      //           unit: 'business_day',
+      //           value: 5,
+      //         },
+      //         maximum: {
+      //           unit: 'business_day',
+      //           value: 7,
+      //         },
+      //       },
+      //     },
+      //   },
+      // ],
     });
 
     console.log('Stripe session created successfully:', session.id);
