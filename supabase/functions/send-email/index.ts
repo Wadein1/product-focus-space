@@ -16,7 +16,8 @@ serve(async (req) => {
   }
 
   try {
-    const { type, data } = await req.json();
+    const body = await req.json();
+    const { type, data } = body;
     let subject, html, attachments = [];
 
     if (type === 'support') {

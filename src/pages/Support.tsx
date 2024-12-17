@@ -41,23 +41,27 @@ const Support = () => {
 
       if (error) throw error;
 
-      const formData = new FormData();
-      formData.append('type', 'support');
-      formData.append('supportType', supportType);
-      formData.append('email', email);
-      formData.append('description', description);
+      // Convert image to base64 if it exists
+      let base64Image = null;
       if (image) {
-        const base64Image = await new Promise((resolve) => {
+        base64Image = await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result);
           reader.readAsDataURL(image);
         });
-        formData.append('image', String(base64Image));
-        formData.append('imageName', image.name);
       }
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: formData
+        body: {
+          type: 'support',
+          data: {
+            supportType,
+            email,
+            description,
+            image: base64Image,
+            imageName: image?.name
+          }
+        }
       });
 
       if (emailError) throw emailError;
