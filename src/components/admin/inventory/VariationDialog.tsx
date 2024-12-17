@@ -10,23 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Trash, Plus } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-interface Variation {
-  id: string;
-  item_id: string;
-  name: string;
-  color: string | null;
-  quantity: number;
-}
+import { Plus } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { VariationRow } from './components/VariationRow';
 
 interface Item {
   id: string;
@@ -44,7 +30,6 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
   const queryClient = useQueryClient();
   const [newVariation, setNewVariation] = useState({
     name: '',
-    color: '',
     quantity: 0,
   });
 
@@ -59,16 +44,16 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
         .order('name');
       
       if (error) throw error;
-      return data as Variation[];
+      return data;
     },
     enabled: !!item,
   });
 
   const addVariation = useMutation({
-    mutationFn: async (variation: Omit<Variation, 'id'>) => {
+    mutationFn: async (variation: { name: string; quantity: number }) => {
       const { data, error } = await supabase
         .from('inventory_variations')
-        .insert([variation])
+        .insert([{ ...variation, item_id: item?.id }])
         .select()
         .single();
       
@@ -77,7 +62,7 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-variations', item?.id] });
-      setNewVariation({ name: '', color: '', quantity: 0 });
+      setNewVariation({ name: '', quantity: 0 });
       toast({
         title: "Variation added",
         description: "The variation has been successfully added.",
@@ -93,10 +78,10 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
   });
 
   const updateVariation = useMutation({
-    mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
       const { data, error } = await supabase
         .from('inventory_variations')
-        .update({ quantity })
+        .update(updates)
         .eq('id', id)
         .select()
         .single();
@@ -107,15 +92,15 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-variations', item?.id] });
       toast({
-        title: "Quantity updated",
-        description: "The quantity has been successfully updated.",
+        title: "Variation updated",
+        description: "The variation has been successfully updated.",
       });
     },
     onError: (error) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update quantity. Please try again.",
+        description: "Failed to update variation. Please try again.",
       });
     },
   });
@@ -155,10 +140,7 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
       });
       return;
     }
-    addVariation.mutate({
-      ...newVariation,
-      item_id: item.id,
-    });
+    addVariation.mutate(newVariation);
   };
 
   return (
@@ -176,11 +158,6 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
               onChange={(e) => setNewVariation(prev => ({ ...prev, name: e.target.value }))}
             />
             <Input
-              placeholder="Color (optional)"
-              value={newVariation.color}
-              onChange={(e) => setNewVariation(prev => ({ ...prev, color: e.target.value }))}
-            />
-            <Input
               type="number"
               placeholder="Quantity"
               value={newVariation.quantity}
@@ -193,49 +170,37 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
           </div>
         </form>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Color</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead className="w-[150px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-2">
             {variations?.map((variation) => (
-              <TableRow key={variation.id}>
-                <TableCell>{variation.name}</TableCell>
-                <TableCell>{variation.color}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={variation.quantity}
-                      onChange={(e) => {
-                        const newQuantity = parseInt(e.target.value) || 0;
-                        updateVariation.mutate({
-                          id: variation.id,
-                          quantity: newQuantity,
-                        });
-                      }}
-                      className="w-24"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteVariation.mutate(variation.id)}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
+              <VariationRow
+                key={variation.id}
+                variation={variation}
+                onDelete={deleteVariation.mutate}
+                onUpdate={(id, updates) => updateVariation.mutate({ id, updates })}
+                dragHandleProps={{
+                  draggable: true,
+                  onDragStart: (e: React.DragEvent) => {
+                    e.dataTransfer.setData('text/plain', variation.id);
+                  },
+                  onDragOver: (e: React.DragEvent) => {
+                    e.preventDefault();
+                  },
+                  onDrop: (e: React.DragEvent) => {
+                    e.preventDefault();
+                    const draggedId = e.dataTransfer.getData('text/plain');
+                    // Here you would implement the reordering logic
+                    // For now, we'll just show a toast
+                    toast({
+                      title: "Reordering coming soon",
+                      description: "This feature is under development.",
+                    });
+                  },
+                }}
+              />
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

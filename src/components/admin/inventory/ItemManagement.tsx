@@ -23,25 +23,15 @@ import {
 } from "@/components/ui/table";
 import { VariationDialog } from './VariationDialog';
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 interface Item {
   id: string;
   category_id: string;
   name: string;
   description: string | null;
   par_level: number;
-}
-
-interface Variation {
-  id: string;
-  item_id: string;
-  name: string;
-  color: string | null;
-  quantity: number;
+  inventory_categories: {
+    name: string;
+  };
 }
 
 export const ItemManagement = () => {
@@ -64,7 +54,7 @@ export const ItemManagement = () => {
         .order('name');
       
       if (error) throw error;
-      return data as Category[];
+      return data;
     },
   });
 
@@ -77,12 +67,6 @@ export const ItemManagement = () => {
           *,
           inventory_categories (
             name
-          ),
-          inventory_variations (
-            id,
-            name,
-            color,
-            quantity
           )
         `)
         .order('name');
