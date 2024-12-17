@@ -51,7 +51,7 @@ export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
               <Button
                 key={presetColor}
                 variant="outline"
-                className="w-8 h-8 p-0"
+                className="w-8 h-8 p-0 cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary transition-all"
                 style={{ backgroundColor: presetColor }}
                 onClick={() => onChange(presetColor)}
               />
@@ -62,7 +62,13 @@ export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
               type="text"
               placeholder="#000000"
               value={color || ''}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => {
+                const newColor = e.target.value;
+                // Only update if it's a valid hex color or empty
+                if (newColor === '' || /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor)) {
+                  onChange(newColor);
+                }
+              }}
               className="flex-1"
             />
             <Input
