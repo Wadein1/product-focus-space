@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,12 +7,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { items, success_url, cancel_url, fundraiser_data } = await req.json();
+    const { items, success_url, cancel_url } = await req.json();
+    console.log('Received checkout request:', { items, success_url, cancel_url });
 
     if (!items || !Array.isArray(items)) {
       throw new Error('Invalid items array');
@@ -35,16 +36,16 @@ serve(async (req) => {
       quantity: item.quantity,
     }));
 
+    console.log('Creating Stripe session with line items:', lineItems);
+
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
       success_url: success_url || `${req.headers.get('origin')}/`,
-      cancel_url: cancel_url || `${req.headers.get('origin')}/`,
-      metadata: fundraiser_data ? {
-        fundraiser_id: fundraiser_data.fundraiser_id,
-        variation_id: fundraiser_data.variation_id,
-      } : undefined,
+      cancel_url: cancel_url || `${req.headers.get('origin')}/product`,
     });
+
+    console.log('Stripe session created:', session.id);
 
     return new Response(
       JSON.stringify({ url: session.url }),

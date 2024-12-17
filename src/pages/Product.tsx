@@ -22,12 +22,23 @@ const Product = () => {
 
   const handleBuyNow = async () => {
     try {
+      if (!selectedChainColor) {
+        toast({
+          title: "Chain color required",
+          description: "Please select a chain color",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const item = {
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
         image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
       };
+
+      console.log('Creating checkout session with item:', item);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { 
@@ -37,9 +48,15 @@ const Product = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating checkout session:', error);
+        throw error;
+      }
+
       if (data?.url) {
         window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
