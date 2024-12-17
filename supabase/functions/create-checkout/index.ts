@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -14,6 +15,7 @@ serve(async (req) => {
   try {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey || !stripeKey.startsWith('sk_')) {
+      console.error('Invalid or missing Stripe secret key');
       throw new Error('Server configuration error: Invalid Stripe secret key format');
     }
 
