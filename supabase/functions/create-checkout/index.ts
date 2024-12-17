@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -30,17 +29,29 @@ serve(async (req) => {
       throw new Error('Missing required checkout information');
     }
 
-    const lineItems = items.map((item: any) => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.product_name,
-          images: item.image_path ? [item.image_path] : undefined,
+    const lineItems = items.map((item: any) => {
+      // Truncate product name if too long
+      const name = item.product_name.length > 100 
+        ? item.product_name.substring(0, 97) + '...' 
+        : item.product_name;
+
+      // Create line item without image if URL is too long
+      const imageUrl = item.image_path && item.image_path.length < 500 
+        ? item.image_path 
+        : undefined;
+
+      return {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name,
+            images: imageUrl ? [imageUrl] : undefined,
+          },
+          unit_amount: Math.round(item.price * 100),
         },
-        unit_amount: Math.round(item.price * 100),
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      };
+    });
 
     console.log('Creating Stripe session with line items:', lineItems);
 
