@@ -47,15 +47,6 @@ export const CartContainer = () => {
     });
   };
 
-  const handleCheckout = () => {
-    navigate('/checkout', { 
-      state: { 
-        cartItems,
-        isLocalCart: true 
-      } 
-    });
-  };
-
   if (isLoading) {
     return <div className="text-center">Loading cart...</div>;
   }
@@ -73,7 +64,6 @@ export const CartContainer = () => {
       />
       <CartSummary 
         items={cartItems}
-        onCheckout={handleCheckout}
       />
     </div>
   );
