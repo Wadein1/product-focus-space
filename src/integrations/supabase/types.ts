@@ -397,6 +397,8 @@ export type Database = {
           id: string
           item_id: string
           name: string
+          order_index: number | null
+          par_level: number | null
           quantity: number
         }
         Insert: {
@@ -405,6 +407,8 @@ export type Database = {
           id?: string
           item_id: string
           name: string
+          order_index?: number | null
+          par_level?: number | null
           quantity?: number
         }
         Update: {
@@ -413,6 +417,8 @@ export type Database = {
           id?: string
           item_id?: string
           name?: string
+          order_index?: number | null
+          par_level?: number | null
           quantity?: number
         }
         Relationships: [

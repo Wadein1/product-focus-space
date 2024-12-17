@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { VariationDialog } from './VariationDialog';
+import { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
 
 interface Category {
   id: string;
@@ -50,6 +51,7 @@ export const ItemManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<Item | null>(null);
   const [newItem, setNewItem] = useState<NewItem>({
     name: '',
     description: '',
@@ -239,7 +241,7 @@ export const ItemManagement = () => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => deleteItem.mutate(item.id)}
+                    onClick={() => setItemToDelete(item)}
                   >
                     <Trash className="h-4 w-4" />
                   </Button>
@@ -253,6 +255,19 @@ export const ItemManagement = () => {
       <VariationDialog
         item={selectedItem}
         onOpenChange={() => setSelectedItem(null)}
+      />
+
+      <DeleteConfirmationDialog
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => {
+          if (itemToDelete) {
+            deleteItem.mutate(itemToDelete.id);
+            setItemToDelete(null);
+          }
+        }}
+        title="Delete Item"
+        description={`Are you sure you want to delete ${itemToDelete?.name}? This will also delete all variations of this item. This action cannot be undone.`}
       />
     </div>
   );

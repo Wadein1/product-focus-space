@@ -31,6 +31,7 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
   const [newVariation, setNewVariation] = useState({
     name: '',
     quantity: 0,
+    par_level: 0,
   });
 
   const { data: variations, isLoading } = useQuery({
@@ -41,7 +42,7 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
         .from('inventory_variations')
         .select('*')
         .eq('item_id', item.id)
-        .order('name');
+        .order('order_index');
       
       if (error) throw error;
       return data;
@@ -50,10 +51,15 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
   });
 
   const addVariation = useMutation({
-    mutationFn: async (variation: { name: string; quantity: number }) => {
+    mutationFn: async (variation: typeof newVariation) => {
+      const maxOrderIndex = Math.max(...(variations?.map(v => v.order_index) || [-1]));
       const { data, error } = await supabase
         .from('inventory_variations')
-        .insert([{ ...variation, item_id: item?.id }])
+        .insert([{ 
+          ...variation, 
+          item_id: item?.id,
+          order_index: maxOrderIndex + 1
+        }])
         .select()
         .single();
       
@@ -62,7 +68,7 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-variations', item?.id] });
-      setNewVariation({ name: '', quantity: 0 });
+      setNewVariation({ name: '', quantity: 0, par_level: 0 });
       toast({
         title: "Variation added",
         description: "The variation has been successfully added.",
@@ -130,6 +136,47 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
     },
   });
 
+  const handleDrop = async (draggedId: string, targetId: string) => {
+    if (!variations) return;
+    
+    const draggedIndex = variations.findIndex(v => v.id === draggedId);
+    const targetIndex = variations.findIndex(v => v.id === targetId);
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const newVariations = [...variations];
+    const [draggedItem] = newVariations.splice(draggedIndex, 1);
+    newVariations.splice(targetIndex, 0, draggedItem);
+
+    // Update order_index for all affected variations
+    const updates = newVariations.map((variation, index) => ({
+      id: variation.id,
+      order_index: index,
+    }));
+
+    try {
+      await Promise.all(
+        updates.map(update =>
+          supabase
+            .from('inventory_variations')
+            .update({ order_index: update.order_index })
+            .eq('id', update.id)
+        )
+      );
+
+      queryClient.invalidateQueries({ queryKey: ['inventory-variations', item?.id] });
+      toast({
+        title: "Order updated",
+        description: "The variations have been reordered successfully.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to reorder variations. Please try again.",
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!item || !newVariation.name.trim()) {
@@ -163,6 +210,12 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
               value={newVariation.quantity}
               onChange={(e) => setNewVariation(prev => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))}
             />
+            <Input
+              type="number"
+              placeholder="Par Level"
+              value={newVariation.par_level}
+              onChange={(e) => setNewVariation(prev => ({ ...prev, par_level: parseInt(e.target.value) || 0 }))}
+            />
             <Button type="submit">
               <Plus className="mr-2 h-4 w-4" />
               Add
@@ -189,12 +242,7 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
                   onDrop: (e: React.DragEvent) => {
                     e.preventDefault();
                     const draggedId = e.dataTransfer.getData('text/plain');
-                    // Here you would implement the reordering logic
-                    // For now, we'll just show a toast
-                    toast({
-                      title: "Reordering coming soon",
-                      description: "This feature is under development.",
-                    });
+                    handleDrop(draggedId, variation.id);
                   },
                 }}
               />
