@@ -13,6 +13,11 @@ serve(async (req) => {
   }
 
   try {
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      throw new Error('Missing Stripe secret key');
+    }
+
     const { items, success_url, cancel_url } = await req.json();
     console.log('Received checkout request:', { items, success_url, cancel_url });
 
@@ -20,7 +25,7 @@ serve(async (req) => {
       throw new Error('Invalid items array');
     }
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     });
 
@@ -55,7 +60,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('Error in create-checkout:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
