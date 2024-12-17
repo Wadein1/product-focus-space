@@ -1,19 +1,66 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FundraiserPurchaseProps {
   basePrice: number;
   quantity: number;
   onQuantityChange: (increment: boolean) => void;
   onBuyNow: () => void;
+  fundraiserId: string;
+  variationId: string;
+  productName: string;
+  imagePath?: string;
 }
 
 export const FundraiserPurchase = ({
   basePrice,
   quantity,
   onQuantityChange,
-  onBuyNow,
+  fundraiserId,
+  variationId,
+  productName,
+  imagePath,
 }: FundraiserPurchaseProps) => {
+  const { toast } = useToast();
+
+  const handleBuyNow = async () => {
+    try {
+      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          items: [{
+            product_name: productName,
+            price: basePrice,
+            quantity: quantity,
+            image_path: imagePath,
+          }],
+          fundraiserId,
+          variationId,
+        },
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!checkoutData?.url) {
+        console.error('No checkout URL received:', checkoutData);
+        throw new Error('No checkout URL received from Stripe');
+      }
+
+      window.location.href = checkoutData.url;
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create checkout session. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
       <div className="border-t border-b py-4">
@@ -47,7 +94,7 @@ export const FundraiserPurchase = ({
         </div>
 
         <Button 
-          onClick={onBuyNow}
+          onClick={handleBuyNow}
           className="w-full bg-primary text-white hover:bg-primary/90"
         >
           Buy Now
