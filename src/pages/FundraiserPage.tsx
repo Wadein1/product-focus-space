@@ -63,38 +63,23 @@ const FundraiserPage = () => {
     const variation = fundraiser.fundraiser_variations.find(v => v.id === selectedVariation);
     if (!variation) return;
 
-    try {
-      const item = {
-        product_name: `${fundraiser.title} - ${variation.title}`,
-        price: fundraiser.base_price,
-        quantity: quantity,
-        image_path: variation.image_path
-      };
+    const cartItem = {
+      id: uuidv4(),
+      product_name: `${fundraiser.title} - ${variation.title}`,
+      price: fundraiser.base_price,
+      quantity: quantity,
+      image_path: variation.image_path
+    };
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          items: [item],
-          success_url: `${window.location.origin}/`,
-          cancel_url: `${window.location.origin}/fundraiser/${customLink}`,
-          fundraiser_data: {
-            fundraiser_id: fundraiser.id,
-            variation_id: variation.id
-          }
-        }
-      });
-
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process checkout. Please try again.",
-        variant: "destructive",
-      });
-    }
+    navigate('/checkout', { 
+      state: { 
+        cartItems: [cartItem],
+        isLocalCart: true,
+        isBuyNow: true,
+        fundraiserId: fundraiser.id,
+        variationId: variation.id
+      } 
+    });
   };
 
   if (isLoading) {
