@@ -8,6 +8,9 @@ const Product = () => {
     isAddingToCart,
     quantity,
     imagePreview,
+    chainColors,
+    selectedChainColor,
+    setSelectedChainColor,
     handleQuantityChange,
     handleFileChange,
     addToCart,
@@ -29,6 +32,9 @@ const Product = () => {
             onAddToCart={addToCart}
             onBuyNow={buyNow}
             isAddingToCart={isAddingToCart}
+            chainColors={chainColors}
+            selectedChainColor={selectedChainColor}
+            onChainColorChange={setSelectedChainColor}
           />
         </div>
       </div>

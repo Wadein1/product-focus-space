@@ -1,6 +1,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { MinusIcon, PlusIcon } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ProductDetailsProps {
   quantity: number;
@@ -8,6 +15,9 @@ interface ProductDetailsProps {
   onBuyNow: () => void;
   onAddToCart: () => void;
   isAddingToCart: boolean;
+  chainColors?: { id: string; name: string; color?: string | null }[];
+  selectedChainColor: string;
+  onChainColorChange: (value: string) => void;
 }
 
 export const ProductDetails = ({
@@ -15,7 +25,10 @@ export const ProductDetails = ({
   onQuantityChange,
   onBuyNow,
   onAddToCart,
-  isAddingToCart
+  isAddingToCart,
+  chainColors = [],
+  selectedChainColor,
+  onChainColorChange
 }: ProductDetailsProps) => {
   return (
     <div className="space-y-6">
@@ -37,25 +50,45 @@ export const ProductDetails = ({
           <p className="text-sm text-gray-500">(+$8.00 shipping & 5% tax)</p>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <span className="text-sm font-medium text-gray-700">Quantity:</span>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onQuantityChange(false)}
-              disabled={quantity <= 1}
-            >
-              <MinusIcon className="h-4 w-4" />
-            </Button>
-            <span className="w-12 text-center">{quantity}</span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onQuantityChange(true)}
-            >
-              <PlusIcon className="h-4 w-4" />
-            </Button>
+        <div className="space-y-4">
+          <div className="form-group">
+            <label htmlFor="chainColor" className="block text-sm font-medium text-gray-700 mb-2">
+              Chain Color
+            </label>
+            <Select value={selectedChainColor} onValueChange={onChainColorChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select chain color" />
+              </SelectTrigger>
+              <SelectContent>
+                {chainColors.map((color) => (
+                  <SelectItem key={color.id} value={color.name}>
+                    {color.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <span className="text-sm font-medium text-gray-700">Quantity:</span>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onQuantityChange(false)}
+                disabled={quantity <= 1}
+              >
+                <MinusIcon className="h-4 w-4" />
+              </Button>
+              <span className="w-12 text-center">{quantity}</span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onQuantityChange(true)}
+              >
+                <PlusIcon className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 

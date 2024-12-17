@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
@@ -10,12 +12,54 @@ export const useProductForm = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedChainColor, setSelectedChainColor] = useState<string>("");
+
+  // Fetch chain colors from inventory
+  const { data: chainColors } = useQuery({
+    queryKey: ['chain-colors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('inventory_items')
+        .select(`
+          id,
+          inventory_variations (
+            id,
+            name,
+            color
+          )
+        `)
+        .eq('name', 'Chains')
+        .single();
+
+      if (error) throw error;
+      return data?.inventory_variations || [];
+    },
+  });
+
+  // Set the first chain color as default when data is loaded
+  useEffect(() => {
+    if (chainColors?.length > 0 && !selectedChainColor) {
+      setSelectedChainColor(chainColors[0].name);
+    }
+  }, [chainColors]);
 
   const validateImage = () => {
     if (!imagePreview) {
       toast({
         title: "Image required",
         description: "Please upload an image before adding to cart",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const validateChainColor = () => {
+    if (!selectedChainColor) {
+      toast({
+        title: "Chain color required",
+        description: "Please select a chain color",
         variant: "destructive",
       });
       return false;
@@ -36,14 +80,14 @@ export const useProductForm = () => {
   };
 
   const addToCart = async () => {
-    if (!validateImage()) return;
+    if (!validateImage() || !validateChainColor()) return;
 
     setIsAddingToCart(true);
     try {
       const newItem: CartItem = {
         id: uuidv4(),
         cart_id: uuidv4(),
-        product_name: "Custom Medallion",
+        product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
         image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
@@ -71,13 +115,13 @@ export const useProductForm = () => {
   };
 
   const buyNow = async () => {
-    if (!validateImage()) return;
+    if (!validateImage() || !validateChainColor()) return;
 
     try {
       const item: CartItem = {
         id: uuidv4(),
         cart_id: uuidv4(),
-        product_name: "Custom Medallion",
+        product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
         image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
@@ -104,6 +148,9 @@ export const useProductForm = () => {
     isAddingToCart,
     quantity,
     imagePreview,
+    chainColors,
+    selectedChainColor,
+    setSelectedChainColor,
     handleQuantityChange,
     handleFileChange,
     addToCart,
