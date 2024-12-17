@@ -15,7 +15,8 @@ serve(async (req) => {
   try {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey) {
-      throw new Error('Missing Stripe secret key');
+      console.error('Missing Stripe secret key in environment variables');
+      throw new Error('Server configuration error: Missing Stripe secret key');
     }
 
     const { items, success_url, cancel_url } = await req.json();
@@ -48,6 +49,31 @@ serve(async (req) => {
       mode: 'payment',
       success_url: success_url || `${req.headers.get('origin')}/`,
       cancel_url: cancel_url || `${req.headers.get('origin')}/product`,
+      shipping_address_collection: {
+        allowed_countries: ['US'],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: 800, // $8.00 in cents
+              currency: 'usd',
+            },
+            display_name: 'Standard shipping',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 5,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 7,
+              },
+            },
+          },
+        },
+      ],
     });
 
     console.log('Stripe session created:', session.id);
@@ -62,7 +88,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in create-checkout:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error instanceof Error ? error.stack : undefined 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
