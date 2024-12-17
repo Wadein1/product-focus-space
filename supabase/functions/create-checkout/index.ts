@@ -19,6 +19,11 @@ serve(async (req) => {
       throw new Error('Server configuration error: Missing Stripe secret key');
     }
 
+    if (!stripeKey.startsWith('sk_')) {
+      console.error('Invalid Stripe secret key format');
+      throw new Error('Server configuration error: Invalid Stripe secret key format');
+    }
+
     const { items, success_url, cancel_url } = await req.json();
     console.log('Received checkout request:', { items, success_url, cancel_url });
 
@@ -90,7 +95,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error instanceof Error ? error.stack : undefined 
+        details: error instanceof Error ? error.stack : undefined,
+        hint: error.message.includes('secret key') ? 'Please ensure a valid Stripe secret key is set in the Edge Function secrets' : undefined
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
