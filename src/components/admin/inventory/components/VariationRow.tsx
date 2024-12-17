@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, GripVertical } from "lucide-react";
+import { Trash, GripVertical, Plus, Minus } from "lucide-react";
 import { QuantityControls } from './QuantityControls';
 import { ParLevelDialog } from './ParLevelDialog';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
-import { ColorPicker } from './ColorPicker';
 
 interface VariationRowProps {
   variation: {
@@ -14,23 +13,14 @@ interface VariationRowProps {
     quantity: number;
     par_level: number;
     order_index: number;
-    color?: string | null;
   };
-  showColorPicker?: boolean;
   onDelete: (id: string) => void;
-  onUpdate: (id: string, updates: { 
-    name?: string; 
-    quantity?: number; 
-    par_level?: number; 
-    order_index?: number;
-    color?: string | null;
-  }) => void;
+  onUpdate: (id: string, updates: { name?: string; quantity?: number; par_level?: number; order_index?: number }) => void;
   dragHandleProps?: any;
 }
 
 export const VariationRow = ({ 
   variation, 
-  showColorPicker = false,
   onDelete, 
   onUpdate,
   dragHandleProps 
@@ -72,13 +62,6 @@ export const VariationRow = ({
         >
           {variation.name}
         </div>
-      )}
-
-      {showColorPicker && (
-        <ColorPicker
-          color={variation.color || null}
-          onChange={(color) => onUpdate(variation.id, { color })}
-        />
       )}
 
       <div className="flex items-center gap-2">

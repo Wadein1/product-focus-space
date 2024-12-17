@@ -50,8 +50,6 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
     enabled: !!item,
   });
 
-  const showColorPicker = item?.name === 'Chains' || item?.name === 'Filament';
-
   const addVariation = useMutation({
     mutationFn: async (variation: typeof newVariation) => {
       const maxOrderIndex = Math.max(...(variations?.map(v => v.order_index) || [-1]));
@@ -149,6 +147,7 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
     const [draggedItem] = newVariations.splice(draggedIndex, 1);
     newVariations.splice(targetIndex, 0, draggedItem);
 
+    // Update order_index for all affected variations
     const updates = newVariations.map((variation, index) => ({
       id: variation.id,
       order_index: index,
@@ -230,7 +229,6 @@ export const VariationDialog = ({ item, onOpenChange }: VariationDialogProps) =>
               <VariationRow
                 key={variation.id}
                 variation={variation}
-                showColorPicker={showColorPicker}
                 onDelete={deleteVariation.mutate}
                 onUpdate={(id, updates) => updateVariation.mutate({ id, updates })}
                 dragHandleProps={{

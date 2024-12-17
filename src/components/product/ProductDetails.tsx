@@ -30,8 +30,6 @@ export const ProductDetails = ({
   selectedChainColor,
   onChainColorChange
 }: ProductDetailsProps) => {
-  const selectedColor = chainColors.find(c => c.name === selectedChainColor)?.color;
-
   return (
     <div className="space-y-6">
       <h1 className="text-4xl font-bold tracking-tight">Custom Medallion</h1>
@@ -57,34 +55,18 @@ export const ProductDetails = ({
             <label htmlFor="chainColor" className="block text-sm font-medium text-gray-700 mb-2">
               Chain Color
             </label>
-            <div className="flex gap-2">
-              <Select value={selectedChainColor} onValueChange={onChainColorChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select chain color" />
-                </SelectTrigger>
-                <SelectContent>
-                  {chainColors.map((color) => (
-                    <SelectItem key={color.id} value={color.name}>
-                      <div className="flex items-center gap-2">
-                        {color.color && (
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: color.color }}
-                          />
-                        )}
-                        {color.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedColor && (
-                <div 
-                  className="w-10 h-10 rounded-full border"
-                  style={{ backgroundColor: selectedColor }}
-                />
-              )}
-            </div>
+            <Select value={selectedChainColor} onValueChange={onChainColorChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select chain color" />
+              </SelectTrigger>
+              <SelectContent>
+                {chainColors.map((color) => (
+                  <SelectItem key={color.id} value={color.name}>
+                    {color.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center space-x-4">
