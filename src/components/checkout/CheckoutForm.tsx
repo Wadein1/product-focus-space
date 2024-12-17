@@ -31,8 +31,12 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
 
   const handleSubmit = async (data: CheckoutFormData) => {
     try {
-      console.log('Submitting checkout form with data:', { data, cartItems });
-      
+      console.log('Preparing checkout data:', { formData: data, cartItems });
+
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error('No items in cart');
+      }
+
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           items: cartItems,
@@ -53,7 +57,8 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
       }
 
       if (!checkoutData?.url) {
-        throw new Error('No checkout URL received');
+        console.error('No checkout URL received:', checkoutData);
+        throw new Error('No checkout URL received from Stripe');
       }
 
       console.log('Redirecting to Stripe checkout:', checkoutData.url);

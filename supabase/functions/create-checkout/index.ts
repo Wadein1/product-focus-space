@@ -24,11 +24,11 @@ serve(async (req) => {
 
     const { items, customerEmail, shippingAddress } = await req.json();
 
+    console.log('Received request data:', { items, customerEmail, shippingAddress });
+
     if (!items || !items.length || !customerEmail || !shippingAddress) {
       throw new Error('Missing required checkout information');
     }
-
-    console.log('Creating checkout session with:', { items, customerEmail, shippingAddress });
 
     const lineItems = items.map((item: any) => ({
       price_data: {
@@ -37,10 +37,12 @@ serve(async (req) => {
           name: item.product_name,
           images: item.image_path ? [item.image_path] : undefined,
         },
-        unit_amount: Math.round(item.price * 100), // Convert to cents
+        unit_amount: Math.round(item.price * 100),
       },
       quantity: item.quantity,
     }));
+
+    console.log('Creating Stripe session with line items:', lineItems);
 
     const session = await stripe.checkout.sessions.create({
       customer_email: customerEmail,
@@ -56,7 +58,7 @@ serve(async (req) => {
           shipping_rate_data: {
             type: 'fixed_amount',
             fixed_amount: {
-              amount: 800, // $8.00
+              amount: 800,
               currency: 'usd',
             },
             display_name: 'Standard Shipping',
@@ -75,7 +77,8 @@ serve(async (req) => {
       ],
     });
 
-    console.log('Checkout session created:', session.id);
+    console.log('Stripe session created successfully:', session.id);
+
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
@@ -84,7 +87,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('Error in create-checkout function:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
