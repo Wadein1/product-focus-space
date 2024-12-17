@@ -14,7 +14,7 @@ export const useProductForm = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedChainColor, setSelectedChainColor] = useState<string>("");
 
-  // Fetch chain colors from inventory
+  // Fetch chain colors from inventory with quantity > 0
   const { data: chainColors } = useQuery({
     queryKey: ['chain-colors'],
     queryFn: async () => {
@@ -25,18 +25,25 @@ export const useProductForm = () => {
           inventory_variations (
             id,
             name,
-            color
+            color,
+            quantity
           )
         `)
         .eq('name', 'Chains')
         .single();
 
       if (error) throw error;
-      return data?.inventory_variations || [];
+      
+      // Filter out variations with zero quantity
+      const availableVariations = data?.inventory_variations.filter(
+        variation => variation.quantity > 0
+      ) || [];
+      
+      return availableVariations;
     },
   });
 
-  // Set the first chain color as default when data is loaded
+  // Set the first available chain color as default when data is loaded
   useEffect(() => {
     if (chainColors?.length > 0 && !selectedChainColor) {
       setSelectedChainColor(chainColors[0].name);
