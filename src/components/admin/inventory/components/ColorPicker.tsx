@@ -44,7 +44,7 @@ export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
       <PopoverTrigger asChild>
         <Button 
           variant="outline" 
-          className="w-[60px] p-0 flex items-center justify-center"
+          className="w-[60px] h-[36px] p-0"
         >
           <div 
             className="w-full h-full rounded"
@@ -59,10 +59,11 @@ export const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
         <div className="space-y-4">
           <div className="grid grid-cols-5 gap-2">
             {predefinedColors.map((presetColor) => (
-              <button
+              <Button
                 key={presetColor}
                 type="button"
-                className="w-8 h-8 rounded border border-gray-200 cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary transition-all"
+                variant="outline"
+                className="w-8 h-8 p-0"
                 style={{ backgroundColor: presetColor }}
                 onClick={() => onChange(presetColor)}
               />
