@@ -16,16 +16,11 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData();
-    const type = formData.get('type');
+    const { type, data } = await req.json();
     let subject, html, attachments = [];
 
     if (type === 'support') {
-      const supportType = formData.get('supportType');
-      const email = formData.get('email');
-      const description = formData.get('description');
-      const image = formData.get('image');
-      const imageName = formData.get('imageName');
+      const { supportType, email, description, image, imageName } = data;
 
       subject = `New Support Ticket: ${supportType}`;
       html = `
@@ -48,7 +43,7 @@ serve(async (req) => {
           
           attachments.push({
             filename: String(imageName),
-            content: Array.from(bytes), // Convert Uint8Array to regular array
+            content: Array.from(bytes),
           });
           
           console.log('Image processed successfully');
@@ -58,9 +53,7 @@ serve(async (req) => {
         }
       }
     } else if (type === 'fundraising') {
-      const companyName = formData.get('companyName');
-      const email = formData.get('email');
-      const description = formData.get('description');
+      const { companyName, email, description } = data;
 
       subject = `New Fundraising Request: ${companyName}`;
       html = `
