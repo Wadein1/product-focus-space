@@ -23,22 +23,34 @@ import {
 } from "@/components/ui/table";
 import { VariationDialog } from './VariationDialog';
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface Item {
   id: string;
   category_id: string;
   name: string;
   description: string | null;
   par_level: number;
-  inventory_categories: {
+  inventory_categories?: {
     name: string;
   };
+}
+
+interface NewItem {
+  name: string;
+  description: string;
+  category_id: string;
+  par_level: number;
 }
 
 export const ItemManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [newItem, setNewItem] = useState({
+  const [newItem, setNewItem] = useState<NewItem>({
     name: '',
     description: '',
     category_id: '',
@@ -72,16 +84,21 @@ export const ItemManagement = () => {
         .order('name');
       
       if (error) throw error;
-      return data;
+      return data as Item[];
     },
   });
 
   const addItem = useMutation({
-    mutationFn: async (item: Omit<Item, 'id'>) => {
+    mutationFn: async (item: NewItem) => {
       const { data, error } = await supabase
         .from('inventory_items')
         .insert([item])
-        .select()
+        .select(`
+          *,
+          inventory_categories (
+            name
+          )
+        `)
         .single();
       
       if (error) throw error;
@@ -207,7 +224,7 @@ export const ItemManagement = () => {
           {items?.map((item) => (
             <TableRow key={item.id}>
               <TableCell>{item.name}</TableCell>
-              <TableCell>{item.inventory_categories.name}</TableCell>
+              <TableCell>{item.inventory_categories?.name}</TableCell>
               <TableCell>{item.par_level}</TableCell>
               <TableCell>{item.description}</TableCell>
               <TableCell>
