@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Order } from '@/types/order';
+import { Order, OrderStatus, RawOrder } from '@/types/order';
+import { mapRawOrderToOrder } from '@/utils/orderUtils';
 
 export const useOrders = (searchTerm: string, statusFilter: string, orderTypeFilter: string) => {
   const queryClient = useQueryClient();
@@ -36,12 +37,13 @@ export const useOrders = (searchTerm: string, statusFilter: string, orderTypeFil
         throw error;
       }
 
-      return data as Order[];
+      // Map the raw data to our Order type
+      return (data as RawOrder[]).map(mapRawOrderToOrder);
     },
   });
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
+    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: OrderStatus }) => {
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
