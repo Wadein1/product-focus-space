@@ -35,8 +35,32 @@ export const FundraiserForm = () => {
     }
   });
 
+  const validateCustomLink = async (customLink: string) => {
+    const { data, error } = await supabase
+      .from('fundraisers')
+      .select('custom_link')
+      .eq('custom_link', customLink)
+      .single();
+
+    if (data) {
+      return "This custom link is already taken. Please choose another one.";
+    }
+    return true;
+  };
+
   const onSubmit = async (data: FundraiserFormData) => {
     try {
+      // Validate custom link first
+      const linkValidation = await validateCustomLink(data.customLink);
+      if (linkValidation !== true) {
+        toast({
+          title: "Error",
+          description: linkValidation,
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Insert fundraiser
       const { data: fundraiser, error: fundraiserError } = await supabase
         .from('fundraisers')
@@ -50,7 +74,17 @@ export const FundraiserForm = () => {
         .select()
         .single();
 
-      if (fundraiserError) throw fundraiserError;
+      if (fundraiserError) {
+        if (fundraiserError.code === '23505') {
+          toast({
+            title: "Error",
+            description: "This custom link is already taken. Please choose another one.",
+            variant: "destructive"
+          });
+          return;
+        }
+        throw fundraiserError;
+      }
 
       // Upload images and create variations
       for (const variation of data.variations) {
