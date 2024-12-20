@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -7,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -125,27 +123,37 @@ export const useProductForm = () => {
     if (!validateImage() || !validateChainColor()) return;
 
     try {
-      const item: CartItem = {
-        id: uuidv4(),
-        cart_id: uuidv4(),
+      const item = {
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
         image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
       };
 
-      navigate('/checkout', { 
-        state: { 
-          cartItems: [item],
-          isLocalCart: true,
-          isBuyNow: true 
-        } 
+      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          items: [item],
+          customerEmail: null, // Stripe will collect this
+          shippingAddress: null, // Stripe will collect this
+        },
       });
-    } catch (error) {
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!checkoutData?.url) {
+        console.error('No checkout URL received:', checkoutData);
+        throw new Error('No checkout URL received from Stripe');
+      }
+
+      window.location.href = checkoutData.url;
+    } catch (error: any) {
       console.error('Error processing buy now:', error);
       toast({
         title: "Error",
-        description: "Failed to process purchase",
+        description: error.message || "Failed to process purchase",
         variant: "destructive",
       });
     }
