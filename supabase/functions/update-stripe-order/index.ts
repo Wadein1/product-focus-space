@@ -16,29 +16,30 @@ serve(async (req) => {
     const { orderId, newStatus } = await req.json();
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
     
+    console.log(`Attempting to update order ${orderId} to status ${newStatus}`);
+    
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    console.log(`Updating order ${orderId} status to ${newStatus}`);
-
     // First retrieve the session to ensure it exists
     const session = await stripe.checkout.sessions.retrieve(orderId);
+    console.log('Retrieved session:', session.id);
     
-    // Create the metadata update
+    // Prepare the metadata update
     const metadata = {
-      ...session.metadata,
+      ...session.metadata, // Keep existing metadata
       order_status: newStatus,
     };
 
-    // Update the session with new metadata using the correct method
+    // Use the correct method to update the session
     const updatedSession = await stripe.checkout.sessions.update(
       orderId,
       { metadata }
     );
 
-    console.log('Session updated successfully:', updatedSession.id);
+    console.log('Successfully updated session:', updatedSession.id);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
