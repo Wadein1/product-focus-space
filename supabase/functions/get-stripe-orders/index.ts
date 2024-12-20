@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 
 const corsHeaders = {
@@ -31,18 +30,17 @@ serve(async (req) => {
     // Transform Stripe data into our Order format
     const orders = sessions.data.map(session => {
       const lineItem = session.line_items?.data[0];
-      const metadata = lineItem?.price?.product.metadata || {};
       
       return {
         id: session.id,
         created_at: new Date(session.created * 1000).toISOString(),
-        customer_email: session.customer_details?.email || metadata.customer_email,
+        customer_email: session.customer_details?.email,
         product_name: lineItem?.description || '',
         total_amount: session.amount_total ? session.amount_total / 100 : 0,
-        status: metadata.initial_order_status || 'received',
-        shipping_address: session.shipping_details || JSON.parse(session.metadata?.shipping_address || '{}'),
-        image_path: metadata.image_url,
-        design_notes: metadata.design_notes,
+        status: session.metadata?.order_status || 'received',
+        shipping_address: session.shipping_details || {},
+        image_path: lineItem?.price?.product.metadata?.image_url,
+        design_notes: lineItem?.price?.product.metadata?.design_notes,
         is_fundraiser: session.metadata?.order_type === 'fundraiser'
       };
     });

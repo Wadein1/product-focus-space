@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 
 const corsHeaders = {
@@ -22,28 +21,23 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Get the session
-    const session = await stripe.checkout.sessions.retrieve(orderId, {
-      expand: ['line_items.data.price.product'],
+    console.log(`Updating order ${orderId} status to ${newStatus}`);
+
+    // Update the session metadata instead of the product
+    const session = await stripe.checkout.sessions.update(orderId, {
+      metadata: {
+        order_status: newStatus,
+      },
     });
 
-    // Update the product metadata with the new status
-    const lineItem = session.line_items?.data[0];
-    if (lineItem?.price?.product) {
-      await stripe.products.update(lineItem.price.product.id, {
-        metadata: {
-          ...lineItem.price.product.metadata,
-          initial_order_status: newStatus,
-        },
-      });
-    }
+    console.log('Session updated successfully:', session.id);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error updating order status:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
