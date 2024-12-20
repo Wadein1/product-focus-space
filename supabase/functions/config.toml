@@ -1,0 +1,7 @@
+project_id = "qekvorbfjgzdfpanwnfs"
+
+[create-checkout]
+verify_jwt = false
+
+[stripe-webhook]
+verify_jwt = false
