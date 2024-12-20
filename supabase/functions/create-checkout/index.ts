@@ -26,7 +26,6 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Test the Stripe connection
     try {
       await stripe.paymentMethods.list({ limit: 1 });
       console.log('Successfully connected to Stripe API');
@@ -50,6 +49,10 @@ serve(async (req) => {
           product_data: {
             name,
             images: imageUrl,
+            metadata: {
+              chain_color: item.chain_color || 'Not specified',
+              custom_image: item.image_path || 'No image uploaded'
+            }
           },
           unit_amount: Math.round(item.price * 100),
         },
@@ -59,12 +62,10 @@ serve(async (req) => {
 
     console.log('Creating Stripe session with line items:', lineItems);
 
-    // Get the base URL from the request URL
     const url = new URL(req.url);
     const baseUrl = `${url.protocol}//${url.host}`;
     console.log('Base URL for redirect:', baseUrl);
 
-    // Create checkout session configuration
     const sessionConfig: any = {
       line_items: lineItems,
       mode: 'payment',
@@ -75,12 +76,10 @@ serve(async (req) => {
       },
     };
 
-    // Only add customer_email if it's provided
     if (customerEmail) {
       sessionConfig.customer_email = customerEmail;
     }
 
-    // Add metadata if fundraiser info is provided
     if (fundraiserId) {
       sessionConfig.metadata = {
         fundraiserId: fundraiserId,

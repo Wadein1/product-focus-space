@@ -95,7 +95,8 @@ export const useProductForm = () => {
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
-        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
+        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
+        chain_color: selectedChainColor // Add chain color to cart item
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -127,14 +128,15 @@ export const useProductForm = () => {
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
-        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
+        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
+        chain_color: selectedChainColor // Add chain color to metadata
       };
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           items: [item],
-          customerEmail: null, // Stripe will collect this
-          shippingAddress: null, // Stripe will collect this
+          customerEmail: null,
+          shippingAddress: null,
         },
       });
 
