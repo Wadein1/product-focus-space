@@ -83,14 +83,7 @@ serve(async (req) => {
             metadata: {
               initial_order_status: 'received',
               chain_color: item.chain_color || 'Not specified',
-              image_url: imageUrl || 'No image uploaded',
-              customer_email: customerEmail || 'Not provided',
-              shipping_name: shippingAddress?.name || 'Not provided',
-              shipping_address: shippingAddress?.address || 'Not provided',
-              shipping_city: shippingAddress?.city || 'Not provided',
-              shipping_state: shippingAddress?.state || 'Not provided',
-              shipping_zip: shippingAddress?.zipCode || 'Not provided',
-              design_notes: item.design_notes || 'No notes provided'
+              image_url: imageUrl || 'No image uploaded'
             }
           },
           unit_amount: Math.round(item.price * 100),
@@ -110,12 +103,8 @@ serve(async (req) => {
       cancel_url: `${origin}/cancel`,
       metadata: {
         order_status: 'received',
-        fundraiser_id: fundraiserId || null,
-        variation_id: variationId || null,
-        customer_email: customerEmail || null,
-        shipping_address: JSON.stringify(shippingAddress || {}),
-        order_type: fundraiserId ? 'fundraiser' : 'regular',
-        created_at: new Date().toISOString()
+        fundraiser_id: fundraiserId,
+        variation_id: variationId
       }
     });
 
