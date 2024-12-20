@@ -32,8 +32,8 @@ serve(async (req) => {
       order_status: newStatus,
     };
 
-    // Update the session with new metadata
-    const updatedSession = await stripe.sessions.update(
+    // Update the session with new metadata using the correct method
+    const updatedSession = await stripe.checkout.sessions.update(
       orderId,
       { metadata }
     );
