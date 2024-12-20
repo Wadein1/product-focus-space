@@ -5,15 +5,27 @@ import Stripe from 'https://esm.sh/stripe@14.21.0';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
-  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
-  
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: corsHeaders,
+      status: 204,
+    });
   }
 
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { 
+      status: 405,
+      headers: corsHeaders
+    });
+  }
+
+  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
+  
   const { items, customerEmail, shippingAddress, fundraiserId, variationId } = await req.json();
   console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId });
 
@@ -27,58 +39,81 @@ serve(async (req) => {
     httpClient: Stripe.createFetchHttpClient(),
   });
 
-  const processedItems = await Promise.all(items.map(async (item: any) => {
-    let imageUrl = item.image_path;
+  try {
+    const processedItems = await Promise.all(items.map(async (item: any) => {
+      let imageUrl = item.image_path;
 
-    if (imageUrl?.startsWith('data:')) {
-      try {
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${item.product_name}-image.${blob.type.split('/')[1]}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error('Error downloading image:', error);
-      }
-    }
-
-    return {
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.product_name,
-          metadata: {
-            initial_order_status: 'received', // Set initial order status
-            chain_color: item.chain_color || 'Not specified',
-            image_url: imageUrl || 'No image uploaded'
+      // If it's a base64 image, upload it to Supabase Storage
+      if (imageUrl?.startsWith('data:')) {
+        try {
+          // Convert base64 to Blob
+          const base64Data = imageUrl.split(',')[1];
+          const binaryData = atob(base64Data);
+          const array = new Uint8Array(binaryData.length);
+          for (let i = 0; i < binaryData.length; i++) {
+            array[i] = binaryData.charCodeAt(i);
           }
+          const blob = new Blob([array], { type: 'image/png' });
+
+          // Upload to Supabase Storage
+          const fileName = `${crypto.randomUUID()}.png`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('gallery')
+            .upload(`cart-images/${fileName}`, blob);
+
+          if (uploadError) throw uploadError;
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(`cart-images/${fileName}`);
+
+          imageUrl = publicUrl;
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          imageUrl = undefined;
+        }
+      }
+
+      return {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: item.product_name,
+            metadata: {
+              initial_order_status: 'received',
+              chain_color: item.chain_color || 'Not specified',
+              image_url: imageUrl || 'No image uploaded'
+            }
+          },
+          unit_amount: Math.round(item.price * 100),
         },
-        unit_amount: Math.round(item.price * 100),
-      },
-      quantity: item.quantity || 1,
-    };
-  }));
+        quantity: item.quantity || 1,
+      };
+    }));
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: processedItems,
-    mode: 'payment',
-    success_url: `${Deno.env.get('BASE_URL')}/success`,
-    cancel_url: `${Deno.env.get('BASE_URL')}/cancel`,
-    metadata: {
-      order_status: 'received', // Top-level order status
-      fundraiser_id: fundraiserId,
-      variation_id: variationId
-    }
-  });
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: processedItems,
+      mode: 'payment',
+      success_url: `${Deno.env.get('BASE_URL')}/success`,
+      cancel_url: `${Deno.env.get('BASE_URL')}/cancel`,
+      metadata: {
+        order_status: 'received',
+        fundraiser_id: fundraiserId,
+        variation_id: variationId
+      }
+    });
 
-  return new Response(JSON.stringify({ url: session.url }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    status: 200,
-  });
+    return new Response(JSON.stringify({ url: session.url }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
+  }
 });
