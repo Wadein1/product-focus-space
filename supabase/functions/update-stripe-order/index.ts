@@ -23,14 +23,21 @@ serve(async (req) => {
 
     console.log(`Updating order ${orderId} status to ${newStatus}`);
 
-    // Update the session metadata instead of the product
-    const session = await stripe.checkout.sessions.update(orderId, {
-      metadata: {
-        order_status: newStatus,
-      },
-    });
+    // First retrieve the session to ensure it exists
+    const session = await stripe.checkout.sessions.retrieve(orderId);
+    
+    // Then update the metadata using the metadata API
+    const updatedSession = await stripe.checkout.sessions.update(
+      orderId,
+      {
+        metadata: {
+          ...session.metadata,
+          order_status: newStatus,
+        },
+      }
+    );
 
-    console.log('Session updated successfully:', session.id);
+    console.log('Session updated successfully:', updatedSession.id);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
