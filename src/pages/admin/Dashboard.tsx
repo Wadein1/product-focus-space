@@ -9,7 +9,7 @@ import { AnalyticsSection } from '@/components/admin/analytics/AnalyticsSection'
 import { FundraiserManagement } from '@/components/admin/fundraiser/FundraiserManagement';
 import { InventoryManagement } from '@/components/admin/inventory/InventoryManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOrders } from '@/hooks/useOrders';
+import { useStripeOrders } from '@/hooks/useStripeOrders';
 import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
@@ -28,23 +28,7 @@ const Dashboard = () => {
     checkAuth();
   }, []);
 
-  const { orders, isLoading, updateOrderStatus, deleteOrder } = useOrders(searchTerm, statusFilter, orderTypeFilter);
-
-  const handleDeleteOrder = async (orderId: string) => {
-    try {
-      await deleteOrder.mutateAsync(orderId);
-      toast({
-        title: "Order deleted",
-        description: "The order has been successfully deleted.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error deleting order",
-        description: "There was an error deleting the order. Please try again.",
-      });
-    }
-  };
+  const { orders, isLoading, updateOrderStatus } = useStripeOrders(searchTerm, statusFilter, orderTypeFilter);
 
   if (!isAuthenticated) {
     return <AdminAuth />;
@@ -81,7 +65,13 @@ const Dashboard = () => {
               <OrdersTable 
                 orders={orders || []} 
                 onViewDetails={setSelectedOrder}
-                onDeleteOrder={handleDeleteOrder}
+                onDeleteOrder={() => {
+                  toast({
+                    title: "Cannot delete Stripe orders",
+                    description: "Orders in Stripe cannot be deleted.",
+                    variant: "destructive",
+                  });
+                }}
               />
             </CardContent>
           </Card>
