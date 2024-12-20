@@ -26,15 +26,16 @@ serve(async (req) => {
     // First retrieve the session to ensure it exists
     const session = await stripe.checkout.sessions.retrieve(orderId);
     
-    // Then update the metadata using the metadata API
-    const updatedSession = await stripe.checkout.sessions.update(
+    // Create the metadata update
+    const metadata = {
+      ...session.metadata,
+      order_status: newStatus,
+    };
+
+    // Update the session with new metadata
+    const updatedSession = await stripe.sessions.update(
       orderId,
-      {
-        metadata: {
-          ...session.metadata,
-          order_status: newStatus,
-        },
-      }
+      { metadata }
     );
 
     console.log('Session updated successfully:', updatedSession.id);
