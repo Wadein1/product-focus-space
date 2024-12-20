@@ -64,8 +64,8 @@ serve(async (req) => {
     const baseUrl = `${url.protocol}//${url.host}`;
     console.log('Base URL for redirect:', baseUrl);
 
-    const session = await stripe.checkout.sessions.create({
-      customer_email: customerEmail,
+    // Create checkout session configuration
+    const sessionConfig: any = {
       line_items: lineItems,
       mode: 'payment',
       success_url: `${baseUrl}/checkout/success`,
@@ -73,11 +73,22 @@ serve(async (req) => {
       shipping_address_collection: {
         allowed_countries: ['US'],
       },
-      metadata: {
-        fundraiserId: fundraiserId || '',
+    };
+
+    // Only add customer_email if it's provided
+    if (customerEmail) {
+      sessionConfig.customer_email = customerEmail;
+    }
+
+    // Add metadata if fundraiser info is provided
+    if (fundraiserId) {
+      sessionConfig.metadata = {
+        fundraiserId: fundraiserId,
         variationId: variationId || '',
-      },
-    });
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     console.log('Stripe session created successfully:', session.id);
 
