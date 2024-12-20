@@ -92,12 +92,15 @@ serve(async (req) => {
       };
     }));
 
+    // Get the origin from the request headers
+    const origin = req.headers.get('origin') || 'https://lovable.dev';
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: processedItems,
       mode: 'payment',
-      success_url: `${Deno.env.get('BASE_URL')}/success`,
-      cancel_url: `${Deno.env.get('BASE_URL')}/cancel`,
+      success_url: `${origin}/success`,
+      cancel_url: `${origin}/cancel`,
       metadata: {
         order_status: 'received',
         fundraiser_id: fundraiserId,
