@@ -17,7 +17,7 @@ const Dashboard = () => {
   }, []);
 
   if (!isAuthenticated) {
-    return <AdminAuth />;
+    return <AdminAuth onAuthSuccess={() => setIsAuthenticated(true)} />;
   }
 
   return (

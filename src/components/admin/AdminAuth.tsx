@@ -6,7 +6,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff } from "lucide-react";
 
-export function AdminAuth() {
+interface AdminAuthProps {
+  onAuthSuccess?: () => void;
+}
+
+export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -44,6 +48,11 @@ export function AdminAuth() {
         title: "Login successful",
         description: "Welcome to the admin dashboard",
       });
+
+      // Call the onAuthSuccess callback if provided
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
 
       // Navigate after successful login with replace to prevent going back to login
       navigate('/admin/dashboard', { replace: true });
