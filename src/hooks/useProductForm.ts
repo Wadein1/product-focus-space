@@ -84,19 +84,55 @@ export const useProductForm = () => {
     reader.readAsDataURL(file);
   };
 
+  const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
+    try {
+      // Convert data URL to Blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+
+      // Generate a unique filename
+      const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
+      const filePath = `product-images/${filename}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(filePath, blob);
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  };
+
   const addToCart = async () => {
     if (!validateImage() || !validateChainColor()) return;
 
     setIsAddingToCart(true);
     try {
+      let imageUrl = imagePreview;
+      
+      // If it's a data URL, upload it to storage first
+      if (imagePreview?.startsWith('data:')) {
+        imageUrl = await uploadImageToStorage(imagePreview);
+      }
+
       const newItem: CartItem = {
         id: uuidv4(),
         cart_id: uuidv4(),
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
-        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
-        chain_color: selectedChainColor // Add chain color to cart item
+        image_path: imageUrl,
+        chain_color: selectedChainColor
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -124,13 +160,27 @@ export const useProductForm = () => {
     if (!validateImage() || !validateChainColor()) return;
 
     try {
+      let imageUrl = imagePreview;
+      
+      // If it's a data URL, upload it to storage first
+      if (imagePreview?.startsWith('data:')) {
+        try {
+          imageUrl = await uploadImageToStorage(imagePreview);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          imageUrl = undefined; // Skip image if upload fails
+        }
+      }
+
       const item = {
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
-        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
-        chain_color: selectedChainColor // Add chain color to metadata
+        image_path: imageUrl,
+        chain_color: selectedChainColor
       };
+
+      console.log('Creating checkout session with item:', item);
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {

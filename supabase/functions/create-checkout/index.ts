@@ -5,118 +5,105 @@ import Stripe from 'https://esm.sh/stripe@14.21.0';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders,
-      status: 204,
-    });
+    return new Response(null, { headers: corsHeaders });
   }
-
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405,
-      headers: corsHeaders
-    });
-  }
-
-  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
-  
-  const { items, customerEmail, shippingAddress, fundraiserId, variationId } = await req.json();
-  console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId });
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
-
-  const stripe = new Stripe(stripeKey, {
-    apiVersion: '2023-10-16',
-    httpClient: Stripe.createFetchHttpClient(),
-  });
 
   try {
-    const processedItems = await Promise.all(items.map(async (item: any) => {
-      let imageUrl = item.image_path;
+    const { items, customerEmail, shippingAddress, fundraiserId, variationId } = await req.json();
+    console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId });
 
-      // If it's a base64 image, upload it to Supabase Storage
-      if (imageUrl?.startsWith('data:')) {
-        try {
-          // Convert base64 to Blob
-          const base64Data = imageUrl.split(',')[1];
-          const binaryData = atob(base64Data);
-          const array = new Uint8Array(binaryData.length);
-          for (let i = 0; i < binaryData.length; i++) {
-            array[i] = binaryData.charCodeAt(i);
-          }
-          const blob = new Blob([array], { type: 'image/png' });
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
+    });
 
-          // Upload to Supabase Storage
-          const fileName = `${crypto.randomUUID()}.png`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('gallery')
-            .upload(`cart-images/${fileName}`, blob);
-
-          if (uploadError) throw uploadError;
-
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(`cart-images/${fileName}`);
-
-          imageUrl = publicUrl;
-        } catch (error) {
-          console.error('Error uploading image:', error);
-          imageUrl = undefined;
-        }
-      }
-
-      return {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: item.product_name,
-            metadata: {
-              initial_order_status: 'received',
-              chain_color: item.chain_color || 'Not specified',
-              image_url: imageUrl || 'No image uploaded'
-            }
+    // Process line items with optimized image handling
+    const lineItems = items.map((item: any) => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.product_name,
+          metadata: {
+            initial_order_status: 'received',
+            chain_color: item.chain_color || 'Not specified',
           },
-          unit_amount: Math.round(item.price * 100),
+          // Only include image if it's a URL, not base64
+          ...(item.image_path && !item.image_path.startsWith('data:') && {
+            images: [item.image_path]
+          })
         },
-        quantity: item.quantity || 1,
-      };
+        unit_amount: Math.round(item.price * 100),
+      },
+      quantity: item.quantity || 1,
     }));
 
-    // Get the origin from the request headers
-    const origin = req.headers.get('origin') || 'https://lovable.dev';
+    console.log('Creating Stripe session with line items:', lineItems);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: processedItems,
+      line_items: lineItems,
       mode: 'payment',
-      success_url: `${origin}/success`,
-      cancel_url: `${origin}/cancel`,
+      success_url: `${req.headers.get('origin') || 'https://lovable.dev'}/success`,
+      cancel_url: `${req.headers.get('origin') || 'https://lovable.dev'}/cancel`,
+      shipping_address_collection: {
+        allowed_countries: ['US'],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: 800,
+              currency: 'usd',
+            },
+            display_name: 'Standard shipping',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 5,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 7,
+              },
+            },
+          },
+        },
+      ],
+      automatic_tax: {
+        enabled: true,
+      },
       metadata: {
         order_status: 'received',
         fundraiser_id: fundraiserId,
         variation_id: variationId
-      }
+      },
+      ...(customerEmail && { customer_email: customerEmail }),
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    console.log('Stripe session created successfully:', session.url);
+
+    return new Response(
+      JSON.stringify({ url: session.url }), 
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error('Error creating checkout session:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }), 
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    );
   }
 });
