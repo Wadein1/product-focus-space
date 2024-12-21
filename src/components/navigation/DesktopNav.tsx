@@ -10,6 +10,9 @@ export const DesktopNav = () => {
       <Link to="/support" className="nav-link">
         Support
       </Link>
+      <Link to="/success" className="nav-link">
+        Success Page
+      </Link>
       <Link to="/product" className="button-primary">
         Buy Now
       </Link>
