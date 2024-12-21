@@ -257,7 +257,6 @@ export type Database = {
           id: string
           status: string
           title: string
-          total_raised: number
         }
         Insert: {
           base_price: number
@@ -268,7 +267,6 @@ export type Database = {
           id?: string
           status?: string
           title: string
-          total_raised?: number
         }
         Update: {
           base_price?: number
@@ -279,7 +277,6 @@ export type Database = {
           id?: string
           status?: string
           title?: string
-          total_raised?: number
         }
         Relationships: []
       }
