@@ -48,6 +48,13 @@ export const useProductForm = () => {
     }
   }, [chainColors]);
 
+  const calculateTotalPrice = (basePrice: number, quantity: number) => {
+    const subtotal = basePrice * quantity;
+    const shipping = 8.00;
+    const tax = subtotal * 0.05;
+    return subtotal + shipping + tax;
+  };
+
   const validateImage = () => {
     if (!imagePreview) {
       toast({
@@ -89,14 +96,17 @@ export const useProductForm = () => {
 
     setIsAddingToCart(true);
     try {
+      const basePrice = 49.99;
+      const totalPrice = calculateTotalPrice(basePrice, quantity);
+
       const newItem: CartItem = {
         id: uuidv4(),
         cart_id: uuidv4(),
         product_name: `Custom Medallion (${selectedChainColor})`,
-        price: 49.99,
+        price: totalPrice,
         quantity: quantity,
         image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
-        chain_color: selectedChainColor // Add chain color to cart item
+        chain_color: selectedChainColor
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -124,12 +134,15 @@ export const useProductForm = () => {
     if (!validateImage() || !validateChainColor()) return;
 
     try {
+      const basePrice = 49.99;
+      const totalPrice = calculateTotalPrice(basePrice, quantity);
+
       const item = {
         product_name: `Custom Medallion (${selectedChainColor})`,
-        price: 49.99,
+        price: totalPrice,
         quantity: quantity,
         image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
-        chain_color: selectedChainColor // Add chain color to metadata
+        chain_color: selectedChainColor
       };
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
