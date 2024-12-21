@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { useToast } from "@/hooks/use-toast";
-import { v4 as uuidv4 } from 'uuid';
 import { Skeleton } from "@/components/ui/skeleton";
 import { FundraiserImages } from '@/components/fundraiser/FundraiserImages';
 import { FundraiserVariations } from '@/components/fundraiser/FundraiserVariations';
@@ -29,10 +28,6 @@ const FundraiserPage = () => {
             title,
             image_path,
             is_default
-          ),
-          fundraiser_orders (
-            amount,
-            donation_amount
           )
         `)
         .eq('custom_link', customLink)
@@ -42,11 +37,6 @@ const FundraiserPage = () => {
       return data;
     },
   });
-
-  const totalRaised = fundraiser?.fundraiser_orders?.reduce(
-    (sum, order) => sum + Number(order.donation_amount),
-    0
-  ) || 0;
 
   const defaultVariation = fundraiser?.fundraiser_variations?.find(v => v.is_default);
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
@@ -91,9 +81,6 @@ const FundraiserPage = () => {
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold mb-4">{fundraiser.title}</h1>
             <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-green-800 text-lg font-semibold">
-                Total Raised: ${totalRaised.toFixed(2)}
-              </p>
               <p className="text-green-600">
                 {fundraiser.donation_percentage}% of each sale is donated
               </p>
