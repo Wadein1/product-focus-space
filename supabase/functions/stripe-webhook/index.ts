@@ -47,13 +47,15 @@ serve(async (req) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      // Extract order status from metadata
-      const orderStatus = session.metadata?.order_status || 'received';
+      // Check if this is a fundraiser order
+      const isFundraiser = session.metadata?.is_fundraiser === 'true';
+      const fundraiserId = session.metadata?.fundraiser_id;
+      const variationId = session.metadata?.variation_id;
       
       // Get line items to extract product metadata
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
       
-      // Create orders in Supabase
+      // Process each line item
       for (const item of lineItems.data) {
         const productId = item.price?.product as string;
         const product = await stripe.products.retrieve(productId);
@@ -63,22 +65,61 @@ serve(async (req) => {
           product_name: item.description,
           price: item.amount_total ? item.amount_total / 100 : 0,
           quantity: item.quantity,
-          status: orderStatus,
+          status: session.metadata?.order_status || 'received',
           shipping_address: session.shipping_details,
           image_path: product.metadata.image_url,
-          is_fundraiser: session.metadata?.fundraiser_id ? true : false,
-          shipping_cost: 8.00, // Default shipping cost
+          is_fundraiser: isFundraiser,
+          shipping_cost: isFundraiser ? 0 : 8.00,
           tax_amount: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
           total_amount: session.amount_total ? session.amount_total / 100 : 0,
         };
 
-        const { error: orderError } = await supabase
+        // Create the order
+        const { data: orderData_, error: orderError } = await supabase
           .from('orders')
-          .insert([orderData]);
+          .insert([orderData])
+          .select()
+          .single();
 
         if (orderError) {
           console.error('Error creating order:', orderError);
           throw orderError;
+        }
+
+        // If this is a fundraiser order, create the fundraiser order record
+        if (isFundraiser && fundraiserId && variationId && orderData_) {
+          // Get the fundraiser details to calculate donation amount
+          const { data: fundraiser, error: fundraiserError } = await supabase
+            .from('fundraisers')
+            .select('donation_percentage')
+            .eq('id', fundraiserId)
+            .single();
+
+          if (fundraiserError) {
+            console.error('Error fetching fundraiser:', fundraiserError);
+            throw fundraiserError;
+          }
+
+          const donationPercentage = fundraiser.donation_percentage / 100;
+          const donationAmount = orderData.price * donationPercentage;
+
+          // Create fundraiser order record
+          const { error: fundraiserOrderError } = await supabase
+            .from('fundraiser_orders')
+            .insert([{
+              fundraiser_id: fundraiserId,
+              variation_id: variationId,
+              order_id: orderData_.id,
+              amount: orderData.price,
+              donation_amount: donationAmount
+            }]);
+
+          if (fundraiserOrderError) {
+            console.error('Error creating fundraiser order:', fundraiserOrderError);
+            throw fundraiserOrderError;
+          }
+
+          console.log(`Successfully processed fundraiser order. Donation amount: $${donationAmount}`);
         }
       }
     }
