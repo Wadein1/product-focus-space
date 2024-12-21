@@ -120,21 +120,19 @@ export const useProductForm = () => {
     if (!validateForm()) return;
 
     try {
-      let imageUrl = imagePreview;
-      
-      if (imagePreview?.startsWith('data:')) {
-        imageUrl = await uploadImage(imagePreview);
-      }
-
-      await createCheckoutSession([{
+      // Create the item first, using the data URL directly
+      const item = {
         id: crypto.randomUUID(),
         cart_id: crypto.randomUUID(),
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
-        image_path: imageUrl,
+        image_path: imagePreview, // Pass the data URL directly
         chain_color: selectedChainColor
-      }]);
+      };
+
+      // Start the checkout process immediately
+      await createCheckoutSession([item]);
     } catch (error) {
       console.error('Buy now failed:', error);
       toast({
