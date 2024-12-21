@@ -6,6 +6,7 @@ import { useProductForm } from "@/hooks/useProductForm";
 const Product = () => {
   const {
     isAddingToCart,
+    isProcessing,
     quantity,
     imagePreview,
     chainColors,
@@ -14,7 +15,9 @@ const Product = () => {
     handleQuantityChange,
     handleFileChange,
     addToCart,
-    buyNow
+    buyNow,
+    uploadProgress,
+    isUploading
   } = useProductForm();
 
   return (
@@ -25,6 +28,8 @@ const Product = () => {
           <ProductImage 
             imagePreview={imagePreview}
             onFileChange={handleFileChange}
+            uploadProgress={uploadProgress}
+            isUploading={isUploading}
           />
           <ProductDetails
             quantity={quantity}
@@ -32,6 +37,7 @@ const Product = () => {
             onAddToCart={addToCart}
             onBuyNow={buyNow}
             isAddingToCart={isAddingToCart}
+            isProcessing={isProcessing}
             chainColors={chainColors}
             selectedChainColor={selectedChainColor}
             onChainColorChange={setSelectedChainColor}

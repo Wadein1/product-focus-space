@@ -5,10 +5,12 @@ import { useToast } from "@/hooks/use-toast";
 
 export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
 
   const uploadImage = async (dataUrl: string): Promise<string> => {
     setIsUploading(true);
+    setUploadProgress(0);
     try {
       // Convert data URL to Blob
       const response = await fetch(dataUrl);
@@ -18,12 +20,25 @@ export const useImageUpload = () => {
       const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
       const filePath = `product-images/${filename}`;
 
-      // Upload to Supabase storage
+      // Create a ReadableStream from the blob
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(blob);
+          controller.close();
+        },
+      });
+
+      // Upload to Supabase storage with progress tracking
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(filePath, blob, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          duplex: 'half',
+          onUploadProgress: (progress) => {
+            const percentage = (progress.loaded / progress.total) * 100;
+            setUploadProgress(Math.round(percentage));
+          },
         });
 
       if (uploadError) throw uploadError;
@@ -45,11 +60,13 @@ export const useImageUpload = () => {
       throw error;
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
   return {
     uploadImage,
-    isUploading
+    isUploading,
+    uploadProgress
   };
 };
