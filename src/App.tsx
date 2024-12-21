@@ -11,6 +11,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Support from "./pages/Support";
 import Fundraising from "./pages/Fundraising";
 import FundraiserPage from "./pages/FundraiserPage";
+import { OrderSuccess } from "./components/checkout/OrderSuccess";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,12 +38,7 @@ const App: React.FC = () => {
               <Route path="/support" element={<Support />} />
               <Route path="/fundraising" element={<Fundraising />} />
               <Route path="/fundraiser/:customLink" element={<FundraiserPage />} />
-              <Route path="/checkout/success" element={<div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                  <h1 className="text-4xl font-bold mb-4">Thank you for your purchase!</h1>
-                  <p className="text-gray-600">Your order has been received and is being processed.</p>
-                </div>
-              </div>} />
+              <Route path="/checkout/success" element={<OrderSuccess />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
