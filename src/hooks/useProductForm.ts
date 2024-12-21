@@ -3,16 +3,17 @@ import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCheckout } from "./useCheckout";
 import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
   const { toast } = useToast();
+  const { createCheckoutSession, isProcessing } = useCheckout();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedChainColor, setSelectedChainColor] = useState<string>("");
 
-  // Fetch chain colors from inventory with quantity > 0
   const { data: chainColors } = useQuery({
     queryKey: ['chain-colors'],
     queryFn: async () => {
@@ -48,19 +49,15 @@ export const useProductForm = () => {
     }
   }, [chainColors]);
 
-  const validateImage = () => {
+  const validateForm = () => {
     if (!imagePreview) {
       toast({
         title: "Image required",
-        description: "Please upload an image before adding to cart",
+        description: "Please upload an image before proceeding",
         variant: "destructive",
       });
       return false;
     }
-    return true;
-  };
-
-  const validateChainColor = () => {
     if (!selectedChainColor) {
       toast({
         title: "Chain color required",
@@ -70,6 +67,30 @@ export const useProductForm = () => {
       return false;
     }
     return true;
+  };
+
+  const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
+    try {
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
+      const filePath = `product-images/${filename}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(filePath, blob);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
   };
 
   const handleQuantityChange = (increment: boolean) => {
@@ -84,43 +105,13 @@ export const useProductForm = () => {
     reader.readAsDataURL(file);
   };
 
-  const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
-    try {
-      // Convert data URL to Blob
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-
-      // Generate a unique filename
-      const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
-      const filePath = `product-images/${filename}`;
-
-      // Upload to Supabase storage
-      const { error: uploadError } = await supabase.storage
-        .from('gallery')
-        .upload(filePath, blob);
-
-      if (uploadError) throw uploadError;
-
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
-  };
-
   const addToCart = async () => {
-    if (!validateImage() || !validateChainColor()) return;
+    if (!validateForm()) return;
 
     setIsAddingToCart(true);
     try {
       let imageUrl = imagePreview;
       
-      // If it's a data URL, upload it to storage first
       if (imagePreview?.startsWith('data:')) {
         imageUrl = await uploadImageToStorage(imagePreview);
       }
@@ -157,62 +148,31 @@ export const useProductForm = () => {
   };
 
   const buyNow = async () => {
-    if (!validateImage() || !validateChainColor()) return;
+    if (!validateForm()) return;
 
     try {
       let imageUrl = imagePreview;
       
-      // If it's a data URL, upload it to storage first
       if (imagePreview?.startsWith('data:')) {
-        try {
-          imageUrl = await uploadImageToStorage(imagePreview);
-        } catch (error) {
-          console.error('Failed to upload image:', error);
-          imageUrl = undefined; // Skip image if upload fails
-        }
+        imageUrl = await uploadImageToStorage(imagePreview);
       }
 
-      const item = {
+      await createCheckoutSession({
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
         image_path: imageUrl,
         chain_color: selectedChainColor
-      };
-
-      console.log('Creating checkout session with item:', item);
-
-      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          items: [item],
-          customerEmail: null,
-          shippingAddress: null,
-        },
       });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
-      }
-
-      if (!checkoutData?.url) {
-        console.error('No checkout URL received:', checkoutData);
-        throw new Error('No checkout URL received from Stripe');
-      }
-
-      window.location.href = checkoutData.url;
-    } catch (error: any) {
-      console.error('Error processing buy now:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to process purchase",
-        variant: "destructive",
-      });
+    } catch (error) {
+      // Error is already handled in createCheckoutSession
+      console.error('Buy now failed:', error);
     }
   };
 
   return {
     isAddingToCart,
+    isProcessing,
     quantity,
     imagePreview,
     chainColors,

@@ -15,6 +15,7 @@ interface ProductDetailsProps {
   onBuyNow: () => void;
   onAddToCart: () => void;
   isAddingToCart: boolean;
+  isProcessing?: boolean;
   chainColors?: { id: string; name: string; color?: string | null }[];
   selectedChainColor: string;
   onChainColorChange: (value: string) => void;
@@ -26,6 +27,7 @@ export const ProductDetails = ({
   onBuyNow,
   onAddToCart,
   isAddingToCart,
+  isProcessing = false,
   chainColors = [],
   selectedChainColor,
   onChainColorChange
@@ -96,8 +98,9 @@ export const ProductDetails = ({
           <Button 
             onClick={onBuyNow}
             className="w-full bg-primary text-white hover:bg-primary/90"
+            disabled={isProcessing}
           >
-            Buy Now
+            {isProcessing ? 'Processing...' : 'Buy Now'}
           </Button>
           <Button 
             onClick={onAddToCart}
