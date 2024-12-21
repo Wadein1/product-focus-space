@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ const FundraiserPage = () => {
   const { toast } = useToast();
   const [selectedVariation, setSelectedVariation] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [totalRaised, setTotalRaised] = useState(0);
 
   const { data: fundraiser, isLoading } = useQuery({
     queryKey: ['fundraiser', customLink],
@@ -39,14 +40,56 @@ const FundraiserPage = () => {
         .single();
 
       if (error) throw error;
+      
+      // Set initial total raised
+      if (data) {
+        const total = data.fundraiser_orders?.reduce(
+          (sum, order) => sum + Number(order.donation_amount),
+          0
+        ) || 0;
+        setTotalRaised(total);
+      }
+      
       return data;
     },
   });
 
-  const totalRaised = fundraiser?.fundraiser_orders?.reduce(
-    (sum, order) => sum + Number(order.donation_amount),
-    0
-  ) || 0;
+  useEffect(() => {
+    if (!fundraiser?.id) return;
+
+    // Subscribe to real-time updates for the fundraiser
+    const channel = supabase
+      .channel('fundraiser-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'fundraiser_orders',
+          filter: `fundraiser_id=eq.${fundraiser.id}`
+        },
+        async (payload) => {
+          console.log('Received real-time update:', payload);
+          
+          // Fetch the latest total
+          const { data, error } = await supabase
+            .from('fundraisers')
+            .select('total_raised')
+            .eq('id', fundraiser.id)
+            .single();
+            
+          if (!error && data) {
+            console.log('Updated total raised:', data.total_raised);
+            setTotalRaised(data.total_raised);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fundraiser?.id]);
 
   const defaultVariation = fundraiser?.fundraiser_variations?.find(v => v.is_default);
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
