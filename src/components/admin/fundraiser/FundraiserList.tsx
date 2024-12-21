@@ -80,11 +80,8 @@ export const FundraiserList = () => {
         </TableHeader>
         <TableBody>
           {fundraisers?.map((fundraiser) => {
-            // Calculate total raised from fundraiser_orders
-            const totalRaised = fundraiser.fundraiser_orders?.reduce(
-              (sum, order) => sum + (Number(order.donation_amount) || 0),
-              0
-            ) || 0;
+            // Use the pre-calculated total_raised from the database
+            const totalRaised = Number(fundraiser.total_raised) || 0;
 
             return (
               <TableRow key={fundraiser.id}>
