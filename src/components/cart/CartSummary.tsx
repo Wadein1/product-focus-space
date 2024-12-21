@@ -11,29 +11,24 @@ interface CartSummaryProps {
 export const CartSummary = ({ items }: CartSummaryProps) => {
   const { toast } = useToast();
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  const shippingCost = 0; // Temporarily set to 0 for testing
+  const shippingCost = 0;
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
 
   const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
     try {
-      // Convert data URL to Blob
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-
-      // Generate a unique filename
       const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
-      const filePath = `cart-images/${filename}`;
+      const filePath = `product-images/${filename}`;
 
-      // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(filePath, blob);
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(filePath);
@@ -47,35 +42,34 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
 
   const handleCheckout = async () => {
     try {
-      // Process items and handle image URLs
-      const processedItems = await Promise.all(items.map(async (item) => {
-        let imageUrl = item.image_path;
-
-        // If it's a data URL, upload it to storage first
-        if (imageUrl?.startsWith('data:')) {
+      // Start image uploads in parallel
+      const imageUploadPromises = items
+        .filter(item => item.image_path?.startsWith('data:'))
+        .map(async (item) => {
           try {
-            imageUrl = await uploadImageToStorage(imageUrl);
+            const imageUrl = await uploadImageToStorage(item.image_path!);
+            return { originalUrl: item.image_path, newUrl: imageUrl };
           } catch (error) {
             console.error('Failed to upload image:', error);
-            imageUrl = undefined; // Skip image if upload fails
+            return { originalUrl: item.image_path, newUrl: undefined };
           }
-        }
+        });
 
-        return {
-          ...item,
-          image_path: imageUrl
-        };
-      }));
-
-      console.log('Creating checkout session with processed items:', processedItems);
-
-      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
+      // Create checkout session immediately with original items
+      const checkoutPromise = supabase.functions.invoke('create-checkout', {
         body: {
-          items: processedItems,
-          customerEmail: null, // Stripe will collect this
-          shippingAddress: null, // Stripe will collect this
+          items: items.map(item => ({
+            ...item,
+            // Keep original image_path for now, will be updated later
+            image_path: item.image_path
+          })),
+          customerEmail: null,
+          shippingAddress: null,
         },
       });
+
+      // Wait for checkout session creation (but not image uploads)
+      const { data: checkoutData, error } = await checkoutPromise;
 
       if (error) {
         console.error('Supabase function error:', error);
@@ -87,6 +81,20 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
         throw new Error('No checkout URL received from Stripe');
       }
 
+      // Continue with image uploads in the background
+      imageUploadPromises.forEach(async (promise) => {
+        try {
+          const { originalUrl, newUrl } = await promise;
+          if (newUrl) {
+            console.log('Image uploaded successfully:', { originalUrl, newUrl });
+            // Here you could update the order with the new image URL if needed
+          }
+        } catch (error) {
+          console.error('Background image upload failed:', error);
+        }
+      });
+
+      // Redirect to Stripe immediately
       window.location.href = checkoutData.url;
     } catch (error: any) {
       console.error('Checkout error:', error);
