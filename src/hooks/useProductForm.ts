@@ -8,7 +8,7 @@ import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
   const { toast } = useToast();
-  const { uploadImage, isUploading } = useImageUpload();
+  const { uploadImage, isUploading, uploadProgress } = useImageUpload();
   const { createCheckoutSession, isProcessing } = useStripeCheckout();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -154,6 +154,8 @@ export const useProductForm = () => {
     handleQuantityChange,
     handleFileChange,
     addToCart,
-    buyNow
+    buyNow,
+    uploadProgress,
+    isUploading
   };
 };

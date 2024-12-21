@@ -20,33 +20,33 @@ export const useImageUpload = () => {
       const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
       const filePath = `product-images/${filename}`;
 
-      // Create a ReadableStream from the blob
-      const stream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(blob);
-          controller.close();
-        },
-      });
-
-      // Upload to Supabase storage with progress tracking
+      // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(filePath, blob, {
           cacheControl: '3600',
-          upsert: false,
-          duplex: 'half',
-          onUploadProgress: (progress) => {
-            const percentage = (progress.loaded / progress.total) * 100;
-            setUploadProgress(Math.round(percentage));
-          },
+          upsert: false
         });
 
       if (uploadError) throw uploadError;
+
+      // Simulate upload progress since we can't get real progress
+      const simulateProgress = () => {
+        setUploadProgress(prev => {
+          if (prev < 90) return prev + 10;
+          return prev;
+        });
+      };
+      const progressInterval = setInterval(simulateProgress, 100);
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(filePath);
+
+      // Complete the progress
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       console.log('Image uploaded successfully:', publicUrl);
       return publicUrl;
