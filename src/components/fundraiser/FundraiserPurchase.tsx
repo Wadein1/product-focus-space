@@ -24,24 +24,15 @@ export const FundraiserPurchase = ({
 }: FundraiserPurchaseProps) => {
   const { toast } = useToast();
 
-  const calculateTotalPrice = (basePrice: number, quantity: number) => {
-    const subtotal = basePrice * quantity;
-    const tax = subtotal * 0.05; // 5% tax only, no shipping for fundraisers
-    return subtotal + tax;
-  };
-
   const handleBuyNow = async () => {
     try {
-      const totalPrice = calculateTotalPrice(basePrice, quantity);
-
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           items: [{
             product_name: productName,
-            price: totalPrice,
+            price: basePrice,
             quantity: quantity,
             image_path: imagePath,
-            is_fundraiser: true, // Add this flag to identify fundraiser purchases
           }],
           fundraiserId,
           variationId,
@@ -69,16 +60,12 @@ export const FundraiserPurchase = ({
     }
   };
 
-  const subtotal = basePrice * quantity;
-  const tax = subtotal * 0.05;
-  const total = subtotal + tax;
-
   return (
     <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
       <div className="border-t border-b py-4">
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">${basePrice}</p>
-          <p className="text-sm text-gray-500">(+5% tax)</p>
+          <p className="text-sm text-gray-500">(+$8.00 shipping & 5% tax)</p>
         </div>
       </div>
 
@@ -102,21 +89,6 @@ export const FundraiserPurchase = ({
             >
               +
             </Button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Tax (5%)</span>
-            <span>${tax.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between font-semibold mt-2 pt-2 border-t">
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
           </div>
         </div>
 
