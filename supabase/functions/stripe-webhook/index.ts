@@ -14,7 +14,6 @@ serve(async (req) => {
     httpClient: Stripe.createFetchHttpClient(),
   });
 
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -47,39 +46,59 @@ serve(async (req) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      // Extract order status from metadata
-      const orderStatus = session.metadata?.order_status || 'received';
+      const fundraiserId = session.metadata?.fundraiser_id;
+      const variationId = session.metadata?.variation_id;
       
-      // Get line items to extract product metadata
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-      
-      // Create orders in Supabase
-      for (const item of lineItems.data) {
-        const productId = item.price?.product as string;
-        const product = await stripe.products.retrieve(productId);
+      if (fundraiserId && variationId) {
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+        const item = lineItems.data[0]; // We only have one item per fundraiser purchase
         
-        const orderData = {
-          customer_email: session.customer_details?.email,
-          product_name: item.description,
-          price: item.amount_total ? item.amount_total / 100 : 0,
-          quantity: item.quantity,
-          status: orderStatus,
-          shipping_address: session.shipping_details,
-          image_path: product.metadata.image_url,
-          is_fundraiser: session.metadata?.fundraiser_id ? true : false,
-          shipping_cost: 8.00, // Default shipping cost
-          tax_amount: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
-          total_amount: session.amount_total ? session.amount_total / 100 : 0,
-        };
-
-        const { error: orderError } = await supabase
-          .from('orders')
-          .insert([orderData]);
-
-        if (orderError) {
-          console.error('Error creating order:', orderError);
-          throw orderError;
+        // Calculate donation amount based on fundraiser's donation percentage
+        const { data: fundraiser } = await supabase
+          .from('fundraisers')
+          .select('donation_percentage')
+          .eq('id', fundraiserId)
+          .single();
+        
+        if (!fundraiser) {
+          throw new Error('Fundraiser not found');
         }
+        
+        const amount = item.amount_total ? item.amount_total / 100 : 0;
+        const donationAmount = (amount * (fundraiser.donation_percentage / 100));
+
+        // Create order first
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            customer_email: session.customer_details?.email,
+            product_name: item.description,
+            price: amount,
+            shipping_address: session.shipping_details,
+            image_path: session.metadata?.image_url,
+            is_fundraiser: true,
+            shipping_cost: 8.00,
+            tax_amount: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
+            total_amount: amount,
+            status: 'received'
+          })
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Create fundraiser order
+        const { error: fundraiserOrderError } = await supabase
+          .from('fundraiser_orders')
+          .insert({
+            fundraiser_id: fundraiserId,
+            variation_id: variationId,
+            order_id: order.id,
+            amount: amount,
+            donation_amount: donationAmount
+          });
+
+        if (fundraiserOrderError) throw fundraiserOrderError;
       }
     }
 
