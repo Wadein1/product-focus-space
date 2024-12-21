@@ -59,25 +59,49 @@ export const FundraiserForm = () => {
       for (const variation of data.variations) {
         if (!variation.image) continue;
 
-        const fileExt = variation.image.name.split('.').pop();
-        const filePath = `${crypto.randomUUID()}.${fileExt}`;
+        try {
+          const fileExt = variation.image.name.split('.').pop();
+          const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('gallery')
-          .upload(filePath, variation.image);
+          // Create a new FormData instance for the file upload
+          const formData = new FormData();
+          formData.append('file', variation.image);
 
-        if (uploadError) throw uploadError;
+          const { error: uploadError } = await supabase.storage
+            .from('gallery')
+            .upload(filePath, variation.image, {
+              cacheControl: '3600',
+              upsert: false
+            });
 
-        const { error: variationError } = await supabase
-          .from('fundraiser_variations')
-          .insert({
-            fundraiser_id: fundraiser.id,
-            title: variation.title,
-            image_path: filePath,
-            is_default: data.variations.indexOf(variation) === 0
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw uploadError;
+          }
+
+          const { error: variationError } = await supabase
+            .from('fundraiser_variations')
+            .insert({
+              fundraiser_id: fundraiser.id,
+              title: variation.title,
+              image_path: filePath,
+              is_default: data.variations.indexOf(variation) === 0
+            });
+
+          if (variationError) {
+            console.error('Variation error:', variationError);
+            throw variationError;
+          }
+        } catch (error) {
+          console.error('Error processing variation:', error);
+          toast({
+            title: "Error",
+            description: `Failed to process variation "${variation.title}". Please try again.`,
+            variant: "destructive"
           });
-
-        if (variationError) throw variationError;
+          // Continue with other variations even if one fails
+          continue;
+        }
       }
 
       toast({
