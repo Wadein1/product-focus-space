@@ -14,8 +14,8 @@ serve(async (req) => {
   }
 
   try {
-    const { items, customerEmail, shippingAddress, fundraiserId, variationId } = await req.json();
-    console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId });
+    const { items, customerEmail, shippingAddress, fundraiserId, variationId, isFundraiser } = await req.json();
+    console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId, isFundraiser });
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
     const stripe = new Stripe(stripeKey, {
@@ -45,16 +45,30 @@ serve(async (req) => {
 
     console.log('Creating Stripe session with line items:', lineItems);
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
       success_url: `${req.headers.get('origin') || 'https://lovable.dev'}/success`,
       cancel_url: `${req.headers.get('origin') || 'https://lovable.dev'}/cancel`,
-      shipping_address_collection: {
-        allowed_countries: ['US'],
+      automatic_tax: {
+        enabled: true,
       },
-      shipping_options: [
+      metadata: {
+        order_status: 'received',
+        fundraiser_id: fundraiserId,
+        variation_id: variationId,
+        is_fundraiser: isFundraiser ? 'true' : 'false'
+      },
+      ...(customerEmail && { customer_email: customerEmail }),
+    };
+
+    // Only add shipping options for non-fundraiser orders
+    if (!isFundraiser) {
+      sessionConfig.shipping_address_collection = {
+        allowed_countries: ['US'],
+      };
+      sessionConfig.shipping_options = [
         {
           shipping_rate_data: {
             type: 'fixed_amount',
@@ -75,17 +89,10 @@ serve(async (req) => {
             },
           },
         },
-      ],
-      automatic_tax: {
-        enabled: true,
-      },
-      metadata: {
-        order_status: 'received',
-        fundraiser_id: fundraiserId,
-        variation_id: variationId
-      },
-      ...(customerEmail && { customer_email: customerEmail }),
-    });
+      ];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     console.log('Stripe session created successfully:', session.url);
 
