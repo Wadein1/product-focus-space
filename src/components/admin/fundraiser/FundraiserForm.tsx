@@ -14,29 +14,63 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PlusIcon, X } from "lucide-react";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface FundraiserFormData {
-  title: string;
-  description: string;
-  customLink: string;
-  basePrice: number;
-  donationPercentage: number;
-  variations: {
-    title: string;
-    image: File | null;
-  }[];
-}
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  customLink: z.string()
+    .min(1, "Custom link is required")
+    .regex(/^[a-zA-Z0-9-]+$/, "Only letters, numbers, and hyphens are allowed"),
+  basePrice: z.number().min(0.01, "Base price must be greater than 0"),
+  donationPercentage: z.number().min(0).max(100, "Percentage must be between 0 and 100"),
+  variations: z.array(z.object({
+    title: z.string().min(1, "Variation title is required"),
+    image: z.any()
+  }))
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export const FundraiserForm = () => {
   const { toast } = useToast();
-  const form = useForm<FundraiserFormData>({
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       variations: [{ title: '', image: null }]
     }
   });
 
-  const onSubmit = async (data: FundraiserFormData) => {
+  const checkCustomLinkAvailability = async (customLink: string) => {
+    const { data, error } = await supabase
+      .from('fundraisers')
+      .select('id')
+      .eq('custom_link', customLink)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking custom link:', error);
+      return false;
+    }
+
+    return !data; // Return true if no existing fundraiser found with this link
+  };
+
+  const onSubmit = async (data: FormData) => {
     try {
+      // Check if custom link is available
+      const isLinkAvailable = await checkCustomLinkAvailability(data.customLink);
+      
+      if (!isLinkAvailable) {
+        toast({
+          title: "Custom link unavailable",
+          description: "This custom link is already in use. Please choose another one.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Insert fundraiser
       const { data: fundraiser, error: fundraiserError } = await supabase
         .from('fundraisers')
@@ -83,11 +117,11 @@ export const FundraiserForm = () => {
       });
 
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating fundraiser:', error);
       toast({
         title: "Error",
-        description: "Failed to create fundraiser. Please try again.",
+        description: error.message || "Failed to create fundraiser. Please try again.",
         variant: "destructive"
       });
     }
@@ -158,7 +192,11 @@ export const FundraiserForm = () => {
               <FormItem>
                 <FormLabel>Base Price ($)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -172,7 +210,13 @@ export const FundraiserForm = () => {
               <FormItem>
                 <FormLabel>Donation Percentage (%)</FormLabel>
                 <FormControl>
-                  <Input type="number" min="0" max="100" {...field} />
+                  <Input 
+                    type="number" 
+                    min="0" 
+                    max="100" 
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
