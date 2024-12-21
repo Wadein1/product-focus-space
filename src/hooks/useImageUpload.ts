@@ -18,38 +18,23 @@ export const useImageUpload = () => {
       const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
       const filePath = `product-images/${filename}`;
 
-      // Upload to Supabase storage with retries
-      let attempts = 0;
-      const maxAttempts = 3;
-      let uploadError = null;
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(filePath, blob, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      while (attempts < maxAttempts) {
-        const { error } = await supabase.storage
-          .from('gallery')
-          .upload(filePath, blob, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: blob.type
-          });
+      if (uploadError) throw uploadError;
 
-        if (!error) {
-          // Get the public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(filePath);
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
 
-          console.log('Image uploaded successfully:', publicUrl);
-          return publicUrl;
-        }
-
-        uploadError = error;
-        attempts++;
-        if (attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Exponential backoff
-        }
-      }
-
-      throw uploadError;
+      console.log('Image uploaded successfully:', publicUrl);
+      return publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
