@@ -18,16 +18,78 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
 
   const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
     try {
+      // Convert to blob with optimized size
       const response = await fetch(dataUrl);
-      const blob = await response.blob();
+      const originalBlob = await response.blob();
+      
+      // Compress image if it's too large (over 1MB)
+      let blob = originalBlob;
+      if (originalBlob.size > 1024 * 1024) {
+        const img = new Image();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        await new Promise((resolve) => {
+          img.onload = resolve;
+          img.src = dataUrl;
+        });
+
+        // Calculate new dimensions while maintaining aspect ratio
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 1200;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Convert to blob with reduced quality
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        const base64Response = await fetch(compressedDataUrl);
+        blob = await base64Response.blob();
+      }
+
       const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
       const filePath = `product-images/${filename}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('gallery')
-        .upload(filePath, blob);
+      // Use chunk upload for large files
+      if (blob.size > 5 * 1024 * 1024) {
+        const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+        const chunks = Math.ceil(blob.size / chunkSize);
+        
+        for (let i = 0; i < chunks; i++) {
+          const start = i * chunkSize;
+          const end = Math.min(start + chunkSize, blob.size);
+          const chunk = blob.slice(start, end);
+          
+          const { error: uploadError } = await supabase.storage
+            .from('gallery')
+            .upload(`${filePath}_part${i}`, chunk, {
+              upsert: true
+            });
 
-      if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
+        }
+      } else {
+        const { error: uploadError } = await supabase.storage
+          .from('gallery')
+          .upload(filePath, blob, {
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (uploadError) throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
@@ -42,8 +104,20 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
 
   const handleCheckout = async () => {
     try {
-      // Start image uploads in parallel
-      const imageUploadPromises = items
+      // Create checkout session immediately
+      const checkoutPromise = supabase.functions.invoke('create-checkout', {
+        body: {
+          items: items.map(item => ({
+            ...item,
+            image_path: item.image_path?.startsWith('data:') ? null : item.image_path
+          })),
+          customerEmail: null,
+          shippingAddress: null,
+        },
+      });
+
+      // Start image uploads in parallel, but only for data URLs
+      const imageUploads = items
         .filter(item => item.image_path?.startsWith('data:'))
         .map(async (item) => {
           try {
@@ -55,20 +129,7 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
           }
         });
 
-      // Create checkout session immediately with original items
-      const checkoutPromise = supabase.functions.invoke('create-checkout', {
-        body: {
-          items: items.map(item => ({
-            ...item,
-            // Keep original image_path for now, will be updated later
-            image_path: item.image_path
-          })),
-          customerEmail: null,
-          shippingAddress: null,
-        },
-      });
-
-      // Wait for checkout session creation (but not image uploads)
+      // Wait for checkout session while images upload in background
       const { data: checkoutData, error } = await checkoutPromise;
 
       if (error) {
@@ -81,20 +142,18 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
         throw new Error('No checkout URL received from Stripe');
       }
 
-      // Continue with image uploads in the background
-      imageUploadPromises.forEach(async (promise) => {
-        try {
-          const { originalUrl, newUrl } = await promise;
+      // Start background processing of image uploads
+      Promise.all(imageUploads).then(results => {
+        results.forEach(({ originalUrl, newUrl }) => {
           if (newUrl) {
             console.log('Image uploaded successfully:', { originalUrl, newUrl });
-            // Here you could update the order with the new image URL if needed
           }
-        } catch (error) {
-          console.error('Background image upload failed:', error);
-        }
+        });
+      }).catch(error => {
+        console.error('Background image upload failed:', error);
       });
 
-      // Redirect to Stripe immediately
+      // Redirect to Stripe checkout immediately
       window.location.href = checkoutData.url;
     } catch (error: any) {
       console.error('Checkout error:', error);
