@@ -18,7 +18,7 @@ const FundraiserPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [totalRaised, setTotalRaised] = useState(0);
 
-  const { data: fundraiser, isLoading } = useQuery({
+  const { data: fundraiser, isLoading, error } = useQuery({
     queryKey: ['fundraiser', customLink],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,18 +37,26 @@ const FundraiserPage = () => {
           )
         `)
         .eq('custom_link', customLink)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       
-      // Set initial total raised
-      if (data) {
-        const total = data.fundraiser_orders?.reduce(
-          (sum, order) => sum + Number(order.donation_amount),
-          0
-        ) || 0;
-        setTotalRaised(total);
+      if (!data) {
+        toast({
+          title: "Fundraiser not found",
+          description: "The fundraiser you're looking for doesn't exist or has been removed.",
+          variant: "destructive"
+        });
+        navigate('/');
+        return null;
       }
+      
+      // Set initial total raised
+      const total = data.fundraiser_orders?.reduce(
+        (sum, order) => sum + Number(order.donation_amount),
+        0
+      ) || 0;
+      setTotalRaised(total);
       
       return data;
     },
@@ -123,7 +131,7 @@ const FundraiserPage = () => {
   }
 
   if (!fundraiser) {
-    return <div>Fundraiser not found</div>;
+    return null; // Navigation will happen due to the queryFn
   }
 
   return (
