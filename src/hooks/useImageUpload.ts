@@ -20,6 +20,15 @@ export const useImageUpload = () => {
       const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
       const filePath = `product-images/${filename}`;
 
+      // Simulate upload progress since we can't get real progress
+      const simulateProgress = () => {
+        setUploadProgress(prev => {
+          if (prev < 90) return prev + 10;
+          return prev;
+        });
+      };
+      const progressInterval = setInterval(simulateProgress, 500);
+
       // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
@@ -29,15 +38,6 @@ export const useImageUpload = () => {
         });
 
       if (uploadError) throw uploadError;
-
-      // Simulate upload progress since we can't get real progress
-      const simulateProgress = () => {
-        setUploadProgress(prev => {
-          if (prev < 90) return prev + 10;
-          return prev;
-        });
-      };
-      const progressInterval = setInterval(simulateProgress, 100);
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
@@ -52,6 +52,7 @@ export const useImageUpload = () => {
       return publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
+      setUploadProgress(0);
       toast({
         title: "Upload failed",
         description: "Failed to upload image. Please try again.",
@@ -59,8 +60,11 @@ export const useImageUpload = () => {
       });
       throw error;
     } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
+      // Only reset after a short delay to show 100% completion
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 500);
     }
   };
 
