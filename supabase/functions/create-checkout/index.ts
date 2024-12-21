@@ -75,6 +75,15 @@ serve(async (req) => {
         }
       }
 
+      // Calculate price including tax (and shipping for non-fundraiser items)
+      const basePrice = item.price;
+      const isFundraiser = item.is_fundraiser || fundraiserId;
+      
+      // For fundraisers, only add tax. For regular products, add both shipping and tax
+      const totalPrice = isFundraiser 
+        ? basePrice // Price already includes tax from the frontend
+        : basePrice; // Price already includes both shipping and tax from the frontend
+
       return {
         price_data: {
           currency: 'usd',
@@ -83,10 +92,11 @@ serve(async (req) => {
             metadata: {
               initial_order_status: 'received',
               chain_color: item.chain_color || 'Not specified',
-              image_url: imageUrl || 'No image uploaded'
+              image_url: imageUrl || 'No image uploaded',
+              is_fundraiser: isFundraiser
             }
           },
-          unit_amount: Math.round(item.price * 100),
+          unit_amount: Math.round(totalPrice * 100),
         },
         quantity: item.quantity || 1,
       };
