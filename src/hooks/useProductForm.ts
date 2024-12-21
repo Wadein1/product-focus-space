@@ -3,13 +3,12 @@ import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useCheckout } from "./useCheckout";
 import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
   const { toast } = useToast();
-  const { createCheckoutSession, isProcessing } = useCheckout();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedChainColor, setSelectedChainColor] = useState<string>("");
@@ -148,6 +147,7 @@ export const useProductForm = () => {
   const buyNow = async () => {
     if (!validateForm()) return;
 
+    setIsProcessing(true);
     try {
       let imageUrl = imagePreview;
       
@@ -155,13 +155,25 @@ export const useProductForm = () => {
         imageUrl = await uploadImageToStorage(imagePreview);
       }
 
-      await createCheckoutSession({
-        product_name: `Custom Medallion (${selectedChainColor})`,
-        price: 49.99,
-        quantity: quantity,
-        image_path: imageUrl,
-        chain_color: selectedChainColor
+      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          items: [{
+            product_name: `Custom Medallion (${selectedChainColor})`,
+            price: 49.99,
+            quantity: quantity,
+            image_path: imageUrl,
+            chain_color: selectedChainColor
+          }],
+        },
       });
+
+      if (error) throw error;
+
+      if (!checkoutData?.url) {
+        throw new Error('No checkout URL received from Stripe');
+      }
+
+      window.location.href = checkoutData.url;
     } catch (error) {
       console.error('Buy now failed:', error);
       toast({
@@ -169,6 +181,8 @@ export const useProductForm = () => {
         description: "Failed to process checkout",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
