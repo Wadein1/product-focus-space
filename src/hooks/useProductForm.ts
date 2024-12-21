@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useImageUpload } from "./useImageUpload";
+import { useStripeCheckout } from "./useStripeCheckout";
 import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
   const { toast } = useToast();
+  const { uploadImage, isUploading } = useImageUpload();
+  const { createCheckoutSession, isProcessing } = useStripeCheckout();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedChainColor, setSelectedChainColor] = useState<string>("");
@@ -40,11 +42,17 @@ export const useProductForm = () => {
     },
   });
 
-  useEffect(() => {
-    if (chainColors?.length > 0 && !selectedChainColor) {
-      setSelectedChainColor(chainColors[0].name);
-    }
-  }, [chainColors]);
+  const handleQuantityChange = (increment: boolean) => {
+    setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
+  };
+
+  const handleFileChange = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const validateForm = () => {
     if (!imagePreview) {
@@ -66,42 +74,6 @@ export const useProductForm = () => {
     return true;
   };
 
-  const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
-    try {
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
-      const filePath = `product-images/${filename}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('gallery')
-        .upload(filePath, blob);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
-  };
-
-  const handleQuantityChange = (increment: boolean) => {
-    setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
-  };
-
-  const handleFileChange = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const addToCart = async () => {
     if (!validateForm()) return;
 
@@ -110,12 +82,12 @@ export const useProductForm = () => {
       let imageUrl = imagePreview;
       
       if (imagePreview?.startsWith('data:')) {
-        imageUrl = await uploadImageToStorage(imagePreview);
+        imageUrl = await uploadImage(imagePreview);
       }
 
       const newItem: CartItem = {
-        id: uuidv4(),
-        cart_id: uuidv4(),
+        id: crypto.randomUUID(),
+        cart_id: crypto.randomUUID(),
         product_name: `Custom Medallion (${selectedChainColor})`,
         price: 49.99,
         quantity: quantity,
@@ -147,33 +119,22 @@ export const useProductForm = () => {
   const buyNow = async () => {
     if (!validateForm()) return;
 
-    setIsProcessing(true);
     try {
       let imageUrl = imagePreview;
       
       if (imagePreview?.startsWith('data:')) {
-        imageUrl = await uploadImageToStorage(imagePreview);
+        imageUrl = await uploadImage(imagePreview);
       }
 
-      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          items: [{
-            product_name: `Custom Medallion (${selectedChainColor})`,
-            price: 49.99,
-            quantity: quantity,
-            image_path: imageUrl,
-            chain_color: selectedChainColor
-          }],
-        },
-      });
-
-      if (error) throw error;
-
-      if (!checkoutData?.url) {
-        throw new Error('No checkout URL received from Stripe');
-      }
-
-      window.location.href = checkoutData.url;
+      await createCheckoutSession([{
+        id: crypto.randomUUID(),
+        cart_id: crypto.randomUUID(),
+        product_name: `Custom Medallion (${selectedChainColor})`,
+        price: 49.99,
+        quantity: quantity,
+        image_path: imageUrl,
+        chain_color: selectedChainColor
+      }]);
     } catch (error) {
       console.error('Buy now failed:', error);
       toast({
@@ -181,14 +142,12 @@ export const useProductForm = () => {
         description: "Failed to process checkout",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   return {
     isAddingToCart,
-    isProcessing,
+    isProcessing: isProcessing || isUploading,
     quantity,
     imagePreview,
     chainColors,
