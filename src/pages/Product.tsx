@@ -17,7 +17,6 @@ const Product = () => {
     handleFileChange,
     addToCart,
     buyNow,
-    uploadProgress,
     isUploading
   } = useProductForm();
 
@@ -25,7 +24,6 @@ const Product = () => {
     <div className="min-h-screen bg-white">
       <LoadingOverlay 
         show={isUploading || isProcessing} 
-        progress={isUploading ? uploadProgress : isProcessing ? 100 : 0}
         message={isUploading ? "Uploading image..." : "Processing your order..."}
       />
       <Navbar />
@@ -34,7 +32,6 @@ const Product = () => {
           <ProductImage 
             imagePreview={imagePreview}
             onFileChange={handleFileChange}
-            uploadProgress={uploadProgress}
             isUploading={isUploading}
           />
           <ProductDetails

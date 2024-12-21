@@ -1,19 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Progress } from '@/components/ui/progress';
 
 interface ProductImageProps {
   imagePreview: string | null;
   onFileChange: (file: File) => void;
-  uploadProgress?: number;
   isUploading?: boolean;
 }
 
 export const ProductImage = ({ 
   imagePreview, 
   onFileChange,
-  uploadProgress = 0,
   isUploading = false
 }: ProductImageProps) => {
   const { toast } = useToast();
@@ -37,21 +34,11 @@ export const ProductImage = ({
     <div className="space-y-4">
       <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative">
         {imagePreview ? (
-          <>
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-full h-full object-cover"
-            />
-            {isUploading && (
-              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white p-4">
-                <div className="w-full max-w-xs space-y-2">
-                  <Progress value={uploadProgress} className="w-full" />
-                  <p className="text-center text-sm">{uploadProgress}% uploaded</p>
-                </div>
-              </div>
-            )}
-          </>
+          <img
+            src={imagePreview}
+            alt="Preview"
+            className="w-full h-full object-cover"
+          />
         ) : (
           <img
             src="/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"

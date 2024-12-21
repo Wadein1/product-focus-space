@@ -1,12 +1,9 @@
-import { Progress } from "@/components/ui/progress";
-
 interface LoadingOverlayProps {
   show: boolean;
-  progress?: number;
   message?: string;
 }
 
-export const LoadingOverlay = ({ show, progress = 0, message = "Processing..." }: LoadingOverlayProps) => {
+export const LoadingOverlay = ({ show, message = "Processing..." }: LoadingOverlayProps) => {
   if (!show) return null;
 
   return (
@@ -14,8 +11,11 @@ export const LoadingOverlay = ({ show, progress = 0, message = "Processing..." }
       <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-center">{message}</h3>
-          <Progress value={progress} className="w-full" />
-          <p className="text-sm text-gray-500 text-center">{progress}% Complete</p>
+          <div className="flex justify-center space-x-2">
+            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
         </div>
       </div>
     </div>
