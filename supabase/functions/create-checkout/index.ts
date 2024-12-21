@@ -17,63 +17,27 @@ serve(async (req) => {
     });
   }
 
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405,
-      headers: corsHeaders
-    });
-  }
-
-  const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
-  
-  const { items, customerEmail, shippingAddress, fundraiserId, variationId } = await req.json();
-  console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId });
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
-
-  const stripe = new Stripe(stripeKey, {
-    apiVersion: '2023-10-16',
-    httpClient: Stripe.createFetchHttpClient(),
-  });
-
   try {
-    const processedItems = await Promise.all(items.map(async (item: any) => {
-      let imageUrl = item.image_path;
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      throw new Error('Missing Stripe secret key');
+    }
 
-      // If it's a base64 image, upload it to Supabase Storage
-      if (imageUrl?.startsWith('data:')) {
-        try {
-          // Convert base64 to Blob
-          const base64Data = imageUrl.split(',')[1];
-          const binaryData = atob(base64Data);
-          const array = new Uint8Array(binaryData.length);
-          for (let i = 0; i < binaryData.length; i++) {
-            array[i] = binaryData.charCodeAt(i);
-          }
-          const blob = new Blob([array], { type: 'image/png' });
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
+    });
 
-          // Upload to Supabase Storage
-          const fileName = `${crypto.randomUUID()}.png`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('gallery')
-            .upload(`cart-images/${fileName}`, blob);
+    const { items, customerEmail, shippingAddress } = await req.json();
+    console.log('Received request data:', { items, customerEmail, shippingAddress });
 
-          if (uploadError) throw uploadError;
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      throw new Error('No items provided');
+    }
 
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(`cart-images/${fileName}`);
-
-          imageUrl = publicUrl;
-        } catch (error) {
-          console.error('Error uploading image:', error);
-          imageUrl = undefined;
-        }
-      }
+    const lineItems = items.map(item => {
+      const unitAmount = Math.round(item.price * 100); // Convert to cents
+      const quantity = item.quantity || 1;
 
       return {
         price_data: {
@@ -81,42 +45,69 @@ serve(async (req) => {
           product_data: {
             name: item.product_name,
             metadata: {
-              initial_order_status: 'received',
               chain_color: item.chain_color || 'Not specified',
-              image_url: imageUrl || 'No image uploaded'
-            }
+              image_url: item.image_path || 'No image'
+            },
           },
-          unit_amount: Math.round(item.price * 100),
+          unit_amount: unitAmount,
         },
-        quantity: item.quantity || 1,
+        quantity: quantity,
       };
-    }));
-
-    // Get the origin from the request headers
-    const origin = req.headers.get('origin') || 'https://lovable.dev';
+    });
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: processedItems,
+      line_items: lineItems,
       mode: 'payment',
-      success_url: `${origin}/success`,
-      cancel_url: `${origin}/cancel`,
-      metadata: {
-        order_status: 'received',
-        fundraiser_id: fundraiserId,
-        variation_id: variationId
-      }
+      success_url: `${req.headers.get('origin') || 'https://lovable.dev'}/success`,
+      cancel_url: `${req.headers.get('origin') || 'https://lovable.dev'}/cancel`,
+      shipping_address_collection: {
+        allowed_countries: ['US'],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: 800, // $8.00
+              currency: 'usd',
+            },
+            display_name: 'Standard shipping',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 5,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 7,
+              },
+            },
+          },
+        },
+      ],
+      automatic_tax: {
+        enabled: true,
+      },
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    console.log('Created checkout session:', session.id);
+    
+    return new Response(
+      JSON.stringify({ url: session.url }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error('Error creating checkout session:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    );
   }
 });
