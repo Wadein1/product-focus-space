@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { CartItem as CartItemType } from "@/types/cart";
 import { CartList } from "./CartList";
@@ -6,6 +7,7 @@ import { CartSummary } from "./CartSummary";
 import { EmptyCart } from "./EmptyCart";
 
 export const CartContainer = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [cartItems, setCartItems] = useState<CartItemType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,11 +48,7 @@ export const CartContainer = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <div className="text-gray-600">Loading cart...</div>
-      </div>
-    );
+    return <div className="text-center">Loading cart...</div>;
   }
 
   if (!cartItems || cartItems.length === 0) {
@@ -58,13 +56,15 @@ export const CartContainer = () => {
   }
 
   return (
-    <div className="grid gap-8 md:grid-cols-[1fr,400px]">
+    <div className="space-y-8">
       <CartList 
         items={cartItems}
         onQuantityChange={handleQuantityChange}
         onRemove={handleRemoveItem}
       />
-      <CartSummary items={cartItems} />
+      <CartSummary 
+        items={cartItems}
+      />
     </div>
   );
 };
