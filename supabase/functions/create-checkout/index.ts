@@ -9,19 +9,12 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders,
-      status: 204,
-    });
+    return new Response(null, { headers: corsHeaders, status: 204 });
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405,
-      headers: corsHeaders
-    });
+    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
   }
 
   try {
@@ -33,11 +26,6 @@ serve(async (req) => {
     const { items, customerEmail, shippingAddress, fundraiserId, variationId } = await req.json();
     console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId });
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
@@ -45,76 +33,55 @@ serve(async (req) => {
 
     try {
       const processedItems = await Promise.all(items.map(async (item: any) => {
-        let imageUrl = item.image_path;
-
-        // If it's a base64 image, upload it to Supabase Storage
-        if (imageUrl?.startsWith('data:')) {
-          try {
-            // Convert base64 to Blob
-            const base64Data = imageUrl.split(',')[1];
-            const binaryData = atob(base64Data);
-            const array = new Uint8Array(binaryData.length);
-            for (let i = 0; i < binaryData.length; i++) {
-              array[i] = binaryData.charCodeAt(i);
-            }
-            const blob = new Blob([array], { type: 'image/png' });
-
-            // Upload to Supabase Storage
-            const fileName = `${crypto.randomUUID()}.png`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('gallery')
-              .upload(`cart-images/${fileName}`, blob);
-
-            if (uploadError) throw uploadError;
-
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-              .from('gallery')
-              .getPublicUrl(`cart-images/${fileName}`);
-
-            imageUrl = publicUrl;
-          } catch (error) {
-            console.error('Error uploading image:', error);
-            imageUrl = undefined;
-          }
-        }
-
-        // Calculate price including tax (and shipping for non-fundraiser items)
-        const basePrice = item.price;
         const isFundraiser = item.is_fundraiser || fundraiserId;
+        const basePrice = item.price;
+        const quantity = item.quantity || 1;
         
-        // For fundraisers, only add tax. For regular products, add both shipping and tax
-        const totalPrice = isFundraiser 
-          ? basePrice // Price already includes tax from the frontend
-          : basePrice; // Price already includes both shipping and tax from the frontend
+        // Calculate components
+        const subtotal = basePrice * quantity;
+        const shippingCost = isFundraiser ? 0 : 8.00; // No shipping for fundraisers
+        const taxRate = 0.05;
+        const taxAmount = subtotal * taxRate;
+        const total = subtotal + shippingCost + taxAmount;
+
+        // Format the description with price breakdown
+        const priceBreakdown = [
+          `Base Price: $${(basePrice).toFixed(2)}`,
+          !isFundraiser ? `Shipping: $${shippingCost.toFixed(2)}` : null,
+          `Tax (5%): $${taxAmount.toFixed(2)}`,
+          `Total: $${total.toFixed(2)}`
+        ].filter(Boolean).join('\n');
 
         return {
           price_data: {
             currency: 'usd',
             product_data: {
               name: item.product_name,
+              description: priceBreakdown,
               metadata: {
                 initial_order_status: 'received',
                 chain_color: item.chain_color || 'Not specified',
-                image_url: imageUrl || 'No image uploaded',
-                is_fundraiser: isFundraiser
+                image_url: item.image_path || 'No image uploaded',
+                is_fundraiser: isFundraiser,
+                base_price: basePrice.toString(),
+                shipping_cost: shippingCost.toString(),
+                tax_amount: taxAmount.toString()
               }
             },
-            unit_amount: Math.round(totalPrice * 100),
+            unit_amount: Math.round(total * 100), // Convert to cents
           },
-          quantity: item.quantity || 1,
+          quantity: 1, // We've already factored quantity into the total price
         };
       }));
 
-      // Get the origin from the request headers
       const origin = req.headers.get('origin') || 'https://lovable.dev';
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: processedItems,
         mode: 'payment',
-        success_url: `${origin}/success`,
-        cancel_url: `${origin}/cancel`,
+        success_url: `${origin}/checkout/success`,
+        cancel_url: `${origin}/cart`,
         metadata: {
           order_status: 'received',
           fundraiser_id: fundraiserId,
