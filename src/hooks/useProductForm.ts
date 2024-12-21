@@ -33,7 +33,6 @@ export const useProductForm = () => {
 
       if (error) throw error;
       
-      // Filter out variations with zero quantity
       const availableVariations = data?.inventory_variations.filter(
         variation => variation.quantity > 0
       ) || [];
@@ -42,7 +41,6 @@ export const useProductForm = () => {
     },
   });
 
-  // Set the first available chain color as default when data is loaded
   useEffect(() => {
     if (chainColors?.length > 0 && !selectedChainColor) {
       setSelectedChainColor(chainColors[0].name);
@@ -165,8 +163,12 @@ export const useProductForm = () => {
         chain_color: selectedChainColor
       });
     } catch (error) {
-      // Error is already handled in createCheckoutSession
       console.error('Buy now failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process checkout",
+        variant: "destructive",
+      });
     }
   };
 
