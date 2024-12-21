@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Product from "./pages/Product";
 import Cart from "./pages/Cart";
 import Success from "./pages/Success";
+import Cancel from "./pages/Cancel";
 import Dashboard from "./pages/admin/Dashboard";
 import Support from "./pages/Support";
 import Fundraising from "./pages/Fundraising";
@@ -36,6 +37,7 @@ const App: React.FC = () => {
               <Route path="/product" element={<Product />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/success" element={<Success />} />
+              <Route path="/cancel" element={<Cancel />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/support" element={<Support />} />
               <Route path="/fundraising" element={<Fundraising />} />
