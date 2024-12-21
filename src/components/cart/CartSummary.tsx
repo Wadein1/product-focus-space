@@ -16,8 +16,13 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
 
-  const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
+  const uploadImageToStorage = async (dataUrl: string, retryCount = 0): Promise<string> => {
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1 second
+
     try {
+      console.log('Starting image upload, attempt:', retryCount + 1);
+      
       // Convert to blob with optimized size
       const response = await fetch(dataUrl);
       const originalBlob = await response.blob();
@@ -25,12 +30,14 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
       // Compress image if it's too large (over 1MB)
       let blob = originalBlob;
       if (originalBlob.size > 1024 * 1024) {
+        console.log('Image size exceeds 1MB, compressing...');
         const img = new Image();
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
           img.onload = resolve;
+          img.onerror = reject;
           img.src = dataUrl;
         });
 
@@ -57,13 +64,17 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
         const base64Response = await fetch(compressedDataUrl);
         blob = await base64Response.blob();
+        console.log('Image compressed successfully');
       }
 
       const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
       const filePath = `product-images/${filename}`;
 
+      console.log('Uploading file:', filePath);
+
       // Use chunk upload for large files
       if (blob.size > 5 * 1024 * 1024) {
+        console.log('Large file detected, using chunked upload');
         const chunkSize = 5 * 1024 * 1024; // 5MB chunks
         const chunks = Math.ceil(blob.size / chunkSize);
         
@@ -75,35 +86,57 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
           const { error: uploadError } = await supabase.storage
             .from('gallery')
             .upload(`${filePath}_part${i}`, chunk, {
-              upsert: true
+              upsert: true,
+              cacheControl: '3600'
             });
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Chunk upload error:', uploadError);
+            throw uploadError;
+          }
         }
       } else {
         const { error: uploadError } = await supabase.storage
           .from('gallery')
           .upload(filePath, blob, {
-            cacheControl: '3600',
-            upsert: true
+            upsert: true,
+            cacheControl: '3600'
           });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw uploadError;
+        }
       }
 
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(filePath);
 
+      console.log('Upload successful, public URL:', publicUrl);
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Upload attempt failed:', error);
+      
+      if (retryCount < maxRetries) {
+        console.log(`Retrying upload in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return uploadImageToStorage(dataUrl, retryCount + 1);
+      }
+      
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image after multiple attempts. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
 
   const handleCheckout = async () => {
     try {
+      console.log('Starting checkout process');
+      
       // Create checkout session immediately
       const checkoutPromise = supabase.functions.invoke('create-checkout', {
         body: {
@@ -116,11 +149,12 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
         },
       });
 
-      // Start image uploads in parallel, but only for data URLs
+      // Start image uploads in parallel for data URLs
       const imageUploads = items
         .filter(item => item.image_path?.startsWith('data:'))
         .map(async (item) => {
           try {
+            console.log('Processing image upload for item:', item.product_name);
             const imageUrl = await uploadImageToStorage(item.image_path!);
             return { originalUrl: item.image_path, newUrl: imageUrl };
           } catch (error) {
@@ -151,9 +185,15 @@ export const CartSummary = ({ items }: CartSummaryProps) => {
         });
       }).catch(error => {
         console.error('Background image upload failed:', error);
+        toast({
+          title: "Warning",
+          description: "Some images may not have uploaded properly. Our team will handle this for you.",
+          variant: "destructive",
+        });
       });
 
       // Redirect to Stripe checkout immediately
+      console.log('Redirecting to Stripe checkout:', checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error: any) {
       console.error('Checkout error:', error);
