@@ -56,8 +56,8 @@ export const FundraiserVariations = ({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-3">
-        {[1, 2].map((i) => (
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="aspect-square rounded-lg" />
         ))}
       </div>
@@ -65,14 +65,14 @@ export const FundraiserVariations = ({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
       {variations?.map((variation) => (
         <button
           key={variation.id}
           onClick={() => onVariationSelect(variation.id)}
           className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
             selectedVariation === variation.id 
-              ? 'border-primary shadow-lg' 
+              ? 'border-primary shadow-md' 
               : 'border-gray-200 hover:border-gray-300'
           }`}
         >
@@ -89,11 +89,11 @@ export const FundraiserVariations = ({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-100">
-              <p className="text-gray-500">No image</p>
+              <p className="text-gray-500 text-xs">No image</p>
             </div>
           )}
-          <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2">
-            <p className="text-white text-sm text-center truncate">
+          <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-1">
+            <p className="text-white text-xs text-center truncate">
               {variation.title}
             </p>
           </div>
