@@ -79,37 +79,43 @@ export const FundraiserList = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {fundraisers?.map((fundraiser) => (
-            <TableRow key={fundraiser.id}>
-              <TableCell>{fundraiser.title}</TableCell>
-              <TableCell>
-                <a
-                  href={`/fundraiser/${fundraiser.custom_link}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-blue-600 hover:text-blue-800"
-                >
-                  {fundraiser.custom_link}
-                  <ExternalLink className="w-4 h-4 ml-1" />
-                </a>
-              </TableCell>
-              <TableCell>${fundraiser.base_price}</TableCell>
-              <TableCell>{fundraiser.donation_percentage}%</TableCell>
-              <TableCell>{fundraiser.fundraiser_variations?.length || 0}</TableCell>
-              <TableCell>
-                ${fundraiser.fundraiser_orders?.reduce((sum, order) => sum + Number(order.donation_amount), 0).toFixed(2)}
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => deleteFundraiser(fundraiser.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {fundraisers?.map((fundraiser) => {
+            // Calculate total raised from fundraiser_orders
+            const totalRaised = fundraiser.fundraiser_orders?.reduce(
+              (sum, order) => sum + (Number(order.donation_amount) || 0),
+              0
+            ) || 0;
+
+            return (
+              <TableRow key={fundraiser.id}>
+                <TableCell>{fundraiser.title}</TableCell>
+                <TableCell>
+                  <a
+                    href={`/fundraiser/${fundraiser.custom_link}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center text-blue-600 hover:text-blue-800"
+                  >
+                    {fundraiser.custom_link}
+                    <ExternalLink className="w-4 h-4 ml-1" />
+                  </a>
+                </TableCell>
+                <TableCell>${fundraiser.base_price}</TableCell>
+                <TableCell>{fundraiser.donation_percentage}%</TableCell>
+                <TableCell>{fundraiser.fundraiser_variations?.length || 0}</TableCell>
+                <TableCell>${totalRaised.toFixed(2)}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => deleteFundraiser(fundraiser.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
