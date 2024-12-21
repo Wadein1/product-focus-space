@@ -1,53 +1,56 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useCheckout } from "./useCheckout";
-import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
   const { toast } = useToast();
-  const { createCheckoutSession, isProcessing } = useCheckout();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedChainColor, setSelectedChainColor] = useState<string>("");
 
-  const { data: chainColors } = useQuery({
-    queryKey: ['chain-colors'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('inventory_items')
-        .select(`
-          id,
-          inventory_variations (
-            id,
-            name,
-            color,
-            quantity
-          )
-        `)
-        .eq('name', 'Chains')
-        .single();
-
-      if (error) throw error;
+  const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
+    try {
+      console.log('Starting image upload...');
       
-      // Filter out variations with zero quantity
-      const availableVariations = data?.inventory_variations.filter(
-        variation => variation.quantity > 0
-      ) || [];
-      
-      return availableVariations;
-    },
-  });
+      // Convert data URL to Blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
 
-  // Set the first available chain color as default when data is loaded
-  useEffect(() => {
-    if (chainColors?.length > 0 && !selectedChainColor) {
-      setSelectedChainColor(chainColors[0].name);
+      // Generate a unique filename
+      const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
+      const filePath = `product-images/${filename}`;
+
+      console.log('Uploading to path:', filePath);
+
+      // Upload to Supabase storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('gallery')
+        .upload(filePath, blob, {
+          contentType: blob.type,
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
+
+      console.log('Upload successful, public URL:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
     }
-  }, [chainColors]);
+  };
 
   const validateForm = () => {
     if (!imagePreview) {
@@ -67,30 +70,6 @@ export const useProductForm = () => {
       return false;
     }
     return true;
-  };
-
-  const uploadImageToStorage = async (dataUrl: string): Promise<string> => {
-    try {
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      const filename = `${uuidv4()}.${blob.type.split('/')[1]}`;
-      const filePath = `product-images/${filename}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('gallery')
-        .upload(filePath, blob);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw error;
-    }
   };
 
   const handleQuantityChange = (increment: boolean) => {
@@ -113,10 +92,20 @@ export const useProductForm = () => {
       let imageUrl = imagePreview;
       
       if (imagePreview?.startsWith('data:')) {
-        imageUrl = await uploadImageToStorage(imagePreview);
+        try {
+          imageUrl = await uploadImageToStorage(imagePreview);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          toast({
+            title: "Error",
+            description: "Failed to upload image. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
-      const newItem: CartItem = {
+      const newItem = {
         id: uuidv4(),
         cart_id: uuidv4(),
         product_name: `Custom Medallion (${selectedChainColor})`,
@@ -150,23 +139,57 @@ export const useProductForm = () => {
   const buyNow = async () => {
     if (!validateForm()) return;
 
+    setIsProcessing(true);
     try {
       let imageUrl = imagePreview;
       
       if (imagePreview?.startsWith('data:')) {
-        imageUrl = await uploadImageToStorage(imagePreview);
+        try {
+          imageUrl = await uploadImageToStorage(imagePreview);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          toast({
+            title: "Error",
+            description: "Failed to upload image. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
-      await createCheckoutSession({
-        product_name: `Custom Medallion (${selectedChainColor})`,
-        price: 49.99,
-        quantity: quantity,
-        image_path: imageUrl,
-        chain_color: selectedChainColor
+      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          items: [{
+            product_name: `Custom Medallion (${selectedChainColor})`,
+            price: 49.99,
+            quantity: quantity,
+            image_path: imageUrl,
+            chain_color: selectedChainColor
+          }],
+          customerEmail: null,
+          shippingAddress: null,
+        },
       });
-    } catch (error) {
-      // Error is already handled in createCheckoutSession
-      console.error('Buy now failed:', error);
+
+      if (error) {
+        console.error('Checkout error:', error);
+        throw error;
+      }
+
+      if (!checkoutData?.url) {
+        throw new Error('No checkout URL received from Stripe');
+      }
+
+      window.location.href = checkoutData.url;
+    } catch (error: any) {
+      console.error('Buy now error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create checkout session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -175,7 +198,7 @@ export const useProductForm = () => {
     isProcessing,
     quantity,
     imagePreview,
-    chainColors,
+    chainColors: [], // This will be populated by the query in Product.tsx
     selectedChainColor,
     setSelectedChainColor,
     handleQuantityChange,
