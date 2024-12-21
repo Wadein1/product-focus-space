@@ -1,20 +1,14 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { validateCustomLink } from './utils/validation';
 import { VariationsSection } from './components/VariationsSection';
+import { BasicInfoFields } from './components/BasicInfoFields';
+import { PricingFields } from './components/PricingFields';
+import { uploadFile } from './utils/fileUpload';
 import { FundraiserFormData } from './types';
 
 export const FundraiserForm = () => {
@@ -51,33 +45,14 @@ export const FundraiserForm = () => {
         .select()
         .single();
 
-      if (fundraiserError) {
-        throw fundraiserError;
-      }
+      if (fundraiserError) throw fundraiserError;
 
-      // Upload images and create variations
+      // Process variations
       for (const variation of data.variations) {
         if (!variation.image) continue;
 
         try {
-          const fileExt = variation.image.name.split('.').pop();
-          const filePath = `${crypto.randomUUID()}.${fileExt}`;
-
-          // Create a new FormData instance for the file upload
-          const formData = new FormData();
-          formData.append('file', variation.image);
-
-          const { error: uploadError } = await supabase.storage
-            .from('gallery')
-            .upload(filePath, variation.image, {
-              cacheControl: '3600',
-              upsert: false
-            });
-
-          if (uploadError) {
-            console.error('Upload error:', uploadError);
-            throw uploadError;
-          }
+          const filePath = await uploadFile(variation.image, 'gallery');
 
           const { error: variationError } = await supabase
             .from('fundraiser_variations')
@@ -99,7 +74,6 @@ export const FundraiserForm = () => {
             description: `Failed to process variation "${variation.title}". Please try again.`,
             variant: "destructive"
           });
-          // Continue with other variations even if one fails
           continue;
         }
       }
@@ -123,80 +97,9 @@ export const FundraiserForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="customLink"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Custom Link</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="my-fundraiser" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="basePrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Base Price ($)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="donationPercentage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Donation Percentage (%)</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" max="100" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
+        <BasicInfoFields form={form} />
+        <PricingFields form={form} />
         <VariationsSection form={form} />
-
         <Button type="submit" className="w-full">
           Create Fundraiser
         </Button>
