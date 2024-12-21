@@ -34,9 +34,11 @@ export const FundraiserPurchase = ({
             quantity: quantity,
             image_path: imagePath,
           }],
-          fundraiserId,
-          variationId,
-          isFundraiser: true
+          metadata: {
+            fundraiser_id: fundraiserId,
+            variation_id: variationId,
+            is_fundraiser: true
+          }
         },
       });
 

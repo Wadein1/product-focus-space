@@ -14,7 +14,6 @@ serve(async (req) => {
     httpClient: Stripe.createFetchHttpClient(),
   });
 
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -57,9 +56,6 @@ serve(async (req) => {
       
       // Process each line item
       for (const item of lineItems.data) {
-        const productId = item.price?.product as string;
-        const product = await stripe.products.retrieve(productId);
-        
         const orderData = {
           customer_email: session.customer_details?.email,
           product_name: item.description,
@@ -67,11 +63,10 @@ serve(async (req) => {
           quantity: item.quantity,
           status: session.metadata?.order_status || 'received',
           shipping_address: session.shipping_details,
-          image_path: product.metadata.image_url,
-          is_fundraiser: isFundraiser,
           shipping_cost: isFundraiser ? 0 : 8.00,
           tax_amount: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
           total_amount: session.amount_total ? session.amount_total / 100 : 0,
+          is_fundraiser: isFundraiser
         };
 
         // Create the order
@@ -88,6 +83,12 @@ serve(async (req) => {
 
         // If this is a fundraiser order, create the fundraiser order record
         if (isFundraiser && fundraiserId && variationId && orderData_) {
+          console.log('Processing fundraiser order:', {
+            fundraiserId,
+            variationId,
+            orderId: orderData_.id
+          });
+
           // Get the fundraiser details to calculate donation amount
           const { data: fundraiser, error: fundraiserError } = await supabase
             .from('fundraisers')

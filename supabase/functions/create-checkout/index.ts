@@ -8,14 +8,13 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { items, customerEmail, shippingAddress, fundraiserId, variationId, isFundraiser } = await req.json();
-    console.log('Received request data:', { items, customerEmail, shippingAddress, fundraiserId, variationId, isFundraiser });
+    const { items, metadata, customerEmail, shippingAddress } = await req.json();
+    console.log('Received request data:', { items, metadata, customerEmail, shippingAddress });
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
     const stripe = new Stripe(stripeKey, {
@@ -23,17 +22,11 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Process line items with optimized image handling
     const lineItems = items.map((item: any) => ({
       price_data: {
         currency: 'usd',
         product_data: {
           name: item.product_name,
-          metadata: {
-            initial_order_status: 'received',
-            chain_color: item.chain_color || 'Not specified',
-          },
-          // Only include image if it's a URL, not base64
           ...(item.image_path && !item.image_path.startsWith('data:') && {
             images: [item.image_path]
           })
@@ -43,7 +36,7 @@ serve(async (req) => {
       quantity: item.quantity || 1,
     }));
 
-    console.log('Creating Stripe session with line items:', lineItems);
+    console.log('Creating Stripe session with metadata:', metadata);
 
     const sessionConfig = {
       payment_method_types: ['card'],
@@ -55,16 +48,14 @@ serve(async (req) => {
         enabled: true,
       },
       metadata: {
+        ...metadata,
         order_status: 'received',
-        fundraiser_id: fundraiserId,
-        variation_id: variationId,
-        is_fundraiser: isFundraiser ? 'true' : 'false'
       },
       ...(customerEmail && { customer_email: customerEmail }),
     };
 
     // Only add shipping options for non-fundraiser orders
-    if (!isFundraiser) {
+    if (!metadata?.is_fundraiser) {
       sessionConfig.shipping_address_collection = {
         allowed_countries: ['US'],
       };
@@ -93,7 +84,6 @@ serve(async (req) => {
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
-
     console.log('Stripe session created successfully:', session.url);
 
     return new Response(
