@@ -96,7 +96,7 @@ export const useProductForm = () => {
         price: 49.99,
         quantity: quantity,
         image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
-        chain_color: selectedChainColor
+        chain_color: selectedChainColor // Add chain color to cart item
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -124,18 +124,19 @@ export const useProductForm = () => {
     if (!validateImage() || !validateChainColor()) return;
 
     try {
-      console.log('Creating checkout session...');
+      const item = {
+        product_name: `Custom Medallion (${selectedChainColor})`,
+        price: 49.99,
+        quantity: quantity,
+        image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
+        chain_color: selectedChainColor // Add chain color to metadata
+      };
+
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          items: [{
-            product_name: `Custom Medallion (${selectedChainColor})`,
-            price: 49.99,
-            quantity: quantity,
-            image_path: imagePreview || "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png",
-            chain_color: selectedChainColor
-          }],
-          customerEmail: null, // Stripe will collect this
-          shippingAddress: null, // Stripe will collect this
+          items: [item],
+          customerEmail: null,
+          shippingAddress: null,
         },
       });
 
@@ -149,7 +150,6 @@ export const useProductForm = () => {
         throw new Error('No checkout URL received from Stripe');
       }
 
-      console.log('Redirecting to checkout:', checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error: any) {
       console.error('Error processing buy now:', error);
