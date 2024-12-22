@@ -45,23 +45,14 @@ serve(async (req) => {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log('Processing completed checkout session:', session.id);
       
       // Check if this is a fundraiser order
       const isFundraiser = session.metadata?.is_fundraiser === 'true';
       const fundraiserId = session.metadata?.fundraiser_id;
       const variationId = session.metadata?.variation_id;
       
-      console.log('Fundraiser metadata:', {
-        isFundraiser,
-        fundraiserId,
-        variationId,
-        metadata: session.metadata
-      });
-
       // Get line items to extract product metadata
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-      console.log('Line items:', lineItems.data);
       
       // Process each line item
       for (const item of lineItems.data) {
@@ -78,8 +69,6 @@ serve(async (req) => {
           is_fundraiser: isFundraiser
         };
 
-        console.log('Creating order with data:', orderData);
-
         // Create the order
         const { data: orderData_, error: orderError } = await supabase
           .from('orders')
@@ -91,8 +80,6 @@ serve(async (req) => {
           console.error('Error creating order:', orderError);
           throw orderError;
         }
-
-        console.log('Order created successfully:', orderData_?.id);
 
         // If this is a fundraiser order, create the fundraiser order record
         if (isFundraiser && fundraiserId && variationId && orderData_) {
@@ -114,15 +101,8 @@ serve(async (req) => {
             throw fundraiserError;
           }
 
-          console.log('Fundraiser details:', fundraiser);
-
           const donationPercentage = fundraiser.donation_percentage / 100;
           const donationAmount = orderData.price * donationPercentage;
-
-          console.log('Calculated donation:', {
-            percentage: fundraiser.donation_percentage,
-            amount: donationAmount
-          });
 
           // Create fundraiser order record
           const { error: fundraiserOrderError } = await supabase
