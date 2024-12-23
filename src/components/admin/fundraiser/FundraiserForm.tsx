@@ -13,53 +13,63 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { PlusIcon, X } from "lucide-react";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DonationFields } from './form/DonationFields';
+import { VariationFields } from './form/VariationFields';
+import { fundraiserFormSchema, type FundraiserFormData, type Fundraiser } from './types';
 
-const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  customLink: z.string()
-    .min(1, "Custom link is required")
-    .regex(/^[a-zA-Z0-9-]+$/, "Only letters, numbers, and hyphens are allowed"),
-  basePrice: z.number().min(0.01, "Base price must be greater than 0"),
-  donationPercentage: z.number().min(0).max(100, "Percentage must be between 0 and 100"),
-  variations: z.array(z.object({
-    title: z.string().min(1, "Variation title is required"),
-    image: z.any()
-  }))
-});
+interface FundraiserFormProps {
+  fundraiser?: Fundraiser;
+  onSuccess?: () => void;
+}
 
-type FormData = z.infer<typeof formSchema>;
-
-export const FundraiserForm = () => {
+export const FundraiserForm: React.FC<FundraiserFormProps> = ({ 
+  fundraiser,
+  onSuccess 
+}) => {
   const { toast } = useToast();
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+  const form = useForm<FundraiserFormData>({
+    resolver: zodResolver(fundraiserFormSchema),
+    defaultValues: fundraiser ? {
+      title: fundraiser.title,
+      description: fundraiser.description || '',
+      customLink: fundraiser.custom_link,
+      basePrice: fundraiser.base_price,
+      donationType: fundraiser.donation_type,
+      donationPercentage: fundraiser.donation_percentage || undefined,
+      donationAmount: fundraiser.donation_amount || undefined,
+      variations: fundraiser.variations.map(v => ({
+        title: v.title,
+        image: null
+      }))
+    } : {
+      donationType: 'percentage',
       variations: [{ title: '', image: null }]
     }
   });
 
   const checkCustomLinkAvailability = async (customLink: string) => {
-    const { data, error } = await supabase
+    const query = supabase
       .from('fundraisers')
       .select('id')
-      .eq('custom_link', customLink)
-      .maybeSingle();
+      .eq('custom_link', customLink);
+    
+    if (fundraiser) {
+      query.neq('id', fundraiser.id);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error('Error checking custom link:', error);
       return false;
     }
 
-    return !data; // Return true if no existing fundraiser found with this link
+    return !data;
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FundraiserFormData) => {
     try {
-      // Check if custom link is available
       const isLinkAvailable = await checkCustomLinkAvailability(data.customLink);
       
       if (!isLinkAvailable) {
@@ -71,22 +81,33 @@ export const FundraiserForm = () => {
         return;
       }
 
-      // Insert fundraiser
-      const { data: fundraiser, error: fundraiserError } = await supabase
-        .from('fundraisers')
-        .insert({
-          title: data.title,
-          description: data.description,
-          custom_link: data.customLink,
-          base_price: data.basePrice,
-          donation_percentage: data.donationPercentage
-        })
-        .select()
-        .single();
+      const fundraiserData = {
+        title: data.title,
+        description: data.description,
+        custom_link: data.customLink,
+        base_price: data.basePrice,
+        donation_type: data.donationType,
+        donation_percentage: data.donationType === 'percentage' ? data.donationPercentage : null,
+        donation_amount: data.donationType === 'fixed' ? data.donationAmount : null
+      };
+
+      // Update or create fundraiser
+      const { data: savedFundraiser, error: fundraiserError } = fundraiser
+        ? await supabase
+            .from('fundraisers')
+            .update(fundraiserData)
+            .eq('id', fundraiser.id)
+            .select()
+            .single()
+        : await supabase
+            .from('fundraisers')
+            .insert(fundraiserData)
+            .select()
+            .single();
 
       if (fundraiserError) throw fundraiserError;
 
-      // Upload images and create variations
+      // Handle variations
       for (const variation of data.variations) {
         if (!variation.image) continue;
 
@@ -102,7 +123,7 @@ export const FundraiserForm = () => {
         const { error: variationError } = await supabase
           .from('fundraiser_variations')
           .insert({
-            fundraiser_id: fundraiser.id,
+            fundraiser_id: savedFundraiser.id,
             title: variation.title,
             image_path: filePath,
             is_default: data.variations.indexOf(variation) === 0
@@ -112,30 +133,26 @@ export const FundraiserForm = () => {
       }
 
       toast({
-        title: "Fundraiser created",
-        description: "Your fundraiser has been created successfully."
+        title: fundraiser ? "Fundraiser updated" : "Fundraiser created",
+        description: fundraiser 
+          ? "Your fundraiser has been updated successfully."
+          : "Your fundraiser has been created successfully."
       });
 
-      form.reset();
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      if (!fundraiser) {
+        form.reset();
+      }
     } catch (error: any) {
-      console.error('Error creating fundraiser:', error);
+      console.error('Error saving fundraiser:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create fundraiser. Please try again.",
+        description: error.message || "Failed to save fundraiser. Please try again.",
         variant: "destructive"
       });
-    }
-  };
-
-  const addVariation = () => {
-    const variations = form.getValues('variations');
-    form.setValue('variations', [...variations, { title: '', image: null }]);
-  };
-
-  const removeVariation = (index: number) => {
-    const variations = form.getValues('variations');
-    if (variations.length > 1) {
-      form.setValue('variations', variations.filter((_, i) => i !== index));
     }
   };
 
@@ -184,114 +201,29 @@ export const FundraiserForm = () => {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="basePrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Base Price ($)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="basePrice"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Base Price ($)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  {...field} 
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="donationPercentage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Donation Percentage (%)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    min="0" 
-                    max="100" 
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Variations</h3>
-            <Button type="button" onClick={addVariation} variant="outline" size="sm">
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Add Variation
-            </Button>
-          </div>
-
-          {form.watch('variations').map((variation, index) => (
-            <div key={index} className="p-4 border rounded-lg space-y-4">
-              <div className="flex justify-between items-center">
-                <h4 className="font-medium">Variation {index + 1}</h4>
-                {index > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeVariation(index)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-
-              <FormField
-                control={form.control}
-                name={`variations.${index}.title`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`variations.${index}.image`}
-                render={({ field: { value, onChange, ...field } }) => (
-                  <FormItem>
-                    <FormLabel>Image</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            onChange(file);
-                          }
-                        }}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          ))}
-        </div>
+        <DonationFields form={form} />
+        <VariationFields form={form} />
 
         <Button type="submit" className="w-full">
-          Create Fundraiser
+          {fundraiser ? 'Update' : 'Create'} Fundraiser
         </Button>
       </form>
     </Form>

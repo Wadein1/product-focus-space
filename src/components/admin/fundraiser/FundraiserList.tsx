@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -13,11 +13,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, ExternalLink, Edit } from "lucide-react";
-import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FundraiserForm } from './FundraiserForm';
+import type { Fundraiser } from './types';
 
 export const FundraiserList = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingFundraiser, setEditingFundraiser] = useState<Fundraiser | null>(null);
 
   const { data: fundraisers, refetch } = useQuery({
     queryKey: ['fundraisers', searchTerm],
@@ -40,7 +43,7 @@ export const FundraiserList = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data;
+      return data as Fundraiser[];
     },
   });
 
@@ -67,14 +70,6 @@ export const FundraiserList = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const handleEditFundraiser = (fundraiserId: string) => {
-    // TODO: Implement edit fundraiser functionality
-    toast({
-      title: "Edit Fundraiser",
-      description: "Edit functionality coming soon!"
-    });
   };
 
   return (
@@ -120,14 +115,14 @@ export const FundraiserList = () => {
                 <TableCell>
                   {fundraiser.donation_type === 'percentage' 
                     ? `${fundraiser.donation_percentage}%`
-                    : `$${fundraiser.donation_amount || 0}`}
+                    : `$${fundraiser.donation_amount}`}
                 </TableCell>
                 <TableCell>{fundraiser.fundraiser_variations?.length || 0}</TableCell>
                 <TableCell className="space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleEditFundraiser(fundraiser.id)}
+                    onClick={() => setEditingFundraiser(fundraiser)}
                   >
                     <Edit className="w-4 h-4 mr-1" /> Edit
                   </Button>
@@ -144,6 +139,23 @@ export const FundraiserList = () => {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!editingFundraiser} onOpenChange={() => setEditingFundraiser(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Fundraiser</DialogTitle>
+          </DialogHeader>
+          {editingFundraiser && (
+            <FundraiserForm 
+              fundraiser={editingFundraiser}
+              onSuccess={() => {
+                setEditingFundraiser(null);
+                refetch();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
