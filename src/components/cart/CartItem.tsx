@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Trash2, MinusIcon, PlusIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 interface CartItemProps {
   id: string;
@@ -20,11 +22,39 @@ export const CartItem = ({
   onQuantityChange,
   onRemove,
 }: CartItemProps) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadImage = async () => {
+      if (!imagePath) return;
+
+      try {
+        // If the image path is already a full URL, use it directly
+        if (imagePath.startsWith('http')) {
+          setImageUrl(imagePath);
+          return;
+        }
+
+        // Otherwise, get the public URL from Supabase storage
+        const { data: { publicUrl } } = supabase
+          .storage
+          .from('gallery')
+          .getPublicUrl(imagePath);
+
+        setImageUrl(publicUrl);
+      } catch (error) {
+        console.error('Error loading image:', error);
+      }
+    };
+
+    loadImage();
+  }, [imagePath]);
+
   return (
     <div className="flex items-center gap-4 p-4 border rounded-lg">
-      {imagePath && (
+      {imageUrl && (
         <img 
-          src={imagePath} 
+          src={imageUrl} 
           alt={productName}
           className="w-24 h-24 object-cover rounded-md"
         />
