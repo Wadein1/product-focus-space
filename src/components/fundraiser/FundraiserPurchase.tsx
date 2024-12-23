@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { CartItem } from "@/types/cart";
 
 interface FundraiserPurchaseProps {
   basePrice: number;
@@ -23,6 +24,40 @@ export const FundraiserPurchase = ({
   imagePath,
 }: FundraiserPurchaseProps) => {
   const { toast } = useToast();
+  const [isAddingToCart, setIsAddingToCart] = React.useState(false);
+
+  const handleAddToCart = () => {
+    try {
+      setIsAddingToCart(true);
+      const cartItem: CartItem = {
+        id: crypto.randomUUID(),
+        cart_id: crypto.randomUUID(),
+        product_name: productName,
+        price: basePrice,
+        quantity: quantity,
+        image_path: imagePath
+      };
+
+      const existingCartJson = localStorage.getItem('cartItems');
+      const existingCart = existingCartJson ? JSON.parse(existingCartJson) : [];
+      const updatedCart = [...existingCart, cartItem];
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+
+      toast({
+        title: "Added to cart",
+        description: "The item has been added to your cart",
+      });
+    } catch (error: any) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   const handleBuyNow = async () => {
     try {
@@ -81,6 +116,7 @@ export const FundraiserPurchase = ({
               size="sm"
               onClick={() => onQuantityChange(false)}
               disabled={quantity <= 1}
+              className="h-8 w-8 p-0"
             >
               -
             </Button>
@@ -89,18 +125,31 @@ export const FundraiserPurchase = ({
               variant="outline"
               size="sm"
               onClick={() => onQuantityChange(true)}
+              className="h-8 w-8 p-0"
             >
               +
             </Button>
           </div>
         </div>
 
-        <Button 
-          onClick={handleBuyNow}
-          className="w-full bg-primary text-white hover:bg-primary/90"
-        >
-          Buy Now
-        </Button>
+        <div className="space-y-3">
+          <Button 
+            onClick={handleBuyNow}
+            className="w-full bg-[#0CA2ED] hover:bg-[#0CA2ED]/90 text-white font-medium py-6"
+            size="lg"
+          >
+            Buy Now
+          </Button>
+          <Button 
+            onClick={handleAddToCart}
+            variant="outline"
+            className="w-full border-[#0CA2ED] text-[#0CA2ED] hover:bg-[#0CA2ED]/10"
+            size="lg"
+            disabled={isAddingToCart}
+          >
+            {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
+          </Button>
+        </div>
       </div>
     </div>
   );
