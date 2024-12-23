@@ -34,17 +34,7 @@ const FundraiserPage = () => {
         .single();
 
       if (fundraiserError) throw fundraiserError;
-
-      // Get total raised
-      const { data: totalRaised } = await supabase
-        .rpc('calculate_fundraiser_total', {
-          fundraiser_id: fundraiserData.id
-        });
-
-      return {
-        ...fundraiserData,
-        total_raised: totalRaised || 0
-      };
+      return fundraiserData;
     },
   });
 
@@ -90,12 +80,9 @@ const FundraiserPage = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold mb-4">{fundraiser.title}</h1>
-            <div className="bg-green-50 p-4 rounded-lg space-y-2">
+            <div className="bg-green-50 p-4 rounded-lg">
               <p className="text-green-600">
                 {fundraiser.donation_percentage}% of each sale is donated
-              </p>
-              <p className="text-green-700 font-semibold">
-                Total Raised: ${fundraiser.total_raised.toFixed(2)}
               </p>
             </div>
           </div>
