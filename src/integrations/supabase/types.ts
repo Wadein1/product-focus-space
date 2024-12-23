@@ -591,12 +591,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_fundraiser_total: {
-        Args: {
-          fundraiser_id: string
-        }
-        Returns: number
-      }
       cleanup_inactive_carts: {
         Args: Record<PropertyKey, never>
         Returns: undefined

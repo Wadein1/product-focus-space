@@ -19,7 +19,7 @@ const FundraiserPage = () => {
   const { data: fundraiser, isLoading } = useQuery({
     queryKey: ['fundraiser', customLink],
     queryFn: async () => {
-      const { data: fundraiserData, error: fundraiserError } = await supabase
+      const { data, error } = await supabase
         .from('fundraisers')
         .select(`
           *,
@@ -33,8 +33,8 @@ const FundraiserPage = () => {
         .eq('custom_link', customLink)
         .single();
 
-      if (fundraiserError) throw fundraiserError;
-      return fundraiserData;
+      if (error) throw error;
+      return data;
     },
   });
 

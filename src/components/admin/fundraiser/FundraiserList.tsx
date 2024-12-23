@@ -19,7 +19,7 @@ export const FundraiserList = () => {
   const { data: fundraisers, refetch } = useQuery({
     queryKey: ['fundraisers'],
     queryFn: async () => {
-      const { data: fundraisersData, error: fundraisersError } = await supabase
+      const { data, error } = await supabase
         .from('fundraisers')
         .select(`
           *,
@@ -30,24 +30,8 @@ export const FundraiserList = () => {
           )
         `);
 
-      if (fundraisersError) throw fundraisersError;
-
-      // Fetch total raised for each fundraiser
-      const fundraisersWithTotals = await Promise.all(
-        fundraisersData.map(async (fundraiser) => {
-          const { data: totalData } = await supabase
-            .rpc('calculate_fundraiser_total', {
-              fundraiser_id: fundraiser.id
-            });
-
-          return {
-            ...fundraiser,
-            total_raised: totalData || 0
-          };
-        })
-      );
-
-      return fundraisersWithTotals;
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -85,7 +69,6 @@ export const FundraiserList = () => {
             <TableHead>Link</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Donation %</TableHead>
-            <TableHead>Total Raised</TableHead>
             <TableHead>Variations</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -107,7 +90,6 @@ export const FundraiserList = () => {
               </TableCell>
               <TableCell>${fundraiser.base_price}</TableCell>
               <TableCell>{fundraiser.donation_percentage}%</TableCell>
-              <TableCell>${fundraiser.total_raised.toFixed(2)}</TableCell>
               <TableCell>{fundraiser.fundraiser_variations?.length || 0}</TableCell>
               <TableCell>
                 <Button
