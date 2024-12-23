@@ -87,8 +87,8 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         custom_link: data.customLink,
         base_price: data.basePrice,
         donation_type: data.donationType,
-        donation_percentage: data.donationType === 'percentage' ? data.donationPercentage : null,
-        donation_amount: data.donationType === 'fixed' ? data.donationAmount : null
+        donation_percentage: data.donationType === 'percentage' ? data.donationPercentage : 0,
+        donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0
       };
 
       // Update or create fundraiser
