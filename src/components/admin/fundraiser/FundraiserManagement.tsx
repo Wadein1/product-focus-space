@@ -7,33 +7,10 @@ import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
-import { useQuery } from "@tanstack/react-query";
-import type { Fundraiser } from './types';
 
 export const FundraiserManagement = () => {
   const { toast } = useToast();
   const [isClearing, setIsClearing] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const { data: editingFundraiser } = useQuery({
-    queryKey: ['fundraiser', editingId],
-    queryFn: async () => {
-      if (!editingId) return null;
-      
-      const { data, error } = await supabase
-        .from('fundraisers')
-        .select(`
-          *,
-          fundraiser_variations (*)
-        `)
-        .eq('id', editingId)
-        .single();
-
-      if (error) throw error;
-      return data as Fundraiser;
-    },
-    enabled: !!editingId
-  });
 
   const clearUnusedImages = async () => {
     setIsClearing(true);
@@ -91,35 +68,13 @@ export const FundraiserManagement = () => {
     }
   };
 
-  const handleEdit = (id: string) => {
-    setEditingId(id);
-  };
-
-  const handleEditSuccess = () => {
-    setEditingId(null);
-  };
-
   return (
     <>
-      <Tabs 
-        defaultValue="list" 
-        className="space-y-4"
-        value={editingId ? "create" : undefined}
-      >
+      <Tabs defaultValue="list" className="space-y-4">
         <div className="flex justify-between items-center">
           <TabsList>
-            <TabsTrigger 
-              value="list"
-              onClick={() => setEditingId(null)}
-            >
-              Fundraisers
-            </TabsTrigger>
-            <TabsTrigger 
-              value="create"
-              onClick={() => setEditingId(null)}
-            >
-              Create New
-            </TabsTrigger>
+            <TabsTrigger value="list">Fundraisers</TabsTrigger>
+            <TabsTrigger value="create">Create New</TabsTrigger>
           </TabsList>
           <Button
             variant="outline"
@@ -133,15 +88,12 @@ export const FundraiserManagement = () => {
         </div>
 
         <TabsContent value="list">
-          <FundraiserList onEdit={handleEdit} />
+          <FundraiserList />
         </TabsContent>
 
         <TabsContent value="create">
           <div className="max-w-2xl mx-auto">
-            <FundraiserForm 
-              fundraiser={editingFundraiser}
-              onSuccess={handleEditSuccess}
-            />
+            <FundraiserForm />
           </div>
         </TabsContent>
       </Tabs>
