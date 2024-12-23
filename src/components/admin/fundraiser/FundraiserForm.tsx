@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { DonationFields } from './form/DonationFields';
 import { VariationFields } from './form/VariationFields';
 import { BasicInfoFields } from './form/BasicInfoFields';
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import { fundraiserFormSchema, type FundraiserFormData, type Fundraiser } from './types';
 
 interface FundraiserFormProps {
@@ -20,6 +21,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   onSuccess 
 }) => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<FundraiserFormData>({
     resolver: zodResolver(fundraiserFormSchema),
     defaultValues: fundraiser ? {
@@ -61,6 +63,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   };
 
   const onSubmit = async (data: FundraiserFormData) => {
+    setIsSubmitting(true);
     try {
       const isLinkAvailable = await checkCustomLinkAvailability(data.customLink);
       
@@ -161,19 +164,27 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         description: error.message || "Failed to save fundraiser. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <BasicInfoFields form={form} />
-        <DonationFields form={form} />
-        <VariationFields form={form} />
-        <Button type="submit" className="w-full">
-          {fundraiser ? 'Update' : 'Create'} Fundraiser
-        </Button>
-      </form>
-    </Form>
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <BasicInfoFields form={form} />
+          <DonationFields form={form} />
+          <VariationFields form={form} />
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {fundraiser ? 'Update' : 'Create'} Fundraiser
+          </Button>
+        </form>
+      </Form>
+      <LoadingOverlay 
+        show={isSubmitting} 
+        message={fundraiser ? "Updating fundraiser..." : "Creating fundraiser..."} 
+      />
+    </>
   );
 };
