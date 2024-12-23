@@ -99,7 +99,7 @@ export const FundraiserPurchase = ({
   };
 
   return (
-    <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+    <div className="space-y-6 bg-gray-50 p-4 rounded-lg">
       <div className="border-t border-b py-4">
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">${basePrice}</p>
@@ -107,7 +107,7 @@ export const FundraiserPurchase = ({
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center space-x-4">
           <span className="text-sm font-medium text-gray-700">Quantity:</span>
           <div className="flex items-center space-x-2">
