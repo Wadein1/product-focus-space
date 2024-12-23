@@ -18,6 +18,13 @@ export const fundraiserFormSchema = z.object({
 
 export type FundraiserFormData = z.infer<typeof fundraiserFormSchema>;
 
+export interface FundraiserVariation {
+  id: string;
+  title: string;
+  image_path: string;
+  is_default: boolean;
+}
+
 export interface Fundraiser {
   id: string;
   title: string;
@@ -27,9 +34,7 @@ export interface Fundraiser {
   donation_type: 'percentage' | 'fixed';
   donation_percentage: number | null;
   donation_amount: number | null;
-  variations: Array<{
-    id: string;
-    title: string;
-    image_path: string;
-  }>;
+  fundraiser_variations: FundraiserVariation[];
+  status: string;
+  created_at: string;
 }

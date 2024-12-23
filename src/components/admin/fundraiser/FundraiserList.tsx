@@ -32,7 +32,8 @@ export const FundraiserList = () => {
           fundraiser_variations (
             id,
             title,
-            image_path
+            image_path,
+            is_default
           )
         `);
 
