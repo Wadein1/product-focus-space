@@ -73,6 +73,14 @@ const FundraiserPage = () => {
     return <div>Fundraiser not found</div>;
   }
 
+  const getDonationText = () => {
+    if (fundraiser.donation_type === 'percentage') {
+      return `${fundraiser.donation_percentage}% of each sale is donated`;
+    } else {
+      return `$${fundraiser.donation_amount.toFixed(2)} from each sale is donated`;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -82,7 +90,7 @@ const FundraiserPage = () => {
             <h1 className="text-4xl font-bold mb-4">{fundraiser.title}</h1>
             <div className="bg-green-50 p-4 rounded-lg">
               <p className="text-green-600">
-                {fundraiser.donation_percentage}% of each sale is donated
+                {getDonationText()}
               </p>
             </div>
           </div>
