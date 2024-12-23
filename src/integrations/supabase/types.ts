@@ -217,7 +217,7 @@ export type Database = {
           created_at: string
           fundraiser_id: string
           id: string
-          image_path: string
+          image_path: string | null
           is_default: boolean
           title: string
         }
@@ -225,7 +225,7 @@ export type Database = {
           created_at?: string
           fundraiser_id: string
           id?: string
-          image_path: string
+          image_path?: string | null
           is_default?: boolean
           title: string
         }
@@ -233,7 +233,7 @@ export type Database = {
           created_at?: string
           fundraiser_id?: string
           id?: string
-          image_path?: string
+          image_path?: string | null
           is_default?: boolean
           title?: string
         }

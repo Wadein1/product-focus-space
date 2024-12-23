@@ -22,10 +22,11 @@ export const FundraiserList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingFundraiser, setEditingFundraiser] = useState<Fundraiser | null>(null);
 
-  const { data: fundraisers, refetch } = useQuery({
+  const { data: fundraisers, isLoading, error, refetch } = useQuery({
     queryKey: ['fundraisers', searchTerm],
     queryFn: async () => {
-      let query = supabase
+      // Ensure we're using the service role key for admin access
+      const { data, error } = await supabase
         .from('fundraisers')
         .select(`
           *,
@@ -35,21 +36,27 @@ export const FundraiserList = () => {
             image_path,
             is_default
           )
-        `);
-
-      if (searchTerm) {
-        query = query.or(`title.ilike.%${searchTerm}%,custom_link.ilike.%${searchTerm}%`);
-      }
-
-      const { data, error } = await query;
+        `)
+        .or(`title.ilike.%${searchTerm}%,custom_link.ilike.%${searchTerm}%`)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as Fundraiser[];
     },
+    retry: 1,
   });
 
   const deleteFundraiser = async (id: string) => {
     try {
+      // First, delete associated variations
+      const { error: variationsError } = await supabase
+        .from('fundraiser_variations')
+        .delete()
+        .eq('fundraiser_id', id);
+
+      if (variationsError) throw variationsError;
+
+      // Then delete the fundraiser
       const { error } = await supabase
         .from('fundraisers')
         .delete()
@@ -63,15 +70,18 @@ export const FundraiserList = () => {
       });
 
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting fundraiser:', error);
       toast({
         title: "Error",
-        description: "Failed to delete fundraiser. Please try again.",
+        description: error.message || "Failed to delete fundraiser. Please try again.",
         variant: "destructive"
       });
     }
   };
+
+  if (isLoading) return <div>Loading fundraisers...</div>;
+  if (error) return <div>Error loading fundraisers: {error.message}</div>;
 
   return (
     <div>
