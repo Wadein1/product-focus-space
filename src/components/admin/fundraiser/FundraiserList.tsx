@@ -1,54 +1,40 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, ExternalLink, Edit } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FundraiserForm } from './FundraiserForm';
-import type { Fundraiser } from './types';
+import { Trash2, Edit, ShoppingCart } from "lucide-react";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import type { CartItem } from "@/types/cart";
 
-export const FundraiserList = () => {
+export const FundraiserList = ({ onEdit }: { onEdit: (id: string) => void }) => {
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [editingFundraiser, setEditingFundraiser] = useState<Fundraiser | null>(null);
+  const queryClient = useQueryClient();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data: fundraisers, isLoading, error, refetch } = useQuery({
-    queryKey: ['fundraisers', searchTerm],
+  const { data: fundraisers, isLoading } = useQuery({
+    queryKey: ['fundraisers'],
     queryFn: async () => {
-      // Ensure we're using the service role key for admin access
       const { data, error } = await supabase
         .from('fundraisers')
         .select(`
           *,
-          fundraiser_variations (
-            id,
-            title,
-            image_path,
-            is_default
-          )
+          fundraiser_variations (*)
         `)
-        .or(`title.ilike.%${searchTerm}%,custom_link.ilike.%${searchTerm}%`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Fundraiser[];
+      return data;
     },
-    retry: 1,
   });
 
-  const deleteFundraiser = async (id: string) => {
-    try {
-      // First, delete associated variations
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      setDeletingId(id);
+      setIsDeleting(true);
+
+      // First delete all variations
       const { error: variationsError } = await supabase
         .from('fundraiser_variations')
         .delete()
@@ -57,116 +43,124 @@ export const FundraiserList = () => {
       if (variationsError) throw variationsError;
 
       // Then delete the fundraiser
-      const { error } = await supabase
+      const { error: fundraiserError } = await supabase
         .from('fundraisers')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
-
+      if (fundraiserError) throw fundraiserError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fundraisers'] });
       toast({
-        title: "Fundraiser deleted",
-        description: "The fundraiser has been deleted successfully."
+        title: "Success",
+        description: "Fundraiser deleted successfully",
       });
-
-      refetch();
-    } catch (error: any) {
+    },
+    onError: (error) => {
       console.error('Error deleting fundraiser:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete fundraiser. Please try again.",
-        variant: "destructive"
+        description: "Failed to delete fundraiser",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setIsDeleting(false);
+      setDeletingId(null);
+    },
+  });
+
+  const addToCart = (fundraiser: any) => {
+    try {
+      const defaultVariation = fundraiser.fundraiser_variations?.find((v: any) => v.is_default);
+      
+      if (!defaultVariation) {
+        toast({
+          title: "Error",
+          description: "No default variation found for this fundraiser",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const cartItem: CartItem = {
+        id: crypto.randomUUID(),
+        cart_id: crypto.randomUUID(),
+        product_name: `${fundraiser.title} - ${defaultVariation.title}`,
+        price: fundraiser.base_price,
+        quantity: 1,
+        image_path: defaultVariation.image_path,
+      };
+
+      const existingCartJson = localStorage.getItem('cartItems');
+      const existingCart = existingCartJson ? JSON.parse(existingCartJson) : [];
+      const updatedCart = [...existingCart, cartItem];
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+
+      toast({
+        title: "Added to cart",
+        description: "The fundraiser item has been added to your cart",
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart",
+        variant: "destructive",
       });
     }
   };
 
-  if (isLoading) return <div>Loading fundraisers...</div>;
-  if (error) return <div>Error loading fundraisers: {error.message}</div>;
+  if (isLoading) {
+    return <div>Loading fundraisers...</div>;
+  }
 
   return (
-    <div>
-      <div className="mb-4">
-        <Input
-          type="text"
-          placeholder="Search fundraisers..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Link</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Donation Type</TableHead>
-              <TableHead>Donation %/Amount</TableHead>
-              <TableHead>Variations</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fundraisers?.map((fundraiser) => (
-              <TableRow key={fundraiser.id}>
-                <TableCell>{fundraiser.title}</TableCell>
-                <TableCell>
-                  <a
-                    href={`/fundraiser/${fundraiser.custom_link}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 hover:text-blue-800"
-                  >
-                    {fundraiser.custom_link}
-                    <ExternalLink className="w-4 h-4 ml-1" />
-                  </a>
-                </TableCell>
-                <TableCell>${fundraiser.base_price}</TableCell>
-                <TableCell>{fundraiser.donation_type}</TableCell>
-                <TableCell>
-                  {fundraiser.donation_type === 'percentage' 
-                    ? `${fundraiser.donation_percentage}%`
-                    : `$${fundraiser.donation_amount}`}
-                </TableCell>
-                <TableCell>{fundraiser.fundraiser_variations?.length || 0}</TableCell>
-                <TableCell className="space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditingFundraiser(fundraiser)}
-                  >
-                    <Edit className="w-4 h-4 mr-1" /> Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteFundraiser(fundraiser.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <Dialog open={!!editingFundraiser} onOpenChange={() => setEditingFundraiser(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Fundraiser</DialogTitle>
-          </DialogHeader>
-          {editingFundraiser && (
-            <FundraiserForm 
-              fundraiser={editingFundraiser}
-              onSuccess={() => {
-                setEditingFundraiser(null);
-                refetch();
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+    <div className="space-y-4">
+      <LoadingOverlay show={isDeleting} message="Deleting fundraiser..." />
+      
+      {fundraisers?.map((fundraiser) => (
+        <div
+          key={fundraiser.id}
+          className="p-4 border rounded-lg flex items-center justify-between"
+        >
+          <div>
+            <h3 className="font-semibold">{fundraiser.title}</h3>
+            <p className="text-sm text-gray-600">
+              Status: {fundraiser.status}
+            </p>
+            <p className="text-sm text-gray-600">
+              Base Price: ${fundraiser.base_price}
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => addToCart(fundraiser)}
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onEdit(fundraiser.id)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={() => deleteMutation.mutate(fundraiser.id)}
+              disabled={isDeleting && deletingId === fundraiser.id}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
