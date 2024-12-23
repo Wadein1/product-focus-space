@@ -35,7 +35,7 @@ export const FundraiserPurchase = ({
         product_name: productName,
         price: basePrice,
         quantity: quantity,
-        image_path: imagePath // Ensure we're passing the full image path
+        image_path: imagePath
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
