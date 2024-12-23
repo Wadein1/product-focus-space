@@ -46,15 +46,12 @@ serve(async (req) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      // Check if this is a fundraiser order
       const isFundraiser = session.metadata?.is_fundraiser === 'true';
       const fundraiserId = session.metadata?.fundraiser_id;
       const variationId = session.metadata?.variation_id;
       
-      // Get line items to extract product metadata
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
       
-      // Process each line item
       for (const item of lineItems.data) {
         const orderData = {
           customer_email: session.customer_details?.email,
@@ -69,7 +66,6 @@ serve(async (req) => {
           is_fundraiser: isFundraiser
         };
 
-        // Create the order
         const { data: orderData_, error: orderError } = await supabase
           .from('orders')
           .insert([orderData])
@@ -81,7 +77,6 @@ serve(async (req) => {
           throw orderError;
         }
 
-        // If this is a fundraiser order, create the fundraiser order record
         if (isFundraiser && fundraiserId && variationId && orderData_) {
           console.log('Processing fundraiser order:', {
             fundraiserId,
@@ -89,7 +84,6 @@ serve(async (req) => {
             orderId: orderData_.id
           });
 
-          // Get the fundraiser details to calculate donation amount
           const { data: fundraiser, error: fundraiserError } = await supabase
             .from('fundraisers')
             .select('donation_percentage')
@@ -104,7 +98,6 @@ serve(async (req) => {
           const donationPercentage = fundraiser.donation_percentage / 100;
           const donationAmount = orderData.price * donationPercentage;
 
-          // Create fundraiser order record
           const { error: fundraiserOrderError } = await supabase
             .from('fundraiser_orders')
             .insert([{

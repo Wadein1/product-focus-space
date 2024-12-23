@@ -36,14 +36,11 @@ serve(async (req) => {
       quantity: item.quantity || 1,
     }));
 
-    console.log('Creating Stripe session with metadata:', metadata);
-
-    const sessionConfig = {
-      payment_method_types: ['card'],
+    const sessionConfig: any = {
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${req.headers.get('origin') || 'https://lovable.dev'}/success`,
-      cancel_url: `${req.headers.get('origin') || 'https://lovable.dev'}/cancel`,
+      success_url: `${req.headers.get('origin')}/success`,
+      cancel_url: `${req.headers.get('origin')}/cancel`,
       automatic_tax: {
         enabled: true,
       },
@@ -83,13 +80,18 @@ serve(async (req) => {
       ];
     }
 
+    console.log('Creating Stripe session with config:', sessionConfig);
     const session = await stripe.checkout.sessions.create(sessionConfig);
     console.log('Stripe session created successfully:', session.url);
 
     return new Response(
       JSON.stringify({ url: session.url }), 
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
         status: 200,
       }
     );
