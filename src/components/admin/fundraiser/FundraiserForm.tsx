@@ -38,7 +38,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       donationType: fundraiser.donation_type,
       donationPercentage: fundraiser.donation_percentage || undefined,
       donationAmount: fundraiser.donation_amount || undefined,
-      variations: fundraiser.variations.map(v => ({
+      variations: fundraiser.fundraiser_variations.map(v => ({
         title: v.title,
         image: null
       }))
