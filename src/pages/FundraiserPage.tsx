@@ -176,7 +176,15 @@ const FundraiserPage = () => {
                   </div>
                 </div>
 
-                <div>
+                <div className="flex gap-4">
+                  <Button 
+                    className="flex-1"
+                    onClick={handleAddToCart}
+                    disabled={isAddingToCart}
+                  >
+                    {isAddingToCart ? "Adding to Cart..." : "Add to Cart"}
+                  </Button>
+
                   <FundraiserPurchase
                     basePrice={fundraiser.base_price}
                     quantity={quantity}
