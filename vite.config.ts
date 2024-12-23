@@ -9,8 +9,8 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     headers: {
       "Content-Security-Policy": [
-        "default-src 'self' https://*.stripe.com https://*.stripecdn.com;",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://*.stripecdn.com https://js.stripe.com https://m.stripe.network https://b.stripecdn.com https://checkout.stripe.com https://hcaptcha.com https://*.hcaptcha.com;",
+        "default-src 'self';",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://*.stripe.com https://*.stripecdn.com https://js.stripe.com https://m.stripe.network https://b.stripecdn.com https://checkout.stripe.com https://hcaptcha.com https://*.hcaptcha.com;",
         "frame-src 'self' https://*.stripe.com https://*.stripecdn.com https://checkout.stripe.com https://js.stripe.com https://hooks.stripe.com https://m.stripe.network https://b.stripecdn.com https://hcaptcha.com https://*.hcaptcha.com;",
         "connect-src 'self' https://*.stripe.com https://*.stripecdn.com https://api.stripe.com https://checkout.stripe.com https://m.stripe.network https://b.stripecdn.com;",
         "img-src 'self' data: blob: https://*.stripe.com https://*.stripecdn.com;",
@@ -21,7 +21,9 @@ export default defineConfig(({ mode }) => ({
         "form-action 'self';",
         "media-src 'self' https://*.stripe.com https://*.stripecdn.com;",
         "manifest-src 'self';",
-        "worker-src 'self' blob: https://*.stripe.com https://*.stripecdn.com;"
+        "worker-src 'self' blob: https://*.stripe.com https://*.stripecdn.com;",
+        "child-src blob: https://*.stripe.com https://*.stripecdn.com;",
+        "script-src-elem 'self' 'unsafe-inline' blob: https://*.stripe.com https://*.stripecdn.com https://js.stripe.com https://m.stripe.network https://b.stripecdn.com https://checkout.stripe.com https://hcaptcha.com https://*.hcaptcha.com;"
       ].join(" ")
     }
   },
