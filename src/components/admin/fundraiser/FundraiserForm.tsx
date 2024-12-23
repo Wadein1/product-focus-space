@@ -1,21 +1,13 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DonationFields } from './form/DonationFields';
 import { VariationFields } from './form/VariationFields';
+import { BasicInfoFields } from './form/BasicInfoFields';
 import { fundraiserFormSchema, type FundraiserFormData, type Fundraiser } from './types';
 
 interface FundraiserFormProps {
@@ -91,14 +83,27 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0
       };
 
-      // Update or create fundraiser
+      if (fundraiser) {
+        // Update fundraiser
+        const { error: fundraiserError } = await supabase
+          .from('fundraisers')
+          .update(fundraiserData)
+          .eq('id', fundraiser.id);
+
+        if (fundraiserError) throw fundraiserError;
+
+        // Delete existing variations
+        const { error: deleteError } = await supabase
+          .from('fundraiser_variations')
+          .delete()
+          .eq('fundraiser_id', fundraiser.id);
+
+        if (deleteError) throw deleteError;
+      }
+
+      // Create new fundraiser if needed
       const { data: savedFundraiser, error: fundraiserError } = fundraiser
-        ? await supabase
-            .from('fundraisers')
-            .update(fundraiserData)
-            .eq('id', fundraiser.id)
-            .select()
-            .single()
+        ? { data: { id: fundraiser.id }, error: null }
         : await supabase
             .from('fundraisers')
             .insert(fundraiserData)
@@ -109,23 +114,26 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
 
       // Handle variations
       for (const variation of data.variations) {
-        if (!variation.image) continue;
+        if (!variation.title) continue;
 
-        const fileExt = variation.image.name.split('.').pop();
-        const filePath = `${crypto.randomUUID()}.${fileExt}`;
+        let imagePath = null;
+        if (variation.image) {
+          const fileExt = variation.image.name.split('.').pop();
+          imagePath = `${crypto.randomUUID()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('gallery')
-          .upload(filePath, variation.image);
+          const { error: uploadError } = await supabase.storage
+            .from('gallery')
+            .upload(imagePath, variation.image);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
+        }
 
         const { error: variationError } = await supabase
           .from('fundraiser_variations')
           .insert({
             fundraiser_id: savedFundraiser.id,
             title: variation.title,
-            image_path: filePath,
+            image_path: imagePath,
             is_default: data.variations.indexOf(variation) === 0
           });
 
@@ -159,69 +167,9 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="customLink"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Custom Link</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="my-fundraiser" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="basePrice"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Base Price ($)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  {...field} 
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+        <BasicInfoFields form={form} />
         <DonationFields form={form} />
         <VariationFields form={form} />
-
         <Button type="submit" className="w-full">
           {fundraiser ? 'Update' : 'Create'} Fundraiser
         </Button>
