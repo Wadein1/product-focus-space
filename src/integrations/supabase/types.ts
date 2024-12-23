@@ -253,7 +253,9 @@ export type Database = {
           created_at: string
           custom_link: string
           description: string | null
+          donation_amount: number | null
           donation_percentage: number
+          donation_type: string
           id: string
           status: string
           title: string
@@ -263,7 +265,9 @@ export type Database = {
           created_at?: string
           custom_link: string
           description?: string | null
+          donation_amount?: number | null
           donation_percentage: number
+          donation_type?: string
           id?: string
           status?: string
           title: string
@@ -273,7 +277,9 @@ export type Database = {
           created_at?: string
           custom_link?: string
           description?: string | null
+          donation_amount?: number | null
           donation_percentage?: number
+          donation_type?: string
           id?: string
           status?: string
           title?: string
