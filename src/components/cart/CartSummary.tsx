@@ -6,10 +6,9 @@ import { CartSummaryTotal } from "./CartSummaryTotal";
 
 interface CartSummaryProps {
   items: CartItemType[];
-  isFundraiser?: boolean;
 }
 
-export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) => {
+export const CartSummary = ({ items }: CartSummaryProps) => {
   const { toast } = useToast();
   const { uploadImage, isUploading } = useImageUpload();
 
@@ -25,8 +24,7 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
             image_path: item.image_path?.startsWith('data:') ? null : item.image_path
           })),
           customerEmail: null,
-          shippingAddress: null,
-          isFundraiser
+          shippingAddress: null
         },
       });
 
@@ -91,7 +89,6 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
       items={items}
       onCheckout={handleCheckout}
       isProcessing={isUploading}
-      isFundraiser={isFundraiser}
     />
   );
 };
