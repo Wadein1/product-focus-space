@@ -5,12 +5,12 @@ interface CartSummaryTotalProps {
   items: CartItemType[];
   onCheckout: () => void;
   isProcessing: boolean;
+  isFundraiser?: boolean;
 }
 
-export const CartSummaryTotal = ({ items, onCheckout, isProcessing }: CartSummaryTotalProps) => {
-  const hasRegularProduct = items.some(item => !item.is_fundraiser);
+export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser = false }: CartSummaryTotalProps) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  const shippingCost = hasRegularProduct ? 8.00 : 0;
+  const shippingCost = isFundraiser ? 0 : 8.00;
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
@@ -22,10 +22,12 @@ export const CartSummaryTotal = ({ items, onCheckout, isProcessing }: CartSummar
           <span>Subtotal</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>Shipping</span>
-          <span>${shippingCost.toFixed(2)}</span>
-        </div>
+        {!isFundraiser && (
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Shipping</span>
+            <span>${shippingCost.toFixed(2)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm text-gray-600">
           <span>Tax (5%)</span>
           <span>${taxAmount.toFixed(2)}</span>

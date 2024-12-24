@@ -19,10 +19,9 @@ const FundraiserPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  const { data: fundraiser, isLoading, error } = useQuery({
+  const { data: fundraiser, isLoading } = useQuery({
     queryKey: ['fundraiser', customLink],
     queryFn: async () => {
-      console.log('Fetching fundraiser with custom link:', customLink);
       const { data, error } = await supabase
         .from('fundraisers')
         .select(`
@@ -35,19 +34,9 @@ const FundraiserPage = () => {
           )
         `)
         .eq('custom_link', customLink)
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error('Error fetching fundraiser:', error);
-        throw error;
-      }
-      
-      if (!data) {
-        console.log('No fundraiser found with custom link:', customLink);
-        return null;
-      }
-
-      console.log('Found fundraiser:', data);
+      if (error) throw error;
       return data;
     },
   });
@@ -60,6 +49,44 @@ const FundraiserPage = () => {
       setSelectedVariation(defaultVariation.id);
     }
   }, [defaultVariation]);
+
+  const handleAddToCart = () => {
+    if (!fundraiser || !selectedVariationData) return;
+
+    setIsAddingToCart(true);
+    try {
+      const cartItem: CartItem = {
+        id: crypto.randomUUID(),
+        cart_id: crypto.randomUUID(),
+        product_name: `${fundraiser.title} - ${selectedVariationData.title}`,
+        price: fundraiser.base_price,
+        quantity: quantity,
+        image_path: selectedVariationData.image_path || undefined
+      };
+
+      const existingCartJson = localStorage.getItem('cartItems');
+      const existingCart = existingCartJson ? JSON.parse(existingCartJson) : [];
+      const updatedCart = [...existingCart, cartItem];
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+
+      toast({
+        title: "Added to cart",
+        description: "The item has been added to your cart",
+      });
+
+      // Optional: Navigate to cart
+      // navigate('/cart');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -84,22 +111,7 @@ const FundraiserPage = () => {
   }
 
   if (!fundraiser) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <div className="container mx-auto px-4 pt-24 pb-16">
-          <div className="max-w-6xl mx-auto text-center">
-            <h1 className="text-2xl font-bold mb-4">Fundraiser Not Found</h1>
-            <p className="text-gray-600 mb-8">
-              The fundraiser you're looking for doesn't exist or may have been removed.
-            </p>
-            <Button onClick={() => navigate('/fundraising')}>
-              View All Fundraisers
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    return <div>Fundraiser not found</div>;
   }
 
   const getDonationText = () => {

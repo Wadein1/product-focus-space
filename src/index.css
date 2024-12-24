@@ -71,12 +71,3 @@
 [data-radix-popper-content-wrapper] {
   @apply bg-white/95 backdrop-blur-sm shadow-lg !important;
 }
-
-/* Carousel styling */
-.embla__slide {
-  @apply flex-[0_0_100%];
-}
-
-[data-carousel-button] {
-  @apply bg-white/80 hover:bg-white/90 backdrop-blur-sm border border-gray-200 !important;
-}
