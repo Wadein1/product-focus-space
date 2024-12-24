@@ -2,20 +2,24 @@ import { useState, useEffect } from "react";
 
 export const useHeroImages = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
+  
+  const images = [
+    "/lovable-uploads/58df6f8a-5ec7-42aa-aabf-60378b61c658.png",
+    "/lovable-uploads/44c77c3c-6fe3-4881-8f1a-a9ae8f56c96b.png",
+    "/lovable-uploads/78980ed8-8186-4f97-bf87-fa197d050aa8.png"
+  ];
 
   useEffect(() => {
-    const imageUrls = [
-      "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png",
-      "/lovable-uploads/d6daae6b-a26c-4424-a049-ee61f42f02c3.png",
-      "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
-    ];
-
     Promise.all(
-      imageUrls.map(url => {
+      images.map(url => {
         return new Promise((resolve) => {
           const img = new Image();
           img.src = url;
-          img.onload = () => resolve(true);
+          img.onload = () => {
+            setLoadedCount(prev => prev + 1);
+            resolve(true);
+          };
           img.onerror = () => resolve(false);
         });
       })
@@ -24,5 +28,5 @@ export const useHeroImages = () => {
     });
   }, []);
 
-  return { imagesLoaded };
+  return { imagesLoaded, images, loadedCount };
 };
