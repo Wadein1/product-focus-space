@@ -36,7 +36,8 @@ export const ProductDetails = ({
     <div className="space-y-6">
       <h1 className="text-4xl font-bold tracking-tight">Custom Medallion</h1>
       <p className="text-lg text-gray-600">
-        Gradient coloring is not supported and will be modified by our designers if submitted
+        Gradient coloring is not supported and will be modified by our designers if submitted<br />
+        The 2D image uploaded will be made into a 3D format and shipped within a week
       </p>
       <div className="border-t border-b py-4">
         <h2 className="text-xl font-semibold mb-2">Features:</h2>
