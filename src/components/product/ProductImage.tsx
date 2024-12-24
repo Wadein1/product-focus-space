@@ -17,9 +17,9 @@ interface ProductImageProps {
 }
 
 const PRODUCT_IMAGES = [
-  "/lovable-uploads/21178cfe-7a06-4bf7-927d-b8fb84577fa3.png",
-  "/lovable-uploads/f42d99d3-0012-46d1-b59f-33e938dbde96.png",
-  "/lovable-uploads/076015c7-e9ad-43f0-a29f-c9a923ffc91b.png"
+  "/lovable-uploads/a1782a0f-f381-463e-95d5-2494f1a03f41.png",
+  "/lovable-uploads/12631842-f4a2-49fc-af99-15b2492366e0.png",
+  "/lovable-uploads/3082aca0-68e8-4481-b166-6f7890867f7d.png"
 ] as const;
 
 export const ProductImage = ({ 
