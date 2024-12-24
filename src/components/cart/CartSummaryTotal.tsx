@@ -10,8 +10,14 @@ interface CartSummaryTotalProps {
 
 export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser = false }: CartSummaryTotalProps) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+  
+  // Only charge shipping for regular products or fundraiser items with chains
   const hasChain = items.some(item => item.chain_color);
-  const shippingCost = (!isFundraiser || (isFundraiser && hasChain)) ? 8.00 : 0;
+  const shouldChargeShipping = !isFundraiser || (isFundraiser && hasChain);
+  const shippingCost = shouldChargeShipping ? 8.00 : 0;
+  
+  console.log('Cart summary details:', { isFundraiser, hasChain, shouldChargeShipping });
+  
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
@@ -23,7 +29,7 @@ export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser
           <span>Subtotal</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        {shippingCost > 0 && (
+        {shouldChargeShipping && (
           <div className="flex justify-between text-sm text-gray-600">
             <span>Shipping</span>
             <span>${shippingCost.toFixed(2)}</span>
