@@ -33,6 +33,19 @@ export const ProductImage = ({
     loop: true // Enable infinite scroll
   });
 
+  // Combine default images with uploaded image if it exists
+  const allImages = imagePreview 
+    ? [...PRODUCT_IMAGES, imagePreview]
+    : PRODUCT_IMAGES;
+
+  // Navigate to the uploaded image when it's added
+  React.useEffect(() => {
+    if (imagePreview && carouselApi) {
+      // Navigate to the last slide (the uploaded image)
+      carouselApi.scrollTo(allImages.length - 1);
+    }
+  }, [imagePreview, carouselApi, allImages.length]);
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -72,11 +85,6 @@ export const ProductImage = ({
       }
     }
   };
-
-  // Combine default images with uploaded image if it exists
-  const allImages = imagePreview 
-    ? [...PRODUCT_IMAGES, imagePreview]
-    : PRODUCT_IMAGES;
 
   return (
     <div className="space-y-4">
