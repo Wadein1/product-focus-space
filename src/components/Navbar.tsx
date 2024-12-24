@@ -24,8 +24,13 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
-            <Link to="/" className="text-xl font-semibold">
-              Gimme Drip
+            <Link to="/" className="flex items-center gap-2">
+              <img 
+                src="/lovable-uploads/9c7acb22-daf9-46c0-b8de-85418ebe9ee9.png" 
+                alt="Logo" 
+                className="h-8 w-auto"
+              />
+              <span className="text-xl font-semibold">Gimme Drip</span>
             </Link>
           </div>
 
