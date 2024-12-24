@@ -57,11 +57,15 @@ export const ProductDetails = ({
             <label htmlFor="chainColor" className="block text-sm font-medium text-gray-700 mb-2">
               Chain Color
             </label>
-            <Select value={selectedChainColor} onValueChange={onChainColorChange}>
+            <Select 
+              value={selectedChainColor || "Designers' Choice"} 
+              onValueChange={onChainColorChange}
+            >
               <SelectTrigger className="w-full bg-white">
                 <SelectValue placeholder="Select chain color" />
               </SelectTrigger>
               <SelectContent className="z-[100] bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200">
+                <SelectItem value="Designers' Choice">Designers' Choice</SelectItem>
                 {chainColors.map((color) => (
                   <SelectItem 
                     key={color.id} 

@@ -13,7 +13,7 @@ export const useProductForm = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedChainColor, setSelectedChainColor] = useState<string>("");
+  const [selectedChainColor, setSelectedChainColor] = useState<string>("Designers' Choice");
 
   const { data: chainColors } = useQuery({
     queryKey: ['chain-colors'],
@@ -59,14 +59,6 @@ export const useProductForm = () => {
       toast({
         title: "Image required",
         description: "Please upload an image before proceeding",
-        variant: "destructive",
-      });
-      return false;
-    }
-    if (!selectedChainColor) {
-      toast({
-        title: "Chain color required",
-        description: "Please select a chain color",
         variant: "destructive",
       });
       return false;
