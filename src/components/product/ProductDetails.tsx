@@ -59,7 +59,7 @@ export const ProductDetails = ({
               Chain Color
             </label>
             <Select 
-              value={selectedChainColor || "Designers' Choice"} 
+              value={selectedChainColor} 
               onValueChange={onChainColorChange}
             >
               <SelectTrigger className="w-full bg-white">

@@ -114,7 +114,6 @@ export const useProductForm = () => {
   };
 
   const chainColors = [
-    { id: '1', name: "Designers' Choice" },
     { id: '2', name: 'Black' },
     { id: '3', name: 'White' },
     { id: '4', name: 'Red' },
