@@ -1,3 +1,4 @@
+import React from "react";
 import Navbar from "@/components/Navbar";
 import { ProductImage } from "@/components/product/ProductImage";
 import { ProductDetails } from "@/components/product/ProductDetails";

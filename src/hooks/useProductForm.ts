@@ -6,26 +6,38 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
+  // Initialize all hooks at the top level
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { uploadImage, isUploading } = useImageUpload();
+  
+  // State hooks
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedChainColor, setSelectedChainColor] = useState("Designers' Choice");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { uploadImage, isUploading } = useImageUpload();
 
   const handleQuantityChange = (increment: boolean) => {
     setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
   };
 
   const handleFileChange = async (file: File) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    try {
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (error) {
+      console.error('Error handling file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process the image",
+        variant: "destructive",
+      });
     }
   };
 
