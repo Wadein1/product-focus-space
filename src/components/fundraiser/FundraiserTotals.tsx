@@ -27,6 +27,13 @@ export function FundraiserTotals({ fundraiserId }: FundraiserTotalsProps) {
     );
   }
 
+  // Get the first row from the results array
+  const totalsData = totals?.[0] || {
+    total_raised: 0,
+    total_orders: 0,
+    total_items_sold: 0
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -37,19 +44,19 @@ export function FundraiserTotals({ fundraiserId }: FundraiserTotalsProps) {
           <div className="p-4 bg-background rounded-lg border">
             <p className="text-sm text-muted-foreground">Total Raised</p>
             <p className="text-2xl font-bold">
-              ${totals?.total_raised?.toFixed(2) || "0.00"}
+              ${totalsData.total_raised.toFixed(2)}
             </p>
           </div>
           <div className="p-4 bg-background rounded-lg border">
             <p className="text-sm text-muted-foreground">Total Orders</p>
             <p className="text-2xl font-bold">
-              {totals?.total_orders || 0}
+              {totalsData.total_orders}
             </p>
           </div>
           <div className="p-4 bg-background rounded-lg border">
             <p className="text-sm text-muted-foreground">Items Sold</p>
             <p className="text-2xl font-bold">
-              {totals?.total_items_sold || 0}
+              {totalsData.total_items_sold}
             </p>
           </div>
         </div>
