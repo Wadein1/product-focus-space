@@ -19,8 +19,7 @@ export const useProductForm = () => {
     setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileChange = async (file: File) => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
