@@ -41,7 +41,7 @@ export const useProductForm = () => {
         quantity,
         image_path: imagePreview || undefined,
         chain_color: selectedChainColor !== "Designers' Choice" ? selectedChainColor : undefined,
-        is_fundraiser: false // Mark as regular product
+        is_fundraiser: false
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -78,7 +78,7 @@ export const useProductForm = () => {
             quantity,
             image_path: imagePreview,
             chain_color: selectedChainColor !== "Designers' Choice" ? selectedChainColor : undefined,
-            is_fundraiser: false // Mark as regular product
+            is_fundraiser: false
           }],
         },
       });
