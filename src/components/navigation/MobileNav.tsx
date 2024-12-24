@@ -29,25 +29,25 @@ export const MobileNav = ({ isMenuOpen, setIsMenuOpen }: MobileNavProps) => {
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg">
+        <div className="md:hidden absolute top-16 left-0 right-0 z-50">
+          <div className="mx-4 p-4 space-y-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-100">
             <Link
               to="/fundraising"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
+              className="block w-full px-4 py-2 text-left rounded-md text-base font-medium hover:bg-gray-50 transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Fundraising
             </Link>
             <Link
               to="/support"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors duration-200"
+              className="block w-full px-4 py-2 text-left rounded-md text-base font-medium hover:bg-gray-50 transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Support
             </Link>
             <Link
               to="/product"
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium button-primary"
+              className="block w-full px-4 py-2 text-left rounded-md text-base font-medium bg-primary text-white hover:bg-primary/90 transition-colors duration-200"
               onClick={() => setIsMenuOpen(false)}
             >
               Buy Now
