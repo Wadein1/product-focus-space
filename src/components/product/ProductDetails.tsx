@@ -36,14 +36,13 @@ export const ProductDetails = ({
     <div className="space-y-6">
       <h1 className="text-4xl font-bold tracking-tight">Custom Medallion</h1>
       <p className="text-lg text-gray-600">
-        Gradient coloring is not supported and will be modified by our designers if submitted<br />
-        The 2D image uploaded will be made into a 3D format and shipped within a week
+        Gradient coloring is not supported and will be modified by our designers if submitted
       </p>
       <div className="border-t border-b py-4">
         <h2 className="text-xl font-semibold mb-2">Features:</h2>
         <ul className="space-y-2 text-gray-600">
-          <li>• Premium quality materials</li>
-          <li>• 10 Inch design</li>
+          <li>• Premium quality lightweight materials</li>
+          <li>• Up to 10 x 10 inch design</li>
           <li>• Custom designed and made</li>
         </ul>
       </div>
@@ -56,7 +55,7 @@ export const ProductDetails = ({
         <div className="space-y-4">
           <div className="form-group relative">
             <label htmlFor="chainColor" className="block text-sm font-medium text-gray-700 mb-2">
-              Chain Color
+              Chain Links Color
             </label>
             <Select 
               value={selectedChainColor} 
