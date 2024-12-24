@@ -29,8 +29,8 @@ export const CartItem = ({
       if (!imagePath) return;
 
       try {
-        // If the image path is already a full URL, use it directly
-        if (imagePath.startsWith('http')) {
+        // If the image path is a data URL or full URL, use it directly
+        if (imagePath.startsWith('data:') || imagePath.startsWith('http')) {
           setImageUrl(imagePath);
           return;
         }

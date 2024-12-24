@@ -17,18 +17,32 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
     try {
       console.log('Starting checkout process');
       
-      // Create checkout session immediately
-      const checkoutPromise = supabase.functions.invoke('create-checkout', {
+      // Process items to handle data URLs
+      const processedItems = items.map(item => ({
+        ...item,
+        // Keep data URLs as is, they'll be handled by the checkout function
+        image_path: item.image_path
+      }));
+
+      // Create checkout session
+      const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          items: items.map(item => ({
-            ...item,
-            image_path: item.image_path?.startsWith('data:') ? null : item.image_path
-          })),
+          items: processedItems,
           customerEmail: null,
           shippingAddress: null,
           isFundraiser
         },
       });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!checkoutData?.url) {
+        console.error('No checkout URL received:', checkoutData);
+        throw new Error('No checkout URL received from Stripe');
+      }
 
       // Start image uploads in parallel for data URLs
       const imageUploads = items
@@ -44,36 +58,25 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           }
         });
 
-      // Wait for checkout session while images upload in background
-      const { data: checkoutData, error } = await checkoutPromise;
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
-      }
-
-      if (!checkoutData?.url) {
-        console.error('No checkout URL received:', checkoutData);
-        throw new Error('No checkout URL received from Stripe');
-      }
-
-      // Start background processing of image uploads
-      Promise.all(imageUploads).then(results => {
-        results.forEach(({ originalUrl, newUrl }) => {
-          if (newUrl) {
-            console.log('Image uploaded successfully:', { originalUrl, newUrl });
-          }
+      // Handle image uploads in the background
+      Promise.all(imageUploads)
+        .then(results => {
+          results.forEach(({ originalUrl, newUrl }) => {
+            if (newUrl) {
+              console.log('Image uploaded successfully:', { originalUrl, newUrl });
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Background image upload failed:', error);
+          toast({
+            title: "Warning",
+            description: "Some images may not have uploaded properly. Our team will handle this for you.",
+            variant: "destructive",
+          });
         });
-      }).catch(error => {
-        console.error('Background image upload failed:', error);
-        toast({
-          title: "Warning",
-          description: "Some images may not have uploaded properly. Our team will handle this for you.",
-          variant: "destructive",
-        });
-      });
 
-      // Redirect to Stripe checkout immediately
+      // Redirect to Stripe checkout
       console.log('Redirecting to Stripe checkout:', checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error: any) {
