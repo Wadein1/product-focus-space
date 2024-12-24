@@ -59,10 +59,15 @@ serve(async (req) => {
         order_status: 'received',
       },
       ...(customerEmail && { customer_email: customerEmail }),
-      // Add business name to the Stripe checkout
+      // Add business information to the Stripe checkout
       payment_intent_data: {
-        statement_descriptor: 'Gimme Drip',
+        statement_descriptor: 'GIMME DRIP',
+        statement_descriptor_suffix: 'MEDALLION',
       },
+      // Set the business name for the checkout page
+      business_profile: {
+        name: 'Gimme Drip',
+      }
     };
 
     // Only add shipping if there are regular products
