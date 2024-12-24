@@ -114,10 +114,12 @@ export const useProductForm = () => {
   };
 
   const chainColors = [
-    { id: '1', name: 'Gold' },
-    { id: '2', name: 'Silver' },
-    { id: '3', name: 'Rose Gold' },
-    { id: '4', name: 'Black' },
+    { id: '1', name: "Designers' Choice" },
+    { id: '2', name: 'Black' },
+    { id: '3', name: 'White' },
+    { id: '4', name: 'Red' },
+    { id: '5', name: 'Blue' },
+    { id: '6', name: 'Yellow' },
   ];
 
   return {
