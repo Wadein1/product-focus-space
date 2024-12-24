@@ -30,7 +30,8 @@ export const ProductImage = ({
 }: ProductImageProps) => {
   const { toast } = useToast();
   const [carouselRef, carouselApi] = useEmblaCarousel({ 
-    loop: true // Enable infinite scroll
+    loop: true,
+    startIndex: imagePreview ? PRODUCT_IMAGES.length : 0 // Start at uploaded image if it exists
   });
 
   // Combine default images with uploaded image if it exists
@@ -41,10 +42,12 @@ export const ProductImage = ({
   // Navigate to the uploaded image when it's added
   React.useEffect(() => {
     if (imagePreview && carouselApi) {
-      // Navigate to the last slide (the uploaded image)
-      carouselApi.scrollTo(allImages.length - 1);
+      // Force a reflow to ensure the carousel updates
+      setTimeout(() => {
+        carouselApi.scrollTo(PRODUCT_IMAGES.length);
+      }, 0);
     }
-  }, [imagePreview, carouselApi, allImages.length]);
+  }, [imagePreview, carouselApi]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -67,7 +70,15 @@ export const ProductImage = ({
             });
           }
 
-          onFileChange(processedFile);
+          // Create a temporary URL for immediate preview
+          const tempUrl = URL.createObjectURL(processedFile);
+          const img = new Image();
+          img.onload = () => {
+            onFileChange(processedFile);
+            URL.revokeObjectURL(tempUrl);
+          };
+          img.src = tempUrl;
+
         } catch (error) {
           console.error('Error processing image:', error);
           toast({
@@ -93,8 +104,8 @@ export const ProductImage = ({
           ref={carouselRef}
           className="w-full"
           opts={{
-            loop: true, // Enable infinite scroll
-            align: "start"
+            loop: true,
+            startIndex: imagePreview ? PRODUCT_IMAGES.length : 0
           }}
         >
           <CarouselContent>
