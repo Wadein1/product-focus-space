@@ -22,6 +22,30 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
+    // Calculate donation amount if this is a fundraiser order
+    let donationAmount = 0;
+    if (metadata?.is_fundraiser && metadata?.fundraiser_id) {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const { data: fundraiser } = await supabase
+        .from('fundraisers')
+        .select('donation_type, donation_percentage, donation_amount')
+        .eq('id', metadata.fundraiser_id)
+        .single();
+
+      if (fundraiser) {
+        const orderAmount = items.reduce((sum: number, item: any) => 
+          sum + (item.price * (item.quantity || 1)), 0);
+
+        donationAmount = fundraiser.donation_type === 'percentage'
+          ? (orderAmount * (fundraiser.donation_percentage / 100))
+          : (fundraiser.donation_amount * items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0));
+      }
+    }
+
     const lineItems = items.map((item: any) => ({
       price_data: {
         currency: 'usd',
@@ -36,7 +60,10 @@ serve(async (req) => {
       quantity: item.quantity || 1,
     }));
 
-    console.log('Creating Stripe session with metadata:', metadata);
+    console.log('Creating Stripe session with metadata:', {
+      ...metadata,
+      donation_amount: donationAmount,
+    });
 
     const sessionConfig = {
       payment_method_types: ['card'],
@@ -49,12 +76,12 @@ serve(async (req) => {
       },
       metadata: {
         ...metadata,
+        donation_amount: donationAmount.toString(),
         order_status: 'received',
       },
       ...(customerEmail && { customer_email: customerEmail }),
     };
 
-    // Only add shipping options for non-fundraiser orders
     if (!metadata?.is_fundraiser) {
       sessionConfig.shipping_address_collection = {
         allowed_countries: ['US'],

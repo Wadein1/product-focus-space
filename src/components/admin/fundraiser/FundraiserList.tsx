@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Trash2, ExternalLink, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FundraiserForm } from './FundraiserForm';
+import { FundraiserTotals } from '@/components/fundraiser/FundraiserTotals';
 import type { Fundraiser } from './types';
 
 export const FundraiserList = () => {
@@ -103,6 +104,7 @@ export const FundraiserList = () => {
               <TableHead>Donation Type</TableHead>
               <TableHead>Donation %/Amount</TableHead>
               <TableHead>Variations</TableHead>
+              <TableHead>Total Raised</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -129,6 +131,9 @@ export const FundraiserList = () => {
                     : `$${fundraiser.donation_amount}`}
                 </TableCell>
                 <TableCell>{fundraiser.fundraiser_variations?.length || 0}</TableCell>
+                <TableCell>
+                  <FundraiserTotals fundraiserId={fundraiser.id} />
+                </TableCell>
                 <TableCell className="space-x-2">
                   <Button
                     variant="outline"
