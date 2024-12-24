@@ -6,12 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
 
 export const useProductForm = () => {
-  // Initialize all hooks at the top level
   const { toast } = useToast();
   const navigate = useNavigate();
   const { uploadImage, isUploading } = useImageUpload();
   
-  // State hooks
   const [quantity, setQuantity] = useState(1);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedChainColor, setSelectedChainColor] = useState("Designers' Choice");
@@ -81,16 +79,34 @@ export const useProductForm = () => {
   const buyNow = async () => {
     try {
       setIsProcessing(true);
+
+      // If there's a data URL image, upload it first
+      let finalImageUrl = imagePreview;
+      if (imagePreview?.startsWith('data:')) {
+        try {
+          finalImageUrl = await uploadImage(imagePreview);
+          console.log('Image uploaded successfully:', finalImageUrl);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          throw new Error('Failed to upload image');
+        }
+      }
+
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           items: [{
             product_name: 'Custom Medallion',
             price: 49.99,
             quantity,
-            image_path: imagePreview,
-            chain_color: selectedChainColor !== "Designers' Choice" ? selectedChainColor : undefined,
+            image_path: finalImageUrl,
+            chain_color: selectedChainColor,
             is_fundraiser: false
           }],
+          metadata: {
+            image_url: finalImageUrl,
+            chain_color: selectedChainColor,
+            order_type: 'custom_medallion'
+          }
         },
       });
 

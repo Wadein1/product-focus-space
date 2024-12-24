@@ -29,7 +29,11 @@ serve(async (req) => {
           name: item.product_name,
           ...(item.image_path && !item.image_path.startsWith('data:') && {
             images: [item.image_path]
-          })
+          }),
+          metadata: {
+            chain_color: item.chain_color || "Designers' Choice",
+            image_url: item.image_path || ''
+          }
         },
         unit_amount: Math.round(item.price * 100),
       },
