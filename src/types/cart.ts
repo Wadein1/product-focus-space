@@ -5,5 +5,6 @@ export interface CartItem {
   quantity: number;
   image_path?: string;
   cart_id: string;
-  chain_color?: string; // Add this optional property
+  chain_color?: string;
+  is_fundraiser?: boolean;
 }

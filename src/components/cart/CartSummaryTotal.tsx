@@ -10,7 +10,11 @@ interface CartSummaryTotalProps {
 
 export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser = false }: CartSummaryTotalProps) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  const shippingCost = isFundraiser ? 0 : 8.00;
+  
+  // Check if there are any regular products in the cart
+  const hasRegularProducts = items.some(item => !item.is_fundraiser);
+  const shippingCost = hasRegularProducts ? 8.00 : 0;
+  
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
@@ -22,12 +26,10 @@ export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser
           <span>Subtotal</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        {!isFundraiser && (
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Shipping</span>
-            <span>${shippingCost.toFixed(2)}</span>
-          </div>
-        )}
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>Shipping</span>
+          <span>${shippingCost.toFixed(2)}</span>
+        </div>
         <div className="flex justify-between text-sm text-gray-600">
           <span>Tax (5%)</span>
           <span>${taxAmount.toFixed(2)}</span>

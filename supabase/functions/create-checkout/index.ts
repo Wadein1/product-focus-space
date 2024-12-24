@@ -38,8 +38,8 @@ serve(async (req) => {
 
     console.log('Creating Stripe session with metadata:', metadata);
 
-    const isFundraiser = metadata?.is_fundraiser === true;
-    const hasChain = items.some((item: any) => item.chain_color);
+    // Check if there are any regular products
+    const hasRegularProducts = items.some((item: any) => !item.is_fundraiser);
 
     const sessionConfig = {
       payment_method_types: ['card'],
@@ -57,8 +57,8 @@ serve(async (req) => {
       ...(customerEmail && { customer_email: customerEmail }),
     };
 
-    // Add shipping options only for non-fundraiser orders OR fundraiser orders with chains
-    if (!isFundraiser || (isFundraiser && hasChain)) {
+    // Only add shipping if there are regular products
+    if (hasRegularProducts) {
       sessionConfig.shipping_address_collection = {
         allowed_countries: ['US'],
       };
