@@ -16,7 +16,6 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
   const handleCheckout = async () => {
     try {
       console.log('Starting checkout process');
-      console.log('Cart details:', { isFundraiser, items });
       
       // Create checkout session immediately
       const checkoutPromise = supabase.functions.invoke('create-checkout', {
@@ -27,9 +26,7 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           })),
           customerEmail: null,
           shippingAddress: null,
-          metadata: {
-            is_fundraiser: isFundraiser
-          }
+          isFundraiser
         },
       });
 

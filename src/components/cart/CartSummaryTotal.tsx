@@ -10,18 +10,7 @@ interface CartSummaryTotalProps {
 
 export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser = false }: CartSummaryTotalProps) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  
-  // Check if there's any regular product item in the cart
-  const hasRegularProduct = items.some(item => item.isRegularProduct);
-  const shippingCost = hasRegularProduct ? 4.00 : 0;
-  
-  console.log('Cart summary details:', { 
-    items, 
-    hasRegularProduct, 
-    shippingCost,
-    itemTypes: items.map(item => ({ name: item.product_name, isRegularProduct: item.isRegularProduct }))
-  });
-  
+  const shippingCost = isFundraiser ? 0 : 8.00;
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
@@ -33,7 +22,7 @@ export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser
           <span>Subtotal</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        {hasRegularProduct && (
+        {!isFundraiser && (
           <div className="flex justify-between text-sm text-gray-600">
             <span>Shipping</span>
             <span>${shippingCost.toFixed(2)}</span>

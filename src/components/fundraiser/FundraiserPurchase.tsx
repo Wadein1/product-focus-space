@@ -35,8 +35,7 @@ export const FundraiserPurchase = ({
         product_name: productName,
         price: basePrice,
         quantity: quantity,
-        image_path: imagePath,
-        isRegularProduct: false // Mark as not a regular product
+        image_path: imagePath // Ensure we're passing the full image path
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -69,7 +68,6 @@ export const FundraiserPurchase = ({
             price: basePrice,
             quantity: quantity,
             image_path: imagePath,
-            isRegularProduct: false // Mark as not a regular product
           }],
           metadata: {
             fundraiser_id: fundraiserId,

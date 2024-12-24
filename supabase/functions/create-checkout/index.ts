@@ -38,11 +38,7 @@ serve(async (req) => {
 
     console.log('Creating Stripe session with metadata:', metadata);
 
-    const isFundraiser = metadata?.is_fundraiser === true;
-    const hasChain = items.some((item: any) => item.chain_color);
-    console.log('Order details:', { isFundraiser, hasChain });
-
-    const sessionConfig: any = {
+    const sessionConfig = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
@@ -58,9 +54,8 @@ serve(async (req) => {
       ...(customerEmail && { customer_email: customerEmail }),
     };
 
-    // Add shipping options only for non-fundraiser orders OR fundraiser orders with chains
-    if (!isFundraiser || (isFundraiser && hasChain)) {
-      console.log('Adding shipping options to session');
+    // Only add shipping options for non-fundraiser orders
+    if (!metadata?.is_fundraiser) {
       sessionConfig.shipping_address_collection = {
         allowed_countries: ['US'],
       };
@@ -88,7 +83,6 @@ serve(async (req) => {
       ];
     }
 
-    console.log('Final session config:', sessionConfig);
     const session = await stripe.checkout.sessions.create(sessionConfig);
     console.log('Stripe session created successfully:', session.url);
 
