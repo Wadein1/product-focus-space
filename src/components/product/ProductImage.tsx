@@ -9,6 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import useEmblaCarousel from 'embla-carousel-react';
 
 interface ProductImageProps {
   imagePreview: string | null;
@@ -28,6 +29,9 @@ export const ProductImage = ({
   isUploading = false
 }: ProductImageProps) => {
   const { toast } = useToast();
+  const [carouselRef, carouselApi] = useEmblaCarousel({ 
+    loop: true // Enable infinite scroll
+  });
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -69,34 +73,34 @@ export const ProductImage = ({
     }
   };
 
+  // Combine default images with uploaded image if it exists
+  const allImages = imagePreview 
+    ? [...PRODUCT_IMAGES, imagePreview]
+    : PRODUCT_IMAGES;
+
   return (
     <div className="space-y-4">
       <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative">
-        <Carousel className="w-full">
+        <Carousel 
+          ref={carouselRef}
+          className="w-full"
+          opts={{
+            loop: true, // Enable infinite scroll
+            align: "start"
+          }}
+        >
           <CarouselContent>
-            {imagePreview ? (
-              <CarouselItem>
+            {allImages.map((image, index) => (
+              <CarouselItem key={index}>
                 <div className="aspect-square relative">
                   <img
-                    src={imagePreview}
-                    alt="Preview"
+                    src={image}
+                    alt={`Product ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </div>
               </CarouselItem>
-            ) : (
-              PRODUCT_IMAGES.map((image, index) => (
-                <CarouselItem key={index}>
-                  <div className="aspect-square relative">
-                    <img
-                      src={image}
-                      alt={`Product ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </CarouselItem>
-              ))
-            )}
+            ))}
           </CarouselContent>
           <CarouselPrevious className="left-2" />
           <CarouselNext className="right-2" />
