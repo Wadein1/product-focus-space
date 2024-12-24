@@ -49,7 +49,7 @@ export const ProductDetails = ({
       <div className="space-y-4">
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">$49.99</p>
-          <p className="text-sm text-gray-500">(+$8.00 shipping & 5% tax)</p>
+          <p className="text-sm text-gray-500">(+$4.00 shipping & 5% tax)</p>
         </div>
         
         <div className="space-y-4">
