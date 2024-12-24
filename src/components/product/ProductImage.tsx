@@ -2,6 +2,13 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { compressImage } from '@/utils/imageCompression';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface ProductImageProps {
   imagePreview: string | null;
@@ -15,13 +22,17 @@ export const ProductImage = ({
   isUploading = false
 }: ProductImageProps) => {
   const { toast } = useToast();
+  const defaultImages = [
+    "/lovable-uploads/1fadc4b9-8c21-46bb-87f6-4bcc68b8db85.png",
+    "/lovable-uploads/8e614d69-0544-432b-86a5-2f6ee2972000.png",
+    "/lovable-uploads/996f2306-0299-402f-a5d7-90b1c7aae7ce.png"
+  ];
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.type.startsWith('image/')) {
         try {
-          // Show compression toast if file is large
           if (file.size > 1024 * 1024) {
             toast({
               title: "Compressing image",
@@ -29,10 +40,8 @@ export const ProductImage = ({
             });
           }
 
-          // Compress image if needed
           const processedFile = await compressImage(file);
           
-          // Show success toast if compression was performed
           if (processedFile.size < file.size) {
             toast({
               title: "Image compressed",
@@ -62,19 +71,23 @@ export const ProductImage = ({
   return (
     <div className="space-y-4">
       <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative">
-        {imagePreview ? (
-          <img
-            src={imagePreview}
-            alt="Preview"
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <img
-            src="/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
-            alt="Product"
-            className="w-full h-full object-cover"
-          />
-        )}
+        <Carousel className="w-full">
+          <CarouselContent>
+            {(imagePreview ? [imagePreview, ...defaultImages] : defaultImages).map((image, index) => (
+              <CarouselItem key={index}>
+                <div className="aspect-square w-full">
+                  <img
+                    src={image}
+                    alt={`Product view ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-2" />
+          <CarouselNext className="right-2" />
+        </Carousel>
       </div>
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700">
