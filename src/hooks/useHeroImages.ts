@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
 const HERO_IMAGES = [
-  "/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png",
-  "/lovable-uploads/d6daae6b-a26c-4424-a049-ee61f42f02c3.png",
-  "/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
+  "/lovable-uploads/21178cfe-7a06-4bf7-927d-b8fb84577fa3.png",
+  "/lovable-uploads/f42d99d3-0012-46d1-b59f-33e938dbde96.png",
+  "/lovable-uploads/076015c7-e9ad-43f0-a29f-c9a923ffc91b.png"
 ] as const;
 
 export const useHeroImages = () => {
