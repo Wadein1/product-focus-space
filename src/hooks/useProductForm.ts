@@ -16,53 +16,56 @@ export const useProductForm = () => {
   const navigate = useNavigate();
   const { uploadImage, isUploading } = useImageUpload();
 
-  // Fetch chain colors from inventory
-  const { data: chainColors = [] } = useQuery({
-    queryKey: ['chain-colors'],
-    queryFn: async () => {
-      // First get the chain category ID
-      const { data: categories, error: categoryError } = await supabase
-        .from('inventory_categories')
-        .select('id')
-        .eq('name', 'chain')
-        .single();
+  // Fetch chain colors from inventory - moved outside of the query function
+  const fetchChainColors = async () => {
+    // First get the chain category ID
+    const { data: categories, error: categoryError } = await supabase
+      .from('inventory_categories')
+      .select('id')
+      .eq('name', 'chain')
+      .maybeSingle();
 
-      if (categoryError) {
-        console.error('Error fetching chain category:', categoryError);
-        return [];
-      }
+    if (categoryError) {
+      console.error('Error fetching chain category:', categoryError);
+      return [];
+    }
 
-      if (!categories) {
-        console.warn('No chain category found');
-        return [];
-      }
+    if (!categories) {
+      console.warn('No chain category found');
+      return [];
+    }
 
-      // Then get all variations of chain items
-      const { data: variations, error: variationsError } = await supabase
-        .from('inventory_variations')
-        .select(`
+    // Then get all variations of chain items
+    const { data: variations, error: variationsError } = await supabase
+      .from('inventory_variations')
+      .select(`
+        id,
+        name,
+        color,
+        inventory_items!inner (
           id,
           name,
-          color,
-          inventory_items!inner (
-            id,
-            name,
-            category_id
-          )
-        `)
-        .eq('inventory_items.category_id', categories.id);
+          category_id
+        )
+      `)
+      .eq('inventory_items.category_id', categories.id);
 
-      if (variationsError) {
-        console.error('Error fetching chain variations:', variationsError);
-        return [];
-      }
+    if (variationsError) {
+      console.error('Error fetching chain variations:', variationsError);
+      return [];
+    }
 
-      return variations.map(variation => ({
-        id: variation.id,
-        name: variation.name,
-        color: variation.color
-      }));
-    },
+    return variations.map(variation => ({
+      id: variation.id,
+      name: variation.name,
+      color: variation.color
+    }));
+  };
+
+  // Use the query with the extracted function
+  const { data: chainColors = [] } = useQuery({
+    queryKey: ['chain-colors'],
+    queryFn: fetchChainColors,
   });
 
   const handleQuantityChange = (increment: boolean) => {
