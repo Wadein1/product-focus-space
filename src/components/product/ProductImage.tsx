@@ -1,6 +1,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { compressImage } from '@/utils/imageCompression';
 
 interface ProductImageProps {
   imagePreview: string | null;
@@ -15,11 +16,39 @@ export const ProductImage = ({
 }: ProductImageProps) => {
   const { toast } = useToast();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.type.startsWith('image/')) {
-        onFileChange(file);
+        try {
+          // Show compression toast if file is large
+          if (file.size > 1024 * 1024) {
+            toast({
+              title: "Compressing image",
+              description: "Large image detected. Compressing...",
+            });
+          }
+
+          // Compress image if needed
+          const processedFile = await compressImage(file);
+          
+          // Show success toast if compression was performed
+          if (processedFile.size < file.size) {
+            toast({
+              title: "Image compressed",
+              description: `Reduced from ${(file.size / (1024 * 1024)).toFixed(2)}MB to ${(processedFile.size / (1024 * 1024)).toFixed(2)}MB`,
+            });
+          }
+
+          onFileChange(processedFile);
+        } catch (error) {
+          console.error('Error processing image:', error);
+          toast({
+            title: "Error processing image",
+            description: "Failed to process the image. Please try again.",
+            variant: "destructive"
+          });
+        }
       } else {
         toast({
           title: "Invalid file type",
