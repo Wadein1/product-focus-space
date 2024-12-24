@@ -50,7 +50,6 @@ serve(async (req) => {
       const isFundraiser = session.metadata?.is_fundraiser === 'true';
       const fundraiserId = session.metadata?.fundraiser_id;
       const variationId = session.metadata?.variation_id;
-      const donationAmount = parseFloat(session.metadata?.donation_amount || '0');
       
       // Get line items to extract product metadata
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
@@ -82,19 +81,18 @@ serve(async (req) => {
           throw orderError;
         }
 
-        // If this is a fundraiser order, create the fundraiser transaction record
-        if (isFundraiser && fundraiserId && orderData_) {
-          console.log('Processing fundraiser transaction:', {
+        // If this is a fundraiser order, create the fundraiser order record
+        if (isFundraiser && fundraiserId && variationId && orderData_) {
+          console.log('Processing fundraiser order:', {
             fundraiserId,
-            orderId: orderData_.id,
-            amount: orderData.price,
-            donationAmount
+            variationId,
+            orderId: orderData_.id
           });
 
-          // Get the fundraiser details
+          // Get the fundraiser details to calculate donation amount
           const { data: fundraiser, error: fundraiserError } = await supabase
             .from('fundraisers')
-            .select('donation_type')
+            .select('donation_percentage')
             .eq('id', fundraiserId)
             .single();
 
@@ -103,25 +101,26 @@ serve(async (req) => {
             throw fundraiserError;
           }
 
-          // Create fundraiser transaction record
-          const { error: transactionError } = await supabase
-            .from('fundraiser_transactions')
+          const donationPercentage = fundraiser.donation_percentage / 100;
+          const donationAmount = orderData.price * donationPercentage;
+
+          // Create fundraiser order record
+          const { error: fundraiserOrderError } = await supabase
+            .from('fundraiser_orders')
             .insert([{
               fundraiser_id: fundraiserId,
+              variation_id: variationId,
               order_id: orderData_.id,
               amount: orderData.price,
-              donation_amount: donationAmount,
-              donation_type: fundraiser.donation_type,
-              quantity: item.quantity || 1,
-              stripe_payment_id: session.payment_intent as string
+              donation_amount: donationAmount
             }]);
 
-          if (transactionError) {
-            console.error('Error creating fundraiser transaction:', transactionError);
-            throw transactionError;
+          if (fundraiserOrderError) {
+            console.error('Error creating fundraiser order:', fundraiserOrderError);
+            throw fundraiserOrderError;
           }
 
-          console.log(`Successfully processed fundraiser transaction. Donation amount: $${donationAmount}`);
+          console.log(`Successfully processed fundraiser order. Donation amount: $${donationAmount}`);
         }
       }
     }

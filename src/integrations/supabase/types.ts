@@ -212,57 +212,6 @@ export type Database = {
           },
         ]
       }
-      fundraiser_transactions: {
-        Row: {
-          amount: number
-          created_at: string
-          donation_amount: number
-          donation_type: string
-          fundraiser_id: string
-          id: string
-          order_id: string
-          quantity: number
-          stripe_payment_id: string | null
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          donation_amount: number
-          donation_type: string
-          fundraiser_id: string
-          id?: string
-          order_id: string
-          quantity: number
-          stripe_payment_id?: string | null
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          donation_amount?: number
-          donation_type?: string
-          fundraiser_id?: string
-          id?: string
-          order_id?: string
-          quantity?: number
-          stripe_payment_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fundraiser_transactions_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "fundraisers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fundraiser_transactions_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       fundraiser_variations: {
         Row: {
           created_at: string
@@ -653,16 +602,6 @@ export type Database = {
           fundraiser_id: string
         }
         Returns: number
-      }
-      calculate_fundraiser_totals: {
-        Args: {
-          fundraiser_id: string
-        }
-        Returns: {
-          total_raised: number
-          total_orders: number
-          total_items_sold: number
-        }[]
       }
       cleanup_inactive_carts: {
         Args: Record<PropertyKey, never>
