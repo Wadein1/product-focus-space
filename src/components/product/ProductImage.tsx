@@ -2,12 +2,25 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { compressImage } from '@/utils/imageCompression';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface ProductImageProps {
   imagePreview: string | null;
   onFileChange: (file: File) => void;
   isUploading?: boolean;
 }
+
+const PRODUCT_IMAGES = [
+  "/lovable-uploads/21178cfe-7a06-4bf7-927d-b8fb84577fa3.png",
+  "/lovable-uploads/f42d99d3-0012-46d1-b59f-33e938dbde96.png",
+  "/lovable-uploads/076015c7-e9ad-43f0-a29f-c9a923ffc91b.png"
+] as const;
 
 export const ProductImage = ({ 
   imagePreview, 
@@ -21,7 +34,6 @@ export const ProductImage = ({
     if (file) {
       if (file.type.startsWith('image/')) {
         try {
-          // Show compression toast if file is large
           if (file.size > 1024 * 1024) {
             toast({
               title: "Compressing image",
@@ -29,10 +41,8 @@ export const ProductImage = ({
             });
           }
 
-          // Compress image if needed
           const processedFile = await compressImage(file);
           
-          // Show success toast if compression was performed
           if (processedFile.size < file.size) {
             toast({
               title: "Image compressed",
@@ -62,19 +72,35 @@ export const ProductImage = ({
   return (
     <div className="space-y-4">
       <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 relative">
-        {imagePreview ? (
-          <img
-            src={imagePreview}
-            alt="Preview"
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <img
-            src="/lovable-uploads/c3b67733-225f-4e30-9363-e13d20ed3100.png"
-            alt="Product"
-            className="w-full h-full object-cover"
-          />
-        )}
+        <Carousel className="w-full">
+          <CarouselContent>
+            {imagePreview ? (
+              <CarouselItem>
+                <div className="aspect-square relative">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </CarouselItem>
+            ) : (
+              PRODUCT_IMAGES.map((image, index) => (
+                <CarouselItem key={index}>
+                  <div className="aspect-square relative">
+                    <img
+                      src={image}
+                      alt={`Product ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </CarouselItem>
+              ))
+            )}
+          </CarouselContent>
+          <CarouselPrevious className="left-2" />
+          <CarouselNext className="right-2" />
+        </Carousel>
       </div>
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700">
