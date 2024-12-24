@@ -26,7 +26,8 @@ export const useProductForm = () => {
             id,
             name,
             color,
-            quantity
+            quantity,
+            order_index
           )
         `)
         .eq('name', 'Chains')
@@ -34,9 +35,9 @@ export const useProductForm = () => {
 
       if (error) throw error;
       
-      const availableVariations = data?.inventory_variations.filter(
-        variation => variation.quantity > 0
-      ) || [];
+      const availableVariations = data?.inventory_variations
+        .filter(variation => variation.quantity > 0)
+        .sort((a, b) => (a.order_index || 0) - (b.order_index || 0)) || [];
       
       return availableVariations;
     },
