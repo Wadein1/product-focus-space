@@ -45,12 +45,16 @@ serve(async (req) => {
     // Check if there are any regular products
     const hasRegularProducts = items.some((item: any) => !item.is_fundraiser);
 
+    // Get the base URL from the request
+    const url = new URL(req.url);
+    const baseUrl = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
+
     const sessionConfig = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${req.headers.get('origin') || 'https://lovable.dev'}/success`,
-      cancel_url: `${req.headers.get('origin') || 'https://lovable.dev'}/cancel`,
+      success_url: `${baseUrl}/success`,
+      cancel_url: `${baseUrl}/cancel`,
       automatic_tax: {
         enabled: true,
       },
