@@ -45,11 +45,12 @@ serve(async (req) => {
     // Check if there are any regular products
     const hasRegularProducts = items.some((item: any) => !item.is_fundraiser);
 
-    // Get the base URL from the request
+    // Get the base URL from the request, ensuring proper URL construction
     const url = new URL(req.url);
     const baseUrl = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
+    console.log('Base URL constructed:', baseUrl);
 
-    const sessionConfig = {
+    const sessionConfig: any = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
@@ -94,6 +95,7 @@ serve(async (req) => {
       ];
     }
 
+    console.log('Creating Stripe session with config:', sessionConfig);
     const session = await stripe.checkout.sessions.create(sessionConfig);
     console.log('Stripe session created successfully:', session.url);
 
