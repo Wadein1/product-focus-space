@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
 
 interface FundraiserPurchaseProps {
-  basePrice: number;
+  price: number;
   quantity: number;
   onQuantityChange: (increment: boolean) => void;
   fundraiserId: string;
@@ -15,7 +15,7 @@ interface FundraiserPurchaseProps {
 }
 
 export const FundraiserPurchase = ({
-  basePrice,
+  price,
   quantity,
   onQuantityChange,
   fundraiserId,
@@ -33,10 +33,10 @@ export const FundraiserPurchase = ({
         id: crypto.randomUUID(),
         cart_id: crypto.randomUUID(),
         product_name: productName,
-        price: basePrice,
+        price: price,
         quantity: quantity,
         image_path: imagePath,
-        is_fundraiser: true // Mark as fundraiser product
+        is_fundraiser: true
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -66,10 +66,10 @@ export const FundraiserPurchase = ({
         body: {
           items: [{
             product_name: productName,
-            price: basePrice,
+            price: price,
             quantity: quantity,
             image_path: imagePath,
-            is_fundraiser: true // Mark as fundraiser product
+            is_fundraiser: true
           }],
           metadata: {
             fundraiser_id: fundraiserId,
@@ -104,7 +104,7 @@ export const FundraiserPurchase = ({
     <div className="space-y-6 bg-gray-50 p-4 rounded-lg">
       <div className="border-t border-b py-4">
         <div className="flex items-baseline gap-2">
-          <p className="text-2xl font-bold">${basePrice}</p>
+          <p className="text-2xl font-bold">${price}</p>
           <p className="text-sm text-gray-500">(+5% tax)</p>
         </div>
       </div>

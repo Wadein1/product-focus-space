@@ -270,6 +270,7 @@ export type Database = {
           id: string
           image_path: string | null
           is_default: boolean
+          price: number
           title: string
         }
         Insert: {
@@ -278,6 +279,7 @@ export type Database = {
           id?: string
           image_path?: string | null
           is_default?: boolean
+          price: number
           title: string
         }
         Update: {
@@ -286,6 +288,7 @@ export type Database = {
           id?: string
           image_path?: string | null
           is_default?: boolean
+          price?: number
           title?: string
         }
         Relationships: [

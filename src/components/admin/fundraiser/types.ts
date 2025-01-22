@@ -12,7 +12,8 @@ export const fundraiserFormSchema = z.object({
   donationAmount: z.number().min(0, "Amount must be greater than or equal to 0").optional(),
   variations: z.array(z.object({
     title: z.string().min(1, "Variation title is required"),
-    image: z.any()
+    image: z.any(),
+    price: z.number().min(0.01, "Price must be greater than 0")
   }))
 });
 
@@ -23,6 +24,7 @@ export interface FundraiserVariation {
   title: string;
   image_path: string;
   is_default: boolean;
+  price: number;
 }
 
 export interface Fundraiser {

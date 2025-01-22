@@ -13,7 +13,8 @@ interface VariationFieldsProps {
 export const VariationFields: React.FC<VariationFieldsProps> = ({ form }) => {
   const addVariation = () => {
     const variations = form.getValues('variations');
-    form.setValue('variations', [...variations, { title: '', image: null }]);
+    const basePrice = form.getValues('basePrice');
+    form.setValue('variations', [...variations, { title: '', image: null, price: basePrice }]);
   };
 
   const removeVariation = (index: number) => {
@@ -57,6 +58,26 @@ export const VariationFields: React.FC<VariationFieldsProps> = ({ form }) => {
                 <FormLabel>Title</FormLabel>
                 <FormControl>
                   <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name={`variations.${index}.price`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price ($)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    step="0.01"
+                    min="0.01"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -34,11 +34,12 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       donationAmount: fundraiser.donation_amount || undefined,
       variations: fundraiser.fundraiser_variations.map(v => ({
         title: v.title,
-        image: null
+        image: null,
+        price: v.price
       }))
     } : {
       donationType: 'percentage',
-      variations: [{ title: '', image: null }]
+      variations: [{ title: '', image: null, price: 0 }]
     }
   });
 
@@ -137,6 +138,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
             fundraiser_id: savedFundraiser.id,
             title: variation.title,
             image_path: imagePath,
+            price: variation.price,
             is_default: data.variations.indexOf(variation) === 0
           });
 
