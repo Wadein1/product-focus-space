@@ -44,6 +44,16 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   });
 
   const checkCustomLinkAvailability = async (customLink: string) => {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.access_token) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in as an admin to perform this action.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     const query = supabase
       .from('fundraisers')
       .select('id')
@@ -66,6 +76,12 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   const onSubmit = async (data: FundraiserFormData) => {
     setIsSubmitting(true);
     try {
+      // Check admin authentication
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.access_token) {
+        throw new Error("You must be logged in as an admin to perform this action.");
+      }
+
       const isLinkAvailable = await checkCustomLinkAvailability(data.customLink);
       
       if (!isLinkAvailable) {
@@ -142,7 +158,10 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
             is_default: data.variations.indexOf(variation) === 0
           });
 
-        if (variationError) throw variationError;
+        if (variationError) {
+          console.error('Variation error:', variationError);
+          throw new Error(`Failed to create variation: ${variationError.message}`);
+        }
       }
 
       toast({
