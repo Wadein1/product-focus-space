@@ -47,7 +47,10 @@ serve(async (req) => {
 
     // Get the base URL from the request, ensuring proper URL construction
     const url = new URL(req.url);
-    const baseUrl = `${url.protocol}//${url.hostname}${url.port ? `:${url.port}` : ''}`;
+    // Remove any trailing colons from the hostname
+    const hostname = url.hostname.replace(/:$/, '');
+    const protocol = url.protocol || 'https:';
+    const baseUrl = `${protocol}//${hostname}`;
     console.log('Base URL constructed:', baseUrl);
 
     const sessionConfig: any = {
