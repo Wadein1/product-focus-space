@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface FundraiserPurchaseProps {
   price: number;
@@ -26,18 +28,19 @@ export const FundraiserPurchase = ({
 }: FundraiserPurchaseProps) => {
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
+  const [deliveryMethod, setDeliveryMethod] = React.useState("shipping");
 
   const handleAddToCart = () => {
     try {
       setIsAddingToCart(true);
       const cartItem: CartItem = {
         id: crypto.randomUUID(),
-        cart_id: crypto.randomUUID(),
         product_name: productName,
         price: price,
         quantity: quantity,
         image_path: imagePath,
-        is_fundraiser: true
+        is_fundraiser: true,
+        delivery_method: deliveryMethod
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -70,14 +73,16 @@ export const FundraiserPurchase = ({
             price: price,
             quantity: quantity,
             image_path: imagePath,
-            is_fundraiser: true
+            is_fundraiser: true,
+            delivery_method: deliveryMethod
           }],
           metadata: {
             fundraiser_id: fundraiserId,
             variation_id: variationId,
-            is_fundraiser: true
+            is_fundraiser: true,
+            delivery_method: deliveryMethod
           },
-          shipping_cost: 8.00
+          shipping_cost: deliveryMethod === "shipping" ? 8.00 : 0
         },
       });
 
@@ -107,11 +112,30 @@ export const FundraiserPurchase = ({
       <div className="border-t border-b py-4">
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">${price}</p>
-          <p className="text-sm text-gray-500">(+$8.00 shipping, +5% tax)</p>
+          {deliveryMethod === "shipping" && (
+            <p className="text-sm text-gray-500">(+$8.00 shipping, +5% tax)</p>
+          )}
+          {deliveryMethod === "pickup" && (
+            <p className="text-sm text-gray-500">(+5% tax)</p>
+          )}
         </div>
       </div>
 
       <div className="space-y-6">
+        <div className="space-y-4">
+          <Label>Delivery Method</Label>
+          <RadioGroup defaultValue="shipping" value={deliveryMethod} onValueChange={setDeliveryMethod}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="shipping" id="shipping" />
+              <Label htmlFor="shipping">Ship to me (+$8.00)</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="pickup" id="pickup" />
+              <Label htmlFor="pickup">Pickup from my team</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
         <div className="flex items-center space-x-4">
           <span className="text-sm font-medium text-gray-700">Quantity:</span>
           <div className="flex items-center space-x-2">

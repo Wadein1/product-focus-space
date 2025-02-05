@@ -25,6 +25,10 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
         image_path: item.image_path
       }));
 
+      const hasShippingItems = items.some(item => 
+        (item.delivery_method === "shipping" || (!item.delivery_method && !item.is_fundraiser))
+      );
+
       // Create checkout session
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -32,7 +36,7 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           customerEmail: null,
           shippingAddress: null,
           isFundraiser,
-          shipping_cost: 8.00
+          shipping_cost: hasShippingItems ? 8.00 : 0
         },
       });
 

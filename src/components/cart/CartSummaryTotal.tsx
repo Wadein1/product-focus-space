@@ -11,8 +11,10 @@ interface CartSummaryTotalProps {
 
 export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser = false }: CartSummaryTotalProps) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  const hasRegularProducts = items.some(item => !item.is_fundraiser);
-  const shippingCost = hasRegularProducts || isFundraiser ? 8.00 : 0;
+  const hasShippingItems = items.some(item => 
+    (item.delivery_method === "shipping" || (!item.delivery_method && !item.is_fundraiser))
+  );
+  const shippingCost = hasShippingItems ? 8.00 : 0;
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
