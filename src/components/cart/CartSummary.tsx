@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { CartItem as CartItemType } from "@/types/cart";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +31,8 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           items: processedItems,
           customerEmail: null,
           shippingAddress: null,
-          isFundraiser
+          isFundraiser,
+          shipping_cost: 8.00
         },
       });
 

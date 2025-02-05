@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -75,7 +76,8 @@ export const FundraiserPurchase = ({
             fundraiser_id: fundraiserId,
             variation_id: variationId,
             is_fundraiser: true
-          }
+          },
+          shipping_cost: 8.00
         },
       });
 
@@ -105,7 +107,7 @@ export const FundraiserPurchase = ({
       <div className="border-t border-b py-4">
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">${price}</p>
-          <p className="text-sm text-gray-500">(+5% tax)</p>
+          <p className="text-sm text-gray-500">(+$8.00 shipping, +5% tax)</p>
         </div>
       </div>
 

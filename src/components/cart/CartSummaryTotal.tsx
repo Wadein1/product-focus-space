@@ -1,3 +1,4 @@
+
 import { CartItem as CartItemType } from "@/types/cart";
 import { Button } from "@/components/ui/button";
 
@@ -10,11 +11,8 @@ interface CartSummaryTotalProps {
 
 export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser = false }: CartSummaryTotalProps) => {
   const subtotal = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-  
-  // Check if there are any regular products in the cart
   const hasRegularProducts = items.some(item => !item.is_fundraiser);
-  const shippingCost = hasRegularProducts ? 8.00 : 0;
-  
+  const shippingCost = hasRegularProducts || isFundraiser ? 8.00 : 0;
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
