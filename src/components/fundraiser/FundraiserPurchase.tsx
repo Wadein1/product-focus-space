@@ -28,7 +28,7 @@ export const FundraiserPurchase = ({
 }: FundraiserPurchaseProps) => {
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
-  const [deliveryMethod, setDeliveryMethod] = React.useState("shipping");
+  const [deliveryMethod, setDeliveryMethod] = React.useState<'shipping' | 'pickup'>('shipping');
 
   const handleAddToCart = () => {
     try {
@@ -182,3 +182,4 @@ export const FundraiserPurchase = ({
     </div>
   );
 };
+
