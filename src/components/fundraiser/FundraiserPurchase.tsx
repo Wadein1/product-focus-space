@@ -30,6 +30,10 @@ export const FundraiserPurchase = ({
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
   const [deliveryMethod, setDeliveryMethod] = React.useState<'shipping' | 'pickup'>('shipping');
 
+  const handleDeliveryMethodChange = (value: string) => {
+    setDeliveryMethod(value as 'shipping' | 'pickup');
+  };
+
   const handleAddToCart = () => {
     try {
       setIsAddingToCart(true);
@@ -124,7 +128,7 @@ export const FundraiserPurchase = ({
       <div className="space-y-6">
         <div className="space-y-4">
           <Label>Delivery Method</Label>
-          <RadioGroup defaultValue="shipping" value={deliveryMethod} onValueChange={setDeliveryMethod}>
+          <RadioGroup defaultValue="shipping" value={deliveryMethod} onValueChange={handleDeliveryMethodChange}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="shipping" id="shipping" />
               <Label htmlFor="shipping">Ship to me (+$8.00)</Label>
@@ -182,4 +186,3 @@ export const FundraiserPurchase = ({
     </div>
   );
 };
-
