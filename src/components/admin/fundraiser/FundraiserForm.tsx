@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +24,11 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
 }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
   const form = useForm<FundraiserFormData>({
     resolver: zodResolver(fundraiserFormSchema),
     defaultValues: fundraiser ? {
@@ -43,14 +50,43 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
     }
   });
 
+  const handleReAuthenticate = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+      if (error) throw error;
+
+      if (!data || password !== 'thanksculvers') {
+        throw new Error('Invalid credentials');
+      }
+
+      // Store admin session
+      sessionStorage.setItem('adminAuthenticated', 'true');
+      
+      setShowAuthDialog(false);
+      
+      // Execute pending action if exists
+      if (pendingAction) {
+        await pendingAction();
+        setPendingAction(null);
+      }
+    } catch (error) {
+      toast({
+        title: "Authentication failed",
+        description: "Invalid username or password",
+        variant: "destructive",
+      });
+    }
+  };
+
   const checkCustomLinkAvailability = async (customLink: string) => {
     const { data: session } = await supabase.auth.getSession();
     if (!session?.session?.access_token) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in as an admin to perform this action.",
-        variant: "destructive"
-      });
+      setShowAuthDialog(true);
       return false;
     }
 
@@ -74,24 +110,26 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   };
 
   const onSubmit = async (data: FundraiserFormData) => {
-    setIsSubmitting(true);
-    try {
-      // Check admin authentication
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.access_token) {
-        throw new Error("You must be logged in as an admin to perform this action.");
-      }
+    const submitAction = async () => {
+      setIsSubmitting(true);
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        if (!session?.session?.access_token) {
+          setPendingAction(() => () => onSubmit(data));
+          setShowAuthDialog(true);
+          return;
+        }
 
-      const isLinkAvailable = await checkCustomLinkAvailability(data.customLink);
-      
-      if (!isLinkAvailable) {
-        toast({
-          title: "Custom link unavailable",
-          description: "This custom link is already in use. Please choose another one.",
-          variant: "destructive"
-        });
-        return;
-      }
+        const isLinkAvailable = await checkCustomLinkAvailability(data.customLink);
+        
+        if (!isLinkAvailable) {
+          toast({
+            title: "Custom link unavailable",
+            description: "This custom link is already in use. Please choose another one.",
+            variant: "destructive"
+          });
+          return;
+        }
 
       const fundraiserData = {
         title: data.title,
@@ -164,30 +202,33 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         }
       }
 
-      toast({
-        title: fundraiser ? "Fundraiser updated" : "Fundraiser created",
-        description: fundraiser 
-          ? "Your fundraiser has been updated successfully."
-          : "Your fundraiser has been created successfully."
-      });
+        toast({
+          title: fundraiser ? "Fundraiser updated" : "Fundraiser created",
+          description: fundraiser 
+            ? "Your fundraiser has been updated successfully."
+            : "Your fundraiser has been created successfully."
+        });
 
-      if (onSuccess) {
-        onSuccess();
-      }
+        if (onSuccess) {
+          onSuccess();
+        }
 
-      if (!fundraiser) {
-        form.reset();
+        if (!fundraiser) {
+          form.reset();
+        }
+      } catch (error: any) {
+        console.error('Error saving fundraiser:', error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save fundraiser. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error: any) {
-      console.error('Error saving fundraiser:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save fundraiser. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    };
+
+    await submitAction();
   };
 
   return (
@@ -202,6 +243,31 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           </Button>
         </form>
       </Form>
+
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Authentication Required</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button onClick={handleReAuthenticate} className="w-full">
+              Authenticate
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <LoadingOverlay 
         show={isSubmitting} 
         message={fundraiser ? "Updating fundraiser..." : "Creating fundraiser..."} 
