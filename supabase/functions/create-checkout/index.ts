@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
@@ -13,8 +14,9 @@ serve(async (req) => {
   }
 
   try {
-    const { items, metadata, customerEmail, shippingAddress } = await req.json();
-    console.log('Received request data:', { items, metadata, customerEmail, shippingAddress });
+    const requestData = await req.json();
+    const { items, metadata, customerEmail, shippingAddress, shipping_cost = 0 } = requestData;
+    console.log('Received request data:', { items, metadata, customerEmail, shippingAddress, shipping_cost });
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
     const stripe = new Stripe(stripeKey, {
@@ -32,7 +34,8 @@ serve(async (req) => {
           }),
           metadata: {
             chain_color: item.chain_color || "Designers' Choice",
-            image_url: item.image_path || ''
+            image_url: item.image_path || '',
+            delivery_method: item.delivery_method || 'shipping'
           }
         },
         unit_amount: Math.round(item.price * 100),
@@ -42,26 +45,13 @@ serve(async (req) => {
 
     console.log('Creating Stripe session with metadata:', metadata);
 
-    // Check if there are any regular products
-    const hasRegularProducts = items.some((item: any) => !item.is_fundraiser);
-
-    // Get the base URL from the request, ensuring proper URL construction
-    const url = new URL(req.url);
-    // Remove any trailing colons from the hostname
-    const hostname = url.hostname.replace(/:$/, '');
-    const protocol = url.protocol || 'https:';
-    const baseUrl = `${protocol}//${hostname}`;
-    console.log('Base URL constructed:', baseUrl);
-
+    // Create the base session config
     const sessionConfig: any = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${baseUrl}/success`,
-      cancel_url: `${baseUrl}/cancel`,
-      automatic_tax: {
-        enabled: true,
-      },
+      success_url: `${new URL(req.url).origin}/success`,
+      cancel_url: `${new URL(req.url).origin}/cancel`,
       metadata: {
         ...metadata,
         order_status: 'received',
@@ -69,17 +59,14 @@ serve(async (req) => {
       ...(customerEmail && { customer_email: customerEmail }),
     };
 
-    // Only add shipping if there are regular products
-    if (hasRegularProducts) {
-      sessionConfig.shipping_address_collection = {
-        allowed_countries: ['US'],
-      };
+    // Add shipping if cost is provided
+    if (shipping_cost > 0) {
       sessionConfig.shipping_options = [
         {
           shipping_rate_data: {
             type: 'fixed_amount',
             fixed_amount: {
-              amount: 800,
+              amount: Math.round(shipping_cost * 100), // Convert to cents
               currency: 'usd',
             },
             display_name: 'Standard shipping',
@@ -97,6 +84,9 @@ serve(async (req) => {
         },
       ];
     }
+
+    // Enable automatic tax calculation
+    sessionConfig.automatic_tax = { enabled: true };
 
     console.log('Creating Stripe session with config:', sessionConfig);
     const session = await stripe.checkout.sessions.create(sessionConfig);

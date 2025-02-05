@@ -70,6 +70,9 @@ export const FundraiserPurchase = ({
 
   const handleBuyNow = async () => {
     try {
+      const shippingCost = deliveryMethod === 'shipping' ? 8.00 : 0;
+      console.log('Creating checkout with shipping cost:', shippingCost);
+
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           items: [{
@@ -86,7 +89,7 @@ export const FundraiserPurchase = ({
             is_fundraiser: true,
             delivery_method: deliveryMethod
           },
-          shipping_cost: deliveryMethod === "shipping" ? 8.00 : 0
+          shipping_cost: shippingCost
         },
       });
 
