@@ -75,6 +75,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         setPendingAction(null);
       }
     } catch (error) {
+      console.error('Authentication error:', error);
       toast({
         title: "Authentication failed",
         description: "Invalid username or password",
@@ -131,76 +132,76 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           return;
         }
 
-      const fundraiserData = {
-        title: data.title,
-        description: data.description,
-        custom_link: data.customLink,
-        base_price: data.basePrice,
-        donation_type: data.donationType,
-        donation_percentage: data.donationType === 'percentage' ? data.donationPercentage : 0,
-        donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0
-      };
+        const fundraiserData = {
+          title: data.title,
+          description: data.description,
+          custom_link: data.customLink,
+          base_price: data.basePrice,
+          donation_type: data.donationType,
+          donation_percentage: data.donationType === 'percentage' ? data.donationPercentage : 0,
+          donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0
+        };
 
-      if (fundraiser) {
-        // Update fundraiser
-        const { error: fundraiserError } = await supabase
-          .from('fundraisers')
-          .update(fundraiserData)
-          .eq('id', fundraiser.id);
+        if (fundraiser) {
+          // Update fundraiser
+          const { error: fundraiserError } = await supabase
+            .from('fundraisers')
+            .update(fundraiserData)
+            .eq('id', fundraiser.id);
+
+          if (fundraiserError) throw fundraiserError;
+
+          // Delete existing variations
+          const { error: deleteError } = await supabase
+            .from('fundraiser_variations')
+            .delete()
+            .eq('fundraiser_id', fundraiser.id);
+
+          if (deleteError) throw deleteError;
+        }
+
+        // Create new fundraiser if needed
+        const { data: savedFundraiser, error: fundraiserError } = fundraiser
+          ? { data: { id: fundraiser.id }, error: null }
+          : await supabase
+              .from('fundraisers')
+              .insert(fundraiserData)
+              .select()
+              .single();
 
         if (fundraiserError) throw fundraiserError;
 
-        // Delete existing variations
-        const { error: deleteError } = await supabase
-          .from('fundraiser_variations')
-          .delete()
-          .eq('fundraiser_id', fundraiser.id);
+        // Handle variations
+        for (const variation of data.variations) {
+          if (!variation.title) continue;
 
-        if (deleteError) throw deleteError;
-      }
+          let imagePath = null;
+          if (variation.image) {
+            const fileExt = variation.image.name.split('.').pop();
+            imagePath = `${crypto.randomUUID()}.${fileExt}`;
 
-      // Create new fundraiser if needed
-      const { data: savedFundraiser, error: fundraiserError } = fundraiser
-        ? { data: { id: fundraiser.id }, error: null }
-        : await supabase
-            .from('fundraisers')
-            .insert(fundraiserData)
-            .select()
-            .single();
+            const { error: uploadError } = await supabase.storage
+              .from('gallery')
+              .upload(imagePath, variation.image);
 
-      if (fundraiserError) throw fundraiserError;
+            if (uploadError) throw uploadError;
+          }
 
-      // Handle variations
-      for (const variation of data.variations) {
-        if (!variation.title) continue;
+          const { error: variationError } = await supabase
+            .from('fundraiser_variations')
+            .insert({
+              fundraiser_id: savedFundraiser.id,
+              title: variation.title,
+              image_path: imagePath,
+              price: variation.price,
+              is_default: data.variations.indexOf(variation) === 0
+            });
 
-        let imagePath = null;
-        if (variation.image) {
-          const fileExt = variation.image.name.split('.').pop();
-          imagePath = `${crypto.randomUUID()}.${fileExt}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from('gallery')
-            .upload(imagePath, variation.image);
-
-          if (uploadError) throw uploadError;
+          if (variationError) {
+            console.error('Variation error:', variationError);
+            throw new Error(`Failed to create variation: ${variationError.message}`);
+          }
         }
-
-        const { error: variationError } = await supabase
-          .from('fundraiser_variations')
-          .insert({
-            fundraiser_id: savedFundraiser.id,
-            title: variation.title,
-            image_path: imagePath,
-            price: variation.price,
-            is_default: data.variations.indexOf(variation) === 0
-          });
-
-        if (variationError) {
-          console.error('Variation error:', variationError);
-          throw new Error(`Failed to create variation: ${variationError.message}`);
-        }
-      }
 
         toast({
           title: fundraiser ? "Fundraiser updated" : "Fundraiser created",
