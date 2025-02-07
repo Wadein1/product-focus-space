@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,40 +24,46 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
+      const { data: adminUser, error: adminError } = await supabase
         .from('admin_users')
         .select('*')
         .eq('username', username)
         .single();
 
-      if (error) throw error;
-
-      if (!data || password !== 'thanksculvers') {
+      if (adminError || !adminUser) {
         throw new Error('Invalid credentials');
       }
 
-      // Update last login
-      await supabase
+      if (password !== 'thanksculvers') {
+        throw new Error('Invalid credentials');
+      }
+
+      // Update last login timestamp
+      const { error: updateError } = await supabase
         .from('admin_users')
         .update({ last_login: new Date().toISOString() })
-        .eq('id', data.id);
+        .eq('id', adminUser.id);
+
+      if (updateError) {
+        console.error('Error updating last login:', updateError);
+      }
 
       // Store admin session
       sessionStorage.setItem('adminAuthenticated', 'true');
+      sessionStorage.setItem('adminId', adminUser.id);
       
       toast({
         title: "Login successful",
         description: "Welcome to the admin dashboard",
       });
 
-      // Call the onAuthSuccess callback if provided
       if (onAuthSuccess) {
         onAuthSuccess();
       }
 
-      // Navigate after successful login with replace to prevent going back to login
       navigate('/admin/dashboard', { replace: true });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Authentication error:', error);
       toast({
         title: "Authentication failed",
         description: "Invalid username or password",

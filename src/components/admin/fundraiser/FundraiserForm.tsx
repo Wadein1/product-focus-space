@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,6 +28,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
 
   const form = useForm<FundraiserFormData>({
@@ -51,21 +53,25 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   });
 
   const handleReAuthenticate = async () => {
+    setIsAuthenticating(true);
     try {
-      const { data, error } = await supabase
+      const { data: adminUser, error: adminError } = await supabase
         .from('admin_users')
         .select('*')
         .eq('username', username)
         .single();
 
-      if (error) throw error;
+      if (adminError || !adminUser) {
+        throw new Error('Invalid credentials');
+      }
 
-      if (!data || password !== 'thanksculvers') {
+      if (password !== 'thanksculvers') {
         throw new Error('Invalid credentials');
       }
 
       // Store admin session
       sessionStorage.setItem('adminAuthenticated', 'true');
+      sessionStorage.setItem('adminId', adminUser.id);
       
       setShowAuthDialog(false);
       
@@ -74,19 +80,20 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         await pendingAction();
         setPendingAction(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Authentication error:', error);
       toast({
         title: "Authentication failed",
         description: "Invalid username or password",
         variant: "destructive",
       });
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
   const checkCustomLinkAvailability = async (customLink: string) => {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session?.session?.access_token) {
+    if (!sessionStorage.getItem('adminAuthenticated')) {
       setShowAuthDialog(true);
       return false;
     }
@@ -114,8 +121,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
     const submitAction = async () => {
       setIsSubmitting(true);
       try {
-        const { data: session } = await supabase.auth.getSession();
-        if (!session?.session?.access_token) {
+        if (!sessionStorage.getItem('adminAuthenticated')) {
           setPendingAction(() => () => onSubmit(data));
           setShowAuthDialog(true);
           return;
@@ -249,6 +255,9 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Authentication Required</DialogTitle>
+            <DialogDescription>
+              Please authenticate to continue with this action.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <Input
@@ -262,8 +271,12 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <Button onClick={handleReAuthenticate} className="w-full">
-              Authenticate
+            <Button 
+              onClick={handleReAuthenticate} 
+              className="w-full"
+              disabled={isAuthenticating}
+            >
+              {isAuthenticating ? "Authenticating..." : "Authenticate"}
             </Button>
           </div>
         </DialogContent>
