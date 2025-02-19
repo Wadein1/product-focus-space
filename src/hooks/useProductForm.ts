@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,18 @@ export const useProductForm = () => {
     setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
   };
 
+  const validateImageUpload = () => {
+    if (!imagePreview) {
+      toast({
+        title: "Image required",
+        description: "Please upload an image for your custom medallion",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleFileChange = async (file: File) => {
     try {
       if (file) {
@@ -40,6 +53,8 @@ export const useProductForm = () => {
   };
 
   const addToCart = async () => {
+    if (!validateImageUpload()) return;
+    
     try {
       setIsAddingToCart(true);
       const cartItem: CartItem = {
@@ -77,6 +92,8 @@ export const useProductForm = () => {
   };
 
   const buyNow = async () => {
+    if (!validateImageUpload()) return;
+    
     try {
       setIsProcessing(true);
 
