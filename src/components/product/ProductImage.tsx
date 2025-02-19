@@ -18,9 +18,10 @@ interface ProductImageProps {
 }
 
 const PRODUCT_IMAGES = [
-  "/lovable-uploads/a1782a0f-f381-463e-95d5-2494f1a03f41.png",
-  "/lovable-uploads/12631842-f4a2-49fc-af99-15b2492366e0.png",
-  "/lovable-uploads/3082aca0-68e8-4481-b166-6f7890867f7d.png"
+  "/lovable-uploads/3dce9c3d-0af6-49cc-889c-77a615bc2f98.png",
+  "/lovable-uploads/9cba17c0-95ff-445d-adbe-f8fd924a119a.png",
+  "/lovable-uploads/971633ce-1b75-4550-be8a-8c1b5a087b57.png",
+  "/lovable-uploads/fd858adb-85ac-4192-aaa1-ae27ef2b1f32.png"
 ] as const;
 
 export const ProductImage = ({ 

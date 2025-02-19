@@ -46,7 +46,7 @@ export const useProductForm = () => {
         id: crypto.randomUUID(),
         cart_id: crypto.randomUUID(),
         product_name: 'Custom Medallion',
-        price: 49.99,
+        price: 39.99,
         quantity,
         image_path: imagePreview || undefined,
         chain_color: selectedChainColor !== "Designers' Choice" ? selectedChainColor : undefined,
@@ -80,7 +80,6 @@ export const useProductForm = () => {
     try {
       setIsProcessing(true);
 
-      // If there's a data URL image, upload it first
       let finalImageUrl = imagePreview;
       if (imagePreview?.startsWith('data:')) {
         try {
@@ -96,7 +95,7 @@ export const useProductForm = () => {
         body: {
           items: [{
             product_name: 'Custom Medallion',
-            price: 49.99,
+            price: 39.99,
             quantity,
             image_path: finalImageUrl,
             chain_color: selectedChainColor,
