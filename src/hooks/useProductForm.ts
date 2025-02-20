@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -61,7 +60,7 @@ export const useProductForm = () => {
         id: crypto.randomUUID(),
         cart_id: crypto.randomUUID(),
         product_name: 'Custom Medallion',
-        price: 39.99,
+        price: 24.99,
         quantity,
         image_path: imagePreview || undefined,
         chain_color: selectedChainColor !== "Designers' Choice" ? selectedChainColor : undefined,
@@ -112,7 +111,7 @@ export const useProductForm = () => {
         body: {
           items: [{
             product_name: 'Custom Medallion',
-            price: 39.99,
+            price: 24.99,
             quantity,
             image_path: finalImageUrl,
             chain_color: selectedChainColor,
