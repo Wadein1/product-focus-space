@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -19,10 +18,10 @@ interface ProductImageProps {
 }
 
 const PRODUCT_IMAGES = [
-  "/lovable-uploads/da9b0a6c-fa30-4794-b0ee-b3d1421fa5bb.png",
-  "/lovable-uploads/bd537e86-da88-4db9-a995-3b6b16ab44c4.png",
-  "/lovable-uploads/1fe41b9d-e18b-48aa-a4d0-b5c549cf0186.png",
-  "/lovable-uploads/bd59d6f3-3ec4-4c14-ad3e-02345ca5d61d.png"
+  "/lovable-uploads/3dce9c3d-0af6-49cc-889c-77a615bc2f98.png",
+  "/lovable-uploads/9cba17c0-95ff-445d-adbe-f8fd924a119a.png",
+  "/lovable-uploads/971633ce-1b75-4550-be8a-8c1b5a087b57.png",
+  "/lovable-uploads/fd858adb-85ac-4192-aaa1-ae27ef2b1f32.png"
 ] as const;
 
 export const ProductImage = ({ 
