@@ -35,9 +35,9 @@ export const ProductDetails = ({
 }: ProductDetailsProps) => {
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <h1 className="text-4xl font-bold tracking-tight">Custom Medallion</h1>
-        <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Custom Medallion</h1>
+        <div className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold animate-pulse w-fit">
           50% OFF
         </div>
       </div>
@@ -53,7 +53,7 @@ export const ProductDetails = ({
         </ul>
       </div>
       <div className="space-y-4">
-        <div className="flex items-baseline gap-2">
+        <div className="flex flex-wrap items-baseline gap-2">
           <p className="text-2xl font-bold">$24.99</p>
           <p className="text-sm line-through text-gray-400">$49.98</p>
           <p className="text-sm text-gray-500">(+$8.00 shipping & 5% tax)</p>
