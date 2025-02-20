@@ -37,7 +37,7 @@ export const ProductDetails = ({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Custom Medallion</h1>
-        <div className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold animate-pulse w-fit">
+        <div className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold w-fit">
           50% OFF
         </div>
       </div>
