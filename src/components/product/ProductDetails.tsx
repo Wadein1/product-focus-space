@@ -35,7 +35,12 @@ export const ProductDetails = ({
 }: ProductDetailsProps) => {
   return (
     <div className="space-y-6">
-      <h1 className="text-4xl font-bold tracking-tight">Custom Medallion</h1>
+      <div className="flex items-center gap-4">
+        <h1 className="text-4xl font-bold tracking-tight">Custom Medallion</h1>
+        <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+          50% OFF
+        </div>
+      </div>
       <p className="text-lg text-gray-600">
         Gradient coloring is not supported and will be modified by our designers if submitted
       </p>
@@ -50,6 +55,7 @@ export const ProductDetails = ({
       <div className="space-y-4">
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">$24.99</p>
+          <p className="text-sm line-through text-gray-400">$49.98</p>
           <p className="text-sm text-gray-500">(+$8.00 shipping & 5% tax)</p>
         </div>
         
