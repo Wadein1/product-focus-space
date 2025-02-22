@@ -1,3 +1,4 @@
+
 import React from "react";
 import Navbar from "@/components/Navbar";
 import { ProductImage } from "@/components/product/ProductImage";
@@ -18,7 +19,11 @@ const Product = () => {
     handleFileChange,
     addToCart,
     buyNow,
-    isUploading
+    isUploading,
+    teamName,
+    teamLocation,
+    setTeamName,
+    setTeamLocation
   } = useProductForm();
 
   return (
@@ -34,6 +39,10 @@ const Product = () => {
             imagePreview={imagePreview}
             onFileChange={handleFileChange}
             isUploading={isUploading}
+            teamName={teamName}
+            teamLocation={teamLocation}
+            onTeamNameChange={setTeamName}
+            onTeamLocationChange={setTeamLocation}
           />
           <ProductDetails
             quantity={quantity}

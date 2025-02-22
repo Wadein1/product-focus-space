@@ -9,4 +9,6 @@ export interface CartItem {
   chain_color?: string;
   is_fundraiser?: boolean;
   delivery_method?: 'shipping' | 'pickup';
+  team_name?: string;
+  team_location?: string;
 }
