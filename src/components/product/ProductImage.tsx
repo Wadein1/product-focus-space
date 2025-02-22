@@ -16,6 +16,10 @@ interface ProductImageProps {
   imagePreview: string | null;
   onFileChange: (file: File) => void;
   isUploading?: boolean;
+  teamName: string;
+  teamLocation: string;
+  onTeamNameChange: (value: string) => void;
+  onTeamLocationChange: (value: string) => void;
 }
 
 const PRODUCT_IMAGES = [
@@ -28,23 +32,24 @@ const PRODUCT_IMAGES = [
 export const ProductImage = ({ 
   imagePreview, 
   onFileChange,
-  isUploading = false
+  isUploading = false,
+  teamName,
+  teamLocation,
+  onTeamNameChange,
+  onTeamLocationChange
 }: ProductImageProps) => {
   const { toast } = useToast();
   const [carouselRef, carouselApi] = useEmblaCarousel({ 
     loop: true,
-    startIndex: imagePreview ? PRODUCT_IMAGES.length : 0 // Start at uploaded image if it exists
+    startIndex: imagePreview ? PRODUCT_IMAGES.length : 0
   });
 
-  // Combine default images with uploaded image if it exists
   const allImages = imagePreview 
     ? [...PRODUCT_IMAGES, imagePreview]
     : PRODUCT_IMAGES;
 
-  // Navigate to the uploaded image when it's added
   React.useEffect(() => {
     if (imagePreview && carouselApi) {
-      // Force a reflow to ensure the carousel updates
       setTimeout(() => {
         carouselApi.scrollTo(PRODUCT_IMAGES.length);
       }, 0);
@@ -72,7 +77,6 @@ export const ProductImage = ({
             });
           }
 
-          // Create a temporary URL for immediate preview
           const tempUrl = URL.createObjectURL(processedFile);
           const img = new Image();
           img.onload = () => {
@@ -127,20 +131,60 @@ export const ProductImage = ({
           <CarouselNext className="right-2" />
         </Carousel>
       </div>
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Upload Your Design
-        </label>
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="w-full"
-          disabled={isUploading}
-        />
-        <p className="text-sm text-gray-500">
-          Upload the image you want on your medallion
-        </p>
+
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="mx-4 text-gray-500">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Upload Your Design
+            </label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full"
+              disabled={isUploading || (!!teamName || !!teamLocation)}
+            />
+            <p className="text-sm text-gray-500">
+              Upload the image you want on your medallion
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Team Information
+              </label>
+              <Input
+                type="text"
+                placeholder="Team Name"
+                value={teamName}
+                onChange={(e) => onTeamNameChange(e.target.value)}
+                className="w-full"
+                disabled={!!imagePreview}
+              />
+              <Input
+                type="text"
+                placeholder="Team Location"
+                value={teamLocation}
+                onChange={(e) => onTeamLocationChange(e.target.value)}
+                className="w-full"
+                disabled={!!imagePreview}
+              />
+              <p className="text-sm text-gray-500">
+                Enter your team details and we'll design a custom medallion for you
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

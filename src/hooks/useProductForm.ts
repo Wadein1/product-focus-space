@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -15,16 +16,18 @@ export const useProductForm = () => {
   const [selectedChainColor, setSelectedChainColor] = useState("Designers' Choice");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [teamName, setTeamName] = useState("");
+  const [teamLocation, setTeamLocation] = useState("");
 
   const handleQuantityChange = (increment: boolean) => {
     setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
   };
 
-  const validateImageUpload = () => {
-    if (!imagePreview) {
+  const validateInput = () => {
+    if (!imagePreview && (!teamName || !teamLocation)) {
       toast({
-        title: "Image required",
-        description: "Please upload an image for your custom medallion",
+        title: "Required fields missing",
+        description: "Please either upload an image OR enter team name and location",
         variant: "destructive",
       });
       return false;
@@ -38,6 +41,9 @@ export const useProductForm = () => {
         const reader = new FileReader();
         reader.onloadend = () => {
           setImagePreview(reader.result as string);
+          // Clear team info when image is uploaded
+          setTeamName("");
+          setTeamLocation("");
         };
         reader.readAsDataURL(file);
       }
@@ -52,7 +58,7 @@ export const useProductForm = () => {
   };
 
   const addToCart = async () => {
-    if (!validateImageUpload()) return;
+    if (!validateInput()) return;
     
     try {
       setIsAddingToCart(true);
@@ -64,7 +70,9 @@ export const useProductForm = () => {
         quantity,
         image_path: imagePreview || undefined,
         chain_color: selectedChainColor !== "Designers' Choice" ? selectedChainColor : undefined,
-        is_fundraiser: false
+        is_fundraiser: false,
+        team_name: teamName || undefined,
+        team_location: teamLocation || undefined
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -91,7 +99,7 @@ export const useProductForm = () => {
   };
 
   const buyNow = async () => {
-    if (!validateImageUpload()) return;
+    if (!validateInput()) return;
     
     try {
       setIsProcessing(true);
@@ -115,12 +123,16 @@ export const useProductForm = () => {
             quantity,
             image_path: finalImageUrl,
             chain_color: selectedChainColor,
-            is_fundraiser: false
+            is_fundraiser: false,
+            team_name: teamName || undefined,
+            team_location: teamLocation || undefined
           }],
           metadata: {
             image_url: finalImageUrl,
             chain_color: selectedChainColor,
-            order_type: 'custom_medallion'
+            order_type: 'custom_medallion',
+            team_name: teamName || undefined,
+            team_location: teamLocation || undefined
           }
         },
       });
@@ -160,6 +172,10 @@ export const useProductForm = () => {
     isAddingToCart,
     isProcessing,
     isUploading,
+    teamName,
+    teamLocation,
+    setTeamName,
+    setTeamLocation,
     setSelectedChainColor,
     handleQuantityChange,
     handleFileChange,
