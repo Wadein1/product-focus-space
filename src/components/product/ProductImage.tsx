@@ -132,58 +132,52 @@ export const ProductImage = ({
         </Carousel>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <div className="flex items-center">
-            <div className="flex-grow border-t border-gray-300"></div>
-            <span className="mx-4 text-gray-500">OR</span>
-            <div className="flex-grow border-t border-gray-300"></div>
-          </div>
+          <label className="block text-sm font-medium text-gray-700">
+            Upload Your Design
+          </label>
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full"
+            disabled={isUploading || (!!teamName || !!teamLocation)}
+          />
+          <p className="text-sm text-gray-500">
+            Upload the image you want on your medallion
+          </p>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Upload Your Design
-            </label>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full"
-              disabled={isUploading || (!!teamName || !!teamLocation)}
-            />
-            <p className="text-sm text-gray-500">
-              Upload the image you want on your medallion
-            </p>
-          </div>
+        <div className="flex items-center">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="mx-4 text-gray-500">OR</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Team Information
-              </label>
-              <Input
-                type="text"
-                placeholder="Team Name"
-                value={teamName}
-                onChange={(e) => onTeamNameChange(e.target.value)}
-                className="w-full"
-                disabled={!!imagePreview}
-              />
-              <Input
-                type="text"
-                placeholder="Team Location"
-                value={teamLocation}
-                onChange={(e) => onTeamLocationChange(e.target.value)}
-                className="w-full"
-                disabled={!!imagePreview}
-              />
-              <p className="text-sm text-gray-500">
-                Enter your team details and we'll design a custom medallion for you
-              </p>
-            </div>
-          </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Team Information
+          </label>
+          <Input
+            type="text"
+            placeholder="Team Name"
+            value={teamName}
+            onChange={(e) => onTeamNameChange(e.target.value)}
+            className="w-full"
+            disabled={!!imagePreview}
+          />
+          <Input
+            type="text"
+            placeholder="Team Location"
+            value={teamLocation}
+            onChange={(e) => onTeamLocationChange(e.target.value)}
+            className="w-full"
+            disabled={!!imagePreview}
+          />
+          <p className="text-sm text-gray-500">
+            Enter your team details and we'll find and verify your team's logo
+          </p>
         </div>
       </div>
     </div>
