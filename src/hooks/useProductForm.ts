@@ -115,6 +115,18 @@ export const useProductForm = () => {
         }
       }
 
+      // Prepare metadata based on whether we have an image or team info
+      const metadata = {
+        order_type: 'custom_medallion',
+        chain_color: selectedChainColor,
+        ...(finalImageUrl && { image_url: finalImageUrl }),
+        ...(teamName && { team_name: teamName }),
+        ...(teamLocation && { team_location: teamLocation }),
+        design_type: finalImageUrl ? 'custom_upload' : 'team_logo'
+      };
+
+      console.log('Sending metadata to Stripe:', metadata);
+
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           items: [{
@@ -127,17 +139,14 @@ export const useProductForm = () => {
             team_name: teamName || undefined,
             team_location: teamLocation || undefined
           }],
-          metadata: {
-            image_url: finalImageUrl,
-            chain_color: selectedChainColor,
-            order_type: 'custom_medallion',
-            team_name: teamName || undefined,
-            team_location: teamLocation || undefined
-          }
+          metadata
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Checkout error:', error);
+        throw error;
+      }
 
       if (!checkoutData?.url) {
         throw new Error('No checkout URL received from Stripe');
