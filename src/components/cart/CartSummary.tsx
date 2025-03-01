@@ -29,6 +29,28 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
         (item.delivery_method === "shipping" || (!item.delivery_method && !item.is_fundraiser))
       );
 
+      // Prepare metadata with all available information from each item
+      const metadata = {};
+      
+      // Get metadata from items (for team info, etc.)
+      items.forEach((item, index) => {
+        if (item.team_name) {
+          metadata[`item_${index}_team_name`] = item.team_name;
+        }
+        if (item.team_location) {
+          metadata[`item_${index}_team_location`] = item.team_location;
+        }
+        if (item.chain_color) {
+          metadata[`item_${index}_chain_color`] = item.chain_color;
+        }
+        
+        // Determine and add design type
+        const designType = item.image_path ? 'custom_upload' : 'team_logo';
+        metadata[`item_${index}_design_type`] = designType;
+      });
+      
+      console.log('Sending checkout metadata:', metadata);
+
       // Create checkout session
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -36,7 +58,8 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           customerEmail: null,
           shippingAddress: null,
           isFundraiser,
-          shipping_cost: hasShippingItems ? 8.00 : 0
+          shipping_cost: hasShippingItems ? 8.00 : 0,
+          metadata
         },
       });
 

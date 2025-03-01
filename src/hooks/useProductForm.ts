@@ -115,14 +115,17 @@ export const useProductForm = () => {
         }
       }
 
-      // Prepare metadata based on whether we have an image or team info
+      // Determine the design type based on whether we have an image or team info
+      const designType = finalImageUrl ? 'custom_upload' : 'team_logo';
+      
+      // Always include all available metadata regardless of purchase type
       const metadata = {
         order_type: 'custom_medallion',
         chain_color: selectedChainColor,
+        design_type: designType,
         ...(finalImageUrl && { image_url: finalImageUrl }),
         ...(teamName && { team_name: teamName }),
         ...(teamLocation && { team_location: teamLocation }),
-        design_type: finalImageUrl ? 'custom_upload' : 'team_logo'
       };
 
       console.log('Sending metadata to Stripe:', metadata);
