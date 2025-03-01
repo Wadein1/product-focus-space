@@ -45,13 +45,16 @@ serve(async (req) => {
 
     console.log('Creating Stripe session with metadata:', metadata);
 
+    // Use the application domain instead of the request URL origin
+    const appDomain = "gimmedrip.lovable.app";
+
     // Create the base session config
     const sessionConfig: any = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${new URL(req.url).origin}/success`,
-      cancel_url: `${new URL(req.url).origin}/cancel`,
+      success_url: `https://${appDomain}/success`,
+      cancel_url: `https://${appDomain}/cancel`,
       metadata: {
         ...metadata,
         order_status: 'received',
