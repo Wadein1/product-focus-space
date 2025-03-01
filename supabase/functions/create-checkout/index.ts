@@ -60,6 +60,8 @@ serve(async (req) => {
         order_status: 'received',
       },
       ...(customerEmail && { customer_email: customerEmail }),
+      // Enable promotion code support
+      allow_promotion_codes: true,
     };
 
     // Add shipping if cost is provided
