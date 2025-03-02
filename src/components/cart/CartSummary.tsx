@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { CartItem as CartItemType } from "@/types/cart";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,9 +17,11 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
     try {
       console.log('Starting checkout process');
       
-      // Process items to handle data URLs
+      // Update any Custom Medallion prices to match the new pricing
       const processedItems = items.map(item => ({
         ...item,
+        // Ensure Custom Medallion items have the correct price
+        price: item.product_name === 'Custom Medallion' ? 39.99 : item.price,
         // Keep data URLs as is, they'll be handled by the checkout function
         image_path: item.image_path
       }));

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +40,6 @@ export const useProductForm = () => {
         const reader = new FileReader();
         reader.onloadend = () => {
           setImagePreview(reader.result as string);
-          // Clear team info when image is uploaded
           setTeamName("");
           setTeamLocation("");
         };
@@ -66,7 +64,7 @@ export const useProductForm = () => {
         id: crypto.randomUUID(),
         cart_id: crypto.randomUUID(),
         product_name: 'Custom Medallion',
-        price: 24.99,
+        price: 39.99,
         quantity,
         image_path: imagePreview || undefined,
         chain_color: selectedChainColor !== "Designers' Choice" ? selectedChainColor : undefined,
@@ -115,10 +113,8 @@ export const useProductForm = () => {
         }
       }
 
-      // Determine the design type based on whether we have an image or team info
       const designType = finalImageUrl ? 'custom_upload' : 'team_logo';
       
-      // Always include all available metadata regardless of purchase type
       const metadata = {
         order_type: 'custom_medallion',
         chain_color: selectedChainColor,
@@ -134,7 +130,7 @@ export const useProductForm = () => {
         body: {
           items: [{
             product_name: 'Custom Medallion',
-            price: 24.99,
+            price: 39.99,
             quantity,
             image_path: finalImageUrl,
             chain_color: selectedChainColor,
