@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { DesktopNav } from "./navigation/DesktopNav";
@@ -31,9 +32,9 @@ const Navbar = () => {
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center gap-2">
               <img 
-                src="/lovable-uploads/105f7156-5cbc-4e97-ac1b-1eb94ec19e91.png" 
+                src="/lovable-uploads/34b85765-bc96-4327-8ece-c29748c2e1a1.png" 
                 alt="Logo" 
-                className="h-8 w-auto"
+                className="h-10 w-auto"
               />
               <span className="text-xl font-semibold">Gimme Drip</span>
             </Link>
