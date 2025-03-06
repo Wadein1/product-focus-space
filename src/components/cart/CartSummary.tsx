@@ -63,7 +63,7 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           customerEmail: null,
           shippingAddress: null,
           isFundraiser,
-          shipping_cost: hasShippingItems ? 5.00 : 0,
+          shipping_cost: hasShippingItems ? 8.00 : 0,
           metadata
         },
       });

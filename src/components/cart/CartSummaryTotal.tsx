@@ -14,7 +14,7 @@ export const CartSummaryTotal = ({ items, onCheckout, isProcessing, isFundraiser
   const hasShippingItems = items.some(item => 
     (item.delivery_method === "shipping" || (!item.delivery_method && !item.is_fundraiser))
   );
-  const shippingCost = hasShippingItems ? 5.00 : 0;
+  const shippingCost = hasShippingItems ? 8.00 : 0;
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + shippingCost + taxAmount;
