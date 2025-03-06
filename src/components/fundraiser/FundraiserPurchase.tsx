@@ -70,7 +70,7 @@ export const FundraiserPurchase = ({
 
   const handleBuyNow = async () => {
     try {
-      const shippingCost = deliveryMethod === 'shipping' ? 8.00 : 0;
+      const shippingCost = deliveryMethod === 'shipping' ? 5.00 : 0;
       console.log('Creating checkout with shipping cost:', shippingCost);
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
@@ -120,7 +120,7 @@ export const FundraiserPurchase = ({
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">${price}</p>
           {deliveryMethod === "shipping" && (
-            <p className="text-sm text-gray-500">(+$8.00 shipping, +5% tax)</p>
+            <p className="text-sm text-gray-500">(+$5.00 shipping, +5% tax)</p>
           )}
           {deliveryMethod === "pickup" && (
             <p className="text-sm text-gray-500">(+5% tax)</p>
@@ -134,7 +134,7 @@ export const FundraiserPurchase = ({
           <RadioGroup defaultValue="shipping" value={deliveryMethod} onValueChange={handleDeliveryMethodChange}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="shipping" id="shipping" />
-              <Label htmlFor="shipping">Ship to me (+$8.00)</Label>
+              <Label htmlFor="shipping">Ship to me (+$5.00)</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="pickup" id="pickup" />
