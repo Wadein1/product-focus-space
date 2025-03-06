@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -119,6 +120,7 @@ export const useProductForm = () => {
         order_type: 'custom_medallion',
         chain_color: selectedChainColor,
         design_type: designType,
+        brand: "Gimme Drip", // Add brand identifier
         ...(finalImageUrl && { image_url: finalImageUrl }),
         ...(teamName && { team_name: teamName }),
         ...(teamLocation && { team_location: teamLocation }),

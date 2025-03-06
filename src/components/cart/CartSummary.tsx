@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { CartItem as CartItemType } from "@/types/cart";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +32,10 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
       );
 
       // Prepare metadata with all available information from each item
-      const metadata = {};
+      const metadata = {
+        // Add brand identifier to differentiate from other websites using the same Supabase project
+        brand: "Gimme Drip"
+      };
       
       // Get metadata from items (for team info, etc.)
       items.forEach((item, index) => {
