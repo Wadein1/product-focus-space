@@ -30,9 +30,6 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
       const hasShippingItems = items.some(item => 
         (item.delivery_method === "shipping" || (!item.delivery_method && !item.is_fundraiser))
       );
-      
-      // Set shipping cost based on whether there are items requiring shipping
-      const shippingCost = hasShippingItems ? 8.00 : 0;
 
       // Prepare metadata with all available information from each item
       const metadata = {
@@ -58,7 +55,6 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
       });
       
       console.log('Sending checkout metadata:', metadata);
-      console.log('Shipping cost being applied:', shippingCost);
 
       // Create checkout session
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
@@ -67,7 +63,7 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           customerEmail: null,
           shippingAddress: null,
           isFundraiser,
-          shipping_cost: shippingCost,
+          shipping_cost: hasShippingItems ? 8.00 : 0,
           metadata
         },
       });

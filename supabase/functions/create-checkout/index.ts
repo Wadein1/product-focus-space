@@ -43,23 +43,6 @@ serve(async (req) => {
       quantity: item.quantity || 1,
     }));
 
-    // Add shipping as a separate line item if cost is provided
-    if (shipping_cost > 0) {
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Shipping',
-            metadata: {
-              type: 'shipping'
-            }
-          },
-          unit_amount: Math.round(shipping_cost * 100),
-        },
-        quantity: 1,
-      });
-    }
-
     console.log('Creating Stripe session with metadata:', metadata);
 
     // Use the application domain instead of the request URL origin
@@ -80,6 +63,32 @@ serve(async (req) => {
       // Enable promotion code support
       allow_promotion_codes: true,
     };
+
+    // Add shipping as a separate line item if cost is provided
+    if (shipping_cost > 0) {
+      sessionConfig.shipping_options = [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: {
+              amount: Math.round(shipping_cost * 100), // Convert to cents
+              currency: 'usd',
+            },
+            display_name: 'Standard shipping',
+            delivery_estimate: {
+              minimum: {
+                unit: 'business_day',
+                value: 5,
+              },
+              maximum: {
+                unit: 'business_day',
+                value: 7,
+              },
+            },
+          },
+        },
+      ];
+    }
 
     // Enable automatic tax calculation
     sessionConfig.automatic_tax = { enabled: true };

@@ -140,7 +140,6 @@ export const useProductForm = () => {
             team_name: teamName || undefined,
             team_location: teamLocation || undefined
           }],
-          shipping_cost: 8.00, // Always add $8 shipping for direct purchases
           metadata
         },
       });

@@ -55,21 +55,8 @@ serve(async (req) => {
       // Get line items to extract product metadata
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
       
-      // Find shipping item if it exists
-      const shippingItem = lineItems.data.find(item => 
-        item.description === 'Shipping'
-      );
-      
-      // Calculate shipping cost from the line items
-      const shippingCost = shippingItem ? shippingItem.amount_total / 100 : 0;
-      
-      // Remove shipping item from processing
-      const productItems = lineItems.data.filter(item => 
-        item.description !== 'Shipping'
-      );
-      
-      // Process each product line item (excluding shipping)
-      for (const item of productItems) {
+      // Process each line item
+      for (const item of lineItems.data) {
         const orderData = {
           customer_email: session.customer_details?.email,
           product_name: item.description,
@@ -77,7 +64,7 @@ serve(async (req) => {
           quantity: item.quantity,
           status: session.metadata?.order_status || 'received',
           shipping_address: session.shipping_details,
-          shipping_cost: shippingCost,
+          shipping_cost: isFundraiser ? 0 : 8.00,
           tax_amount: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
           total_amount: session.amount_total ? session.amount_total / 100 : 0,
           is_fundraiser: isFundraiser
