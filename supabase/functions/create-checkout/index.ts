@@ -64,7 +64,7 @@ serve(async (req) => {
       allow_promotion_codes: true,
     };
 
-    // Add shipping if cost is provided
+    // Add shipping as a separate line item if cost is provided
     if (shipping_cost > 0) {
       sessionConfig.shipping_options = [
         {
