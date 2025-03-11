@@ -38,7 +38,7 @@ export const ProductDetails = ({
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Custom Medallion</h1>
         <div className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold w-fit">
-          20% OFF
+          40% OFF
         </div>
       </div>
       <p className="text-lg text-gray-600">
@@ -54,7 +54,7 @@ export const ProductDetails = ({
       </div>
       <div className="space-y-4">
         <div className="flex flex-wrap items-baseline gap-2">
-          <p className="text-2xl font-bold">$39.99</p>
+          <p className="text-2xl font-bold">$29.99</p>
           <p className="text-sm line-through text-gray-400">$49.99</p>
           <p className="text-sm text-gray-500">(+$8.00 shipping)</p>
         </div>
