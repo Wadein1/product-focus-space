@@ -10,12 +10,12 @@ export const LogoAnimation = () => {
     // Start animation after component mounts
     setAnimate(true);
     
-    // After initial animation and delay, show the logo
-    const timer = setTimeout(() => {
+    // After initial animation, begin separation and then show the logo
+    const separationTimer = setTimeout(() => {
       setShowLogo(true);
-    }, 1400); // 0.8s for initial animation + 0.6s delay
+    }, 1200); // Delay showing logo to allow text to start moving first
     
-    return () => clearTimeout(timer);
+    return () => clearTimeout(separationTimer);
   }, []);
 
   return (
