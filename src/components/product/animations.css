@@ -4,6 +4,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2rem;
+  position: relative;
 }
 
 .your-text {
@@ -28,6 +29,33 @@
   animation: slideInFromBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.logo-animation-container.separate {
+  flex-direction: row;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 1rem;
+}
+
+.logo-animation-container.separate .your-text {
+  transform: translateX(-20vw) translateY(0);
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.logo-animation-container.separate .logo-text {
+  transform: translateX(20vw) translateY(0);
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.logo-image-container {
+  position: relative;
+  opacity: 0;
+  animation: fadeIn 0.6s ease-in forwards;
+  animation-delay: 0.2s;
+}
+
+.logo-image {
+  object-fit: contain;
+}
+
 @keyframes slideInFromTop {
   0% {
     transform: translateY(-100vh);
@@ -46,6 +74,15 @@
   }
   100% {
     transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
     opacity: 1;
   }
 }
