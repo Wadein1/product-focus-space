@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AnimatedTextProps {
   onAnimationComplete: () => void;
@@ -8,7 +8,7 @@ interface AnimatedTextProps {
 
 export const AnimatedText: React.FC<AnimatedTextProps> = ({ onAnimationComplete }) => {
   const [animationState, setAnimationState] = useState("initial");
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Start animation sequence
@@ -40,7 +40,8 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({ onAnimationComplete 
         <div className="logo">Logo</div>
       </div>
       
-      <style jsx>{`
+      <style>
+        {`
         .text-animation {
           display: flex;
           flex-direction: ${isMobile ? 'column' : 'row'};
@@ -86,7 +87,8 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({ onAnimationComplete 
             ? 'translateY(calc(40vh - 2.5rem))' 
             : 'translateX(calc(15vw))'};
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
