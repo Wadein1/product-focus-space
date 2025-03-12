@@ -4,36 +4,26 @@ import './animations.css';
 
 export const LogoAnimation = () => {
   const [animate, setAnimate] = useState(false);
-  const [showLogo, setShowLogo] = useState(false);
+  const [textSeparation, setTextSeparation] = useState(false);
 
   useEffect(() => {
-    // Start animation after component mounts
+    // Start initial animation after component mounts
     setAnimate(true);
     
-    // After initial animation, begin separation and then show the logo
+    // After initial animation, begin text separation with a slight delay
     const separationTimer = setTimeout(() => {
-      setShowLogo(true);
-    }, 1200); // Delay showing logo to allow text to start moving first
+      setTextSeparation(true);
+    }, 800); // 800ms for the initial slide-in animation to complete
     
     return () => clearTimeout(separationTimer);
   }, []);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
-      <div className={`logo-animation-container ${animate ? 'animate' : ''} ${showLogo ? 'separate' : ''}`}>
+      <div className={`logo-animation-container ${animate ? 'animate' : ''} ${textSeparation ? 'separate' : ''}`}>
         <span className="text-6xl md:text-8xl font-bold your-text font-montserrat">
           Your
         </span>
-        
-        {showLogo && (
-          <div className="logo-image-container">
-            <img 
-              src="/lovable-uploads/2bd49f1c-637b-40bf-813e-27e6a5bd4066.png" 
-              alt="Logo" 
-              className="w-40 h-40 md:w-52 md:h-52 logo-image"
-            />
-          </div>
-        )}
         
         <span className="text-6xl md:text-8xl font-bold logo-text text-white font-montserrat">
           Logo

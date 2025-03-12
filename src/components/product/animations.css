@@ -38,15 +38,15 @@
   animation: slideInFromBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Mobile separation - smooth transition */
+/* Mobile separation - smooth transition with easing */
 .logo-animation-container.separate .your-text {
-  transform: translateY(-20vh);
-  transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translateY(-30vh);
+  transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .logo-animation-container.separate .logo-text {
-  transform: translateY(20vh);
-  transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translateY(30vh);
+  transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* Desktop animations */
@@ -68,26 +68,14 @@
   }
   
   .logo-animation-container.separate .your-text {
-    transform: translateX(-20vw) translateY(0);
-    transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transform: translateX(-30vw) translateY(0);
+    transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
   
   .logo-animation-container.separate .logo-text {
-    transform: translateX(20vw) translateY(0);
-    transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transform: translateX(30vw) translateY(0);
+    transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
-}
-
-.logo-image-container {
-  position: relative;
-  opacity: 0;
-  animation: fadeIn 1.2s ease-out forwards;
-  animation-delay: 0.5s; /* Delay logo appearance after text starts moving */
-  transform: scale(0.7);
-}
-
-.logo-image {
-  object-fit: contain;
 }
 
 /* Mobile animations */
@@ -95,6 +83,9 @@
   0% {
     transform: translateY(-100vh);
     opacity: 0;
+  }
+  60% {
+    opacity: 0.7;
   }
   100% {
     transform: translateY(0);
@@ -106,6 +97,9 @@
   0% {
     transform: translateY(100vh);
     opacity: 0;
+  }
+  60% {
+    opacity: 0.7;
   }
   100% {
     transform: translateY(0);
@@ -119,6 +113,9 @@
     transform: translateX(-100vw);
     opacity: 0;
   }
+  60% {
+    opacity: 0.7;
+  }
   100% {
     transform: translateX(0);
     opacity: 1;
@@ -130,22 +127,11 @@
     transform: translateX(100vw);
     opacity: 0;
   }
+  60% {
+    opacity: 0.7;
+  }
   100% {
     transform: translateX(0);
     opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  60% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
