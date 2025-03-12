@@ -1,15 +1,12 @@
 
-import React, { useState } from "react";
+import React from "react";
 import Navbar from "@/components/Navbar";
 import { ProductImage } from "@/components/product/ProductImage";
 import { ProductDetails } from "@/components/product/ProductDetails";
 import { useProductForm } from "@/hooks/useProductForm";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
-import LogoAnimation from "@/components/product/LogoAnimation";
 
 const Product = () => {
-  const [showAnimation, setShowAnimation] = useState(true);
-  
   const {
     isAddingToCart,
     isProcessing,
@@ -29,17 +26,6 @@ const Product = () => {
     setTeamLocation
   } = useProductForm();
 
-  // Handle animation completion
-  const handleAnimationComplete = () => {
-    setShowAnimation(false);
-  };
-
-  // If animation is shown, display only the animation component
-  if (showAnimation) {
-    return <LogoAnimation onAnimationComplete={handleAnimationComplete} />;
-  }
-
-  // After animation completes, show the normal product page
   return (
     <div className="min-h-screen bg-white">
       <LoadingOverlay 
