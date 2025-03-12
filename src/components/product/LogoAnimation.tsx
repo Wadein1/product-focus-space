@@ -101,7 +101,7 @@ const LogoAnimation: React.FC = () => {
     navigate('/product');
   };
 
-  // Fix: Use CSS custom properties properly with actual CSS variables defined in the stylesheet
+  // Fixed: Replace CSS custom properties with actual transform values
   return (
     <div className="h-screen w-full bg-black flex flex-col items-center justify-center relative overflow-hidden">
       {/* Your/Logo Text Animation */}
