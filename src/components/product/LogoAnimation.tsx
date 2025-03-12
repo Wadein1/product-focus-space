@@ -11,12 +11,12 @@ export const LogoAnimation = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
       <div className={`logo-animation-container ${animate ? 'animate' : ''}`}>
         <span className="text-6xl md:text-8xl font-bold your-text">
           Your
         </span>
-        <span className="text-6xl md:text-8xl font-bold logo-text">
+        <span className="text-6xl md:text-8xl font-bold logo-text text-white">
           Logo
         </span>
       </div>
