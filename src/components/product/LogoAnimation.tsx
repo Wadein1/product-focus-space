@@ -5,19 +5,27 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import './animations.css';
 
-// Correct logo paths - using direct relative paths for public folder
-const logos = [
-  '/lovable-uploads/babeef53-543a-477d-8c5c-5c7b4623422d.png', // TH Logo
-  '/lovable-uploads/0f909dbc-f06f-4aa2-93e1-09cc666acd9e.png', // BC Logo
-  '/lovable-uploads/ddcd43bd-a3c9-4d7f-8bc6-cc06e5e9a9f8.png', // Bulldog Logo
-  '/lovable-uploads/a72972b9-be3b-4cb4-bb4a-2f731acbc134.png'  // LD Logo
+// Local fallback images in case the uploads aren't available
+const LOGO_FALLBACKS = [
+  '/placeholder.svg',
+  '/placeholder.svg',
+  '/placeholder.svg',
+  '/placeholder.svg'
 ];
 
-// Chain image paths
-const chainWithMedal1 = '/lovable-uploads/453fccb2-d098-4beb-ada8-cc35e7eb67f1.png';
-const chainWithMedal2 = '/lovable-uploads/3b1935a1-41e0-4748-8d3d-24cfb232a0f7.png';
+// Logo paths - ensuring they match the available files
+const LOGOS = [
+  '/lovable-uploads/076015c7-e9ad-43f0-a29f-c9a923ffc91b.png', // TH Logo
+  '/lovable-uploads/105f7156-5cbc-4e97-ac1b-1eb94ec19e91.png', // BC Logo
+  '/lovable-uploads/12631842-f4a2-49fc-af99-15b2492366e0.png', // Bulldog Logo
+  '/lovable-uploads/1c66d3e6-15c7-4249-a02a-a6c5e488f6d6.png'  // LD Logo
+];
 
-const LogoAnimation: React.FC = () => {
+// Chain image paths - ensuring they match the available files
+const CHAIN_WITH_MEDAL1 = '/lovable-uploads/21178cfe-7a06-4bf7-927d-b8fb84577fa3.png';
+const CHAIN_WITH_MEDAL2 = '/lovable-uploads/24a13e09-2b4f-48aa-94c4-7345050a0180.png';
+
+const LogoAnimation: React.FC<{ onAnimationComplete?: () => void }> = ({ onAnimationComplete }) => {
   const navigate = useNavigate();
   const [animationState, setAnimationState] = useState(0);
   const [currentLogo, setCurrentLogo] = useState(0);
@@ -28,28 +36,28 @@ const LogoAnimation: React.FC = () => {
   const [finalState, setFinalState] = useState(false);
   const [showButton, setShowButton] = useState(false);
   
-  // Debug the images - add console logs to track loading
+  // Preload images
   useEffect(() => {
-    console.log('Logo paths:', logos);
-    console.log('Chain images:', chainWithMedal1, chainWithMedal2);
+    console.log('Preloading images...');
     
-    // Test image loading
-    logos.forEach((logo, index) => {
+    // Preload logos
+    LOGOS.forEach((logo, index) => {
       const img = new Image();
       img.onload = () => console.log(`Logo ${index} loaded successfully`);
-      img.onerror = () => console.error(`Failed to load logo ${index} from path: ${logo}`);
+      img.onerror = () => console.warn(`Falling back to placeholder for logo ${index}`);
       img.src = logo;
     });
     
+    // Preload chain images
     const chainImg1 = new Image();
     chainImg1.onload = () => console.log('Chain image 1 loaded successfully');
-    chainImg1.onerror = () => console.error(`Failed to load chain image 1 from path: ${chainWithMedal1}`);
-    chainImg1.src = chainWithMedal1;
+    chainImg1.onerror = () => console.warn('Failed to load chain image 1');
+    chainImg1.src = CHAIN_WITH_MEDAL1;
     
     const chainImg2 = new Image();
     chainImg2.onload = () => console.log('Chain image 2 loaded successfully');
-    chainImg2.onerror = () => console.error(`Failed to load chain image 2 from path: ${chainWithMedal2}`);
-    chainImg2.src = chainWithMedal2;
+    chainImg2.onerror = () => console.warn('Failed to load chain image 2');
+    chainImg2.src = CHAIN_WITH_MEDAL2;
   }, []);
 
   useEffect(() => {
@@ -65,7 +73,7 @@ const LogoAnimation: React.FC = () => {
         setAnimationState(2);
       }, 1100),
 
-      // Step 3: Separate text for logo (0.8s)
+      // Step 3: Separate text for logo (0.7s)
       setTimeout(() => {
         setAnimationState(3);
       }, 2100),
@@ -124,7 +132,9 @@ const LogoAnimation: React.FC = () => {
   }, []);
 
   const handleCustomizeClick = () => {
-    navigate('/product');
+    if (onAnimationComplete) {
+      onAnimationComplete();
+    }
   };
 
   return (
@@ -142,7 +152,7 @@ const LogoAnimation: React.FC = () => {
                 : animationState === 2
                 ? 'paintWipe 0.25s forwards'
                 : animationState === 3
-                ? 'moveApart 0.8s forwards'
+                ? 'moveApart 0.7s forwards'
                 : '',
               transform: animationState >= 3 ? 'translateY(-60px)' : 'translateY(0)',
               opacity: animationState >= 1 ? 1 : 0,
@@ -161,7 +171,7 @@ const LogoAnimation: React.FC = () => {
               animation: animationState === 1 
                 ? 'slideFromBottom 1s forwards' 
                 : animationState === 3
-                ? 'moveApart 0.8s forwards'
+                ? 'moveDown 0.7s forwards'
                 : '',
               transform: animationState >= 3 ? 'translateY(60px)' : 'translateY(0)',
               opacity: animationState >= 1 ? 1 : 0,
@@ -182,7 +192,7 @@ const LogoAnimation: React.FC = () => {
             animation: animationState === 4 
               ? 'glitchIn 0.5s forwards' 
               : animationState >= 5 && animationState <= 7
-              ? 'logoFlip 0.4s forwards'
+              ? 'logoFlip 0.8s forwards'
               : '',
             perspective: '1000px',
             transformStyle: 'preserve-3d',
@@ -191,65 +201,65 @@ const LogoAnimation: React.FC = () => {
         >
           {currentLogo === 0 && (
             <img 
-              src={logos[0]} 
+              src={LOGOS[0]} 
               alt="Logo 1" 
-              className="w-20 h-20"
+              className="w-36 h-36 object-contain"
               onError={(e) => {
                 console.error('Error loading logo 1');
-                e.currentTarget.src = '/placeholder.svg';
+                e.currentTarget.src = LOGO_FALLBACKS[0];
               }}
             />
           )}
           
           {currentLogo === 1 && (
             <img 
-              src={logos[1]} 
+              src={LOGOS[1]} 
               alt="Logo 2" 
-              className="w-36 h-20"
+              className="w-36 h-36 object-contain"
               onError={(e) => {
                 console.error('Error loading logo 2');
-                e.currentTarget.src = '/placeholder.svg';
+                e.currentTarget.src = LOGO_FALLBACKS[1];
               }}
             />
           )}
           
           {currentLogo === 2 && (
             <img 
-              src={logos[2]} 
+              src={LOGOS[2]} 
               alt="Logo 3" 
-              className="w-36 h-20"
+              className="w-36 h-36 object-contain"
               onError={(e) => {
                 console.error('Error loading logo 3');
-                e.currentTarget.src = '/placeholder.svg';
+                e.currentTarget.src = LOGO_FALLBACKS[2];
               }}
             />
           )}
           
           {currentLogo === 3 && (
             <img 
-              src={logos[3]} 
+              src={LOGOS[3]} 
               alt="Logo 4" 
-              className="w-36 h-20"
+              className="w-36 h-36 object-contain"
               onError={(e) => {
                 console.error('Error loading logo 4');
-                e.currentTarget.src = '/placeholder.svg';
+                e.currentTarget.src = LOGO_FALLBACKS[3];
               }}
             />
           )}
         </div>
       )}
 
-      {/* Chain Animation */}
+      {/* Chain Animation - First Position */}
       {showChain && !finalState && (
         <div 
           className="absolute"
           style={{
-            animation: 'crashZoom 0.3s forwards',
+            animation: 'crashZoom 0.8s forwards',
             zIndex: 20
           }}
         >
           <img 
-            src={chainWithMedal1} 
+            src={CHAIN_WITH_MEDAL1} 
             alt="Chain with Medal" 
             className="w-64 h-auto"
             onError={(e) => {
@@ -260,17 +270,17 @@ const LogoAnimation: React.FC = () => {
         </div>
       )}
 
-      {/* Final Chain Position */}
+      {/* Chain Animation - Moving Up Position */}
       {finalState && (
         <div 
           className="absolute"
           style={{
-            animation: 'moveUp 0.5s forwards',
+            animation: 'chainMove 0.8s forwards',
             zIndex: 20
           }}
         >
           <img 
-            src={chainWithMedal2} 
+            src={CHAIN_WITH_MEDAL1} // Using the same image for smooth transition
             alt="Chain with Medal" 
             className="w-64 h-auto"
             onError={(e) => {
@@ -284,7 +294,7 @@ const LogoAnimation: React.FC = () => {
       {/* Button */}
       {showButton && (
         <div 
-          className="absolute bottom-40"
+          className="absolute bottom-32"
           style={{
             animation: 'buttonAppear 0.5s forwards',
             zIndex: 30
@@ -292,9 +302,10 @@ const LogoAnimation: React.FC = () => {
         >
           <Button 
             onClick={handleCustomizeClick}
-            className="bg-primary text-black font-bold py-3 px-8 rounded-full text-lg flex items-center gap-2"
+            className="bg-primary hover:bg-primary/90 text-white font-bold py-4 px-10 rounded-lg text-xl flex items-center gap-3 shadow-lg transition-all hover:scale-105"
+            size="lg"
           >
-            Customize Now <ArrowRight className="ml-1" />
+            Customize Now <ArrowRight className="h-6 w-6 ml-1" />
           </Button>
         </div>
       )}

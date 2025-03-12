@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { ProductImage } from "@/components/product/ProductImage";
 import { ProductDetails } from "@/components/product/ProductDetails";
@@ -29,18 +29,14 @@ const Product = () => {
     setTeamLocation
   } = useProductForm();
 
-  // Set a timeout to automatically close the animation after 11 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowAnimation(false);
-    }, 11000);
-    
-    return () => clearTimeout(timer);
-  }, []);
+  // Handle animation completion
+  const handleAnimationComplete = () => {
+    setShowAnimation(false);
+  };
 
   // If animation is shown, display only the animation component
   if (showAnimation) {
-    return <LogoAnimation />;
+    return <LogoAnimation onAnimationComplete={handleAnimationComplete} />;
   }
 
   // After animation completes, show the normal product page
