@@ -38,14 +38,14 @@
   animation: slideInFromBottom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Mobile separation - smooth transition with easing */
+/* Mobile separation - moving text apart with 40% of screen height between them */
 .logo-animation-container.separate .your-text {
-  transform: translateY(-30vh);
+  transform: translateY(-40vh);
   transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .logo-animation-container.separate .logo-text {
-  transform: translateY(30vh);
+  transform: translateY(40vh);
   transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -67,13 +67,14 @@
     animation: slideInFromRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   
+  /* Desktop separation - moving text apart with 30% of screen width between them */
   .logo-animation-container.separate .your-text {
-    transform: translateX(-40vw) translateY(0);
+    transform: translateX(-30vw) translateY(0);
     transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   
   .logo-animation-container.separate .logo-text {
-    transform: translateX(40vw) translateY(0);
+    transform: translateX(30vw) translateY(0);
     transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
