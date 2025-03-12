@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import './animations.css';
 
 const logos = [
   '/lovable-uploads/babeef53-543a-477d-8c5c-5c7b4623422d.png', // TH Logo
@@ -11,13 +12,10 @@ const logos = [
   '/lovable-uploads/a72972b9-be3b-4cb4-bb4a-2f731acbc134.png'  // LD Logo
 ];
 
-const medalLogo = '/lovable-uploads/95564def-42d3-4670-bd09-c5f400d05607.png';
 const chainWithMedal1 = '/lovable-uploads/453fccb2-d098-4beb-ada8-cc35e7eb67f1.png';
 const chainWithMedal2 = '/lovable-uploads/3b1935a1-41e0-4748-8d3d-24cfb232a0f7.png';
-const finalChain = '/lovable-uploads/13bf4d17-1bb9-465b-be2b-57adee0a18dd.png';
-const chainWithButton = '/lovable-uploads/409301a7-6af4-49f4-b571-ade106a03ce8.png';
 
-export const LogoAnimation: React.FC = () => {
+const LogoAnimation: React.FC = () => {
   const navigate = useNavigate();
   const [animationState, setAnimationState] = useState(0);
   const [currentLogo, setCurrentLogo] = useState(0);
@@ -103,6 +101,7 @@ export const LogoAnimation: React.FC = () => {
     navigate('/product');
   };
 
+  // Fix: Use CSS custom properties properly with actual CSS variables defined in the stylesheet
   return (
     <div className="h-screen w-full bg-black flex flex-col items-center justify-center relative overflow-hidden">
       {/* Your/Logo Text Animation */}
@@ -120,7 +119,6 @@ export const LogoAnimation: React.FC = () => {
                 : animationState === 3
                 ? 'moveApart 0.8s forwards'
                 : '',
-              '--translate-y': '-60px',
               transform: animationState >= 3 ? 'translateY(-60px)' : 'translateY(0)',
               opacity: animationState >= 1 ? 1 : 0,
               position: 'relative',
@@ -140,7 +138,6 @@ export const LogoAnimation: React.FC = () => {
                 : animationState === 3
                 ? 'moveApart 0.8s forwards'
                 : '',
-              '--translate-y': '60px',
               transform: animationState >= 3 ? 'translateY(60px)' : 'translateY(0)',
               opacity: animationState >= 1 ? 1 : 0,
               position: 'relative',

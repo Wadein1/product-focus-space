@@ -136,3 +136,63 @@
 .customize-button:hover::after {
   left: 100%;
 }
+
+/* New animations for the LogoAnimation component */
+@keyframes slideFromTop {
+  0% { transform: translateY(-100px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideFromBottom {
+  0% { transform: translateY(100px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes paintWipe {
+  0% { color: #0ca2ed; }
+  100% { color: white; }
+}
+
+@keyframes moveApart {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(var(--move-distance)); }
+}
+
+@keyframes glitchIn {
+  0% { opacity: 0; clip-path: inset(0 0 0 0); }
+  20% { opacity: 0.3; clip-path: inset(44% 0 0 0); }
+  40% { opacity: 0.6; clip-path: inset(57% 0 43% 0); }
+  60% { opacity: 0.8; clip-path: inset(0 0 43% 0); }
+  80% { opacity: 0.9; clip-path: inset(10% 0 90% 0); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes logoFlip {
+  0% { opacity: 0; transform: rotateY(90deg); }
+  100% { opacity: 1; transform: rotateY(0deg); }
+}
+
+@keyframes zoomIn {
+  0% { transform: scale(0.2); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes crashZoom {
+  0% { transform: scale(0.1) translateY(0); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes moveUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50px); }
+}
+
+@keyframes buttonAppear {
+  0% { opacity: 0; transform: translateY(50px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
