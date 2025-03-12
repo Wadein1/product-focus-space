@@ -41,12 +41,12 @@
 /* Mobile separation - smooth transition with easing */
 .logo-animation-container.separate .your-text {
   transform: translateY(-30vh);
-  transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .logo-animation-container.separate .logo-text {
   transform: translateY(30vh);
-  transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Desktop animations */
@@ -68,13 +68,13 @@
   }
   
   .logo-animation-container.separate .your-text {
-    transform: translateX(-30vw) translateY(0);
-    transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transform: translateX(-40vw) translateY(0);
+    transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   
   .logo-animation-container.separate .logo-text {
-    transform: translateX(30vw) translateY(0);
-    transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transform: translateX(40vw) translateY(0);
+    transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 

@@ -10,10 +10,10 @@ export const LogoAnimation = () => {
     // Start initial animation after component mounts
     setAnimate(true);
     
-    // After initial animation, begin text separation with a slight delay
+    // After initial animation completes, wait for 0.6 seconds before starting separation
     const separationTimer = setTimeout(() => {
       setTextSeparation(true);
-    }, 800); // 800ms for the initial slide-in animation to complete
+    }, 1400); // 800ms for initial animation + 600ms pause
     
     return () => clearTimeout(separationTimer);
   }, []);
