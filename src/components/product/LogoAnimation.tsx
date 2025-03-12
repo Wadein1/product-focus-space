@@ -21,7 +21,7 @@ export const LogoAnimation = () => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black overflow-hidden">
       <div className={`logo-animation-container ${animate ? 'animate' : ''} ${showLogo ? 'separate' : ''}`}>
-        <span className="text-6xl md:text-8xl font-bold your-text">
+        <span className="text-6xl md:text-8xl font-bold your-text font-montserrat">
           Your
         </span>
         
@@ -30,12 +30,12 @@ export const LogoAnimation = () => {
             <img 
               src="/lovable-uploads/2bd49f1c-637b-40bf-813e-27e6a5bd4066.png" 
               alt="Logo" 
-              className="w-32 h-32 md:w-40 md:h-40 logo-image"
+              className="w-40 h-40 md:w-52 md:h-52 logo-image"
             />
           </div>
         )}
         
-        <span className="text-6xl md:text-8xl font-bold logo-text text-white">
+        <span className="text-6xl md:text-8xl font-bold logo-text text-white font-montserrat">
           Logo
         </span>
       </div>
