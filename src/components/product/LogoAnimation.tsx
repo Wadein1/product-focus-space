@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import './animations.css';
 
+// Correct logo paths - using direct relative paths for public folder
 const logos = [
   '/lovable-uploads/babeef53-543a-477d-8c5c-5c7b4623422d.png', // TH Logo
   '/lovable-uploads/0f909dbc-f06f-4aa2-93e1-09cc666acd9e.png', // BC Logo
@@ -12,6 +13,7 @@ const logos = [
   '/lovable-uploads/a72972b9-be3b-4cb4-bb4a-2f731acbc134.png'  // LD Logo
 ];
 
+// Chain image paths
 const chainWithMedal1 = '/lovable-uploads/453fccb2-d098-4beb-ada8-cc35e7eb67f1.png';
 const chainWithMedal2 = '/lovable-uploads/3b1935a1-41e0-4748-8d3d-24cfb232a0f7.png';
 
@@ -25,6 +27,30 @@ const LogoAnimation: React.FC = () => {
   const [showChain, setShowChain] = useState(false);
   const [finalState, setFinalState] = useState(false);
   const [showButton, setShowButton] = useState(false);
+  
+  // Debug the images - add console logs to track loading
+  useEffect(() => {
+    console.log('Logo paths:', logos);
+    console.log('Chain images:', chainWithMedal1, chainWithMedal2);
+    
+    // Test image loading
+    logos.forEach((logo, index) => {
+      const img = new Image();
+      img.onload = () => console.log(`Logo ${index} loaded successfully`);
+      img.onerror = () => console.error(`Failed to load logo ${index} from path: ${logo}`);
+      img.src = logo;
+    });
+    
+    const chainImg1 = new Image();
+    chainImg1.onload = () => console.log('Chain image 1 loaded successfully');
+    chainImg1.onerror = () => console.error(`Failed to load chain image 1 from path: ${chainWithMedal1}`);
+    chainImg1.src = chainWithMedal1;
+    
+    const chainImg2 = new Image();
+    chainImg2.onload = () => console.log('Chain image 2 loaded successfully');
+    chainImg2.onerror = () => console.error(`Failed to load chain image 2 from path: ${chainWithMedal2}`);
+    chainImg2.src = chainWithMedal2;
+  }, []);
 
   useEffect(() => {
     const timeline = [
@@ -101,7 +127,6 @@ const LogoAnimation: React.FC = () => {
     navigate('/product');
   };
 
-  // Fixed: Replace CSS custom properties with actual transform values
   return (
     <div className="h-screen w-full bg-black flex flex-col items-center justify-center relative overflow-hidden">
       {/* Your/Logo Text Animation */}
@@ -169,6 +194,10 @@ const LogoAnimation: React.FC = () => {
               src={logos[0]} 
               alt="Logo 1" 
               className="w-20 h-20"
+              onError={(e) => {
+                console.error('Error loading logo 1');
+                e.currentTarget.src = '/placeholder.svg';
+              }}
             />
           )}
           
@@ -177,6 +206,10 @@ const LogoAnimation: React.FC = () => {
               src={logos[1]} 
               alt="Logo 2" 
               className="w-36 h-20"
+              onError={(e) => {
+                console.error('Error loading logo 2');
+                e.currentTarget.src = '/placeholder.svg';
+              }}
             />
           )}
           
@@ -185,6 +218,10 @@ const LogoAnimation: React.FC = () => {
               src={logos[2]} 
               alt="Logo 3" 
               className="w-36 h-20"
+              onError={(e) => {
+                console.error('Error loading logo 3');
+                e.currentTarget.src = '/placeholder.svg';
+              }}
             />
           )}
           
@@ -193,6 +230,10 @@ const LogoAnimation: React.FC = () => {
               src={logos[3]} 
               alt="Logo 4" 
               className="w-36 h-20"
+              onError={(e) => {
+                console.error('Error loading logo 4');
+                e.currentTarget.src = '/placeholder.svg';
+              }}
             />
           )}
         </div>
@@ -211,6 +252,10 @@ const LogoAnimation: React.FC = () => {
             src={chainWithMedal1} 
             alt="Chain with Medal" 
             className="w-64 h-auto"
+            onError={(e) => {
+              console.error('Error loading chain 1');
+              e.currentTarget.src = '/placeholder.svg';
+            }}
           />
         </div>
       )}
@@ -228,6 +273,10 @@ const LogoAnimation: React.FC = () => {
             src={chainWithMedal2} 
             alt="Chain with Medal" 
             className="w-64 h-auto"
+            onError={(e) => {
+              console.error('Error loading chain 2');
+              e.currentTarget.src = '/placeholder.svg';
+            }}
           />
         </div>
       )}
