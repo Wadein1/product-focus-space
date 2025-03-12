@@ -1,0 +1,51 @@
+
+.logo-animation-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.your-text {
+  color: #0ca2ed;
+  background: linear-gradient(90deg, rgba(12,162,237,0.1) 0%, rgba(12,162,237,0.1) 100%);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transform: translateY(-100vh);
+  opacity: 0;
+}
+
+.logo-text {
+  transform: translateY(100vh);
+  opacity: 0;
+}
+
+.logo-animation-container.animate .your-text {
+  animation: slideInFromTop 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.logo-animation-container.animate .logo-text {
+  animation: slideInFromBottom 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInFromTop {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

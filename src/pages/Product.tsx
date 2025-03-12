@@ -5,6 +5,7 @@ import { ProductImage } from "@/components/product/ProductImage";
 import { ProductDetails } from "@/components/product/ProductDetails";
 import { useProductForm } from "@/hooks/useProductForm";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import { LogoAnimation } from "@/components/product/LogoAnimation";
 
 const Product = () => {
   const {
@@ -28,6 +29,7 @@ const Product = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <LogoAnimation />
       <LoadingOverlay 
         show={isUploading || isProcessing} 
         message={isUploading ? "Uploading image..." : "Processing your order..."}
