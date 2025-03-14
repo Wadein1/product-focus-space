@@ -30,14 +30,14 @@ const Product = () => {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden">
-      <div className="relative flex flex-col md:flex-row items-center justify-center w-full h-full">
+      <div className="relative flex flex-col items-center justify-center w-full h-full">
         {/* "Your" text */}
         <div 
           ref={yourRef}
           className={`text-5xl md:text-7xl font-bold transition-all duration-800 ease-out font-[Montserrat] z-10
             ${animationStage === 0 ? 'opacity-0 -translate-y-20' : 'opacity-100 translate-y-0'} 
             ${animationStage >= 2 ? 'text-white' : 'text-primary'} 
-            ${animationStage >= 3 ? 'md:-translate-x-[17.5%]' : ''}`}
+            ${animationStage >= 3 ? 'md:-translate-y-[17.5vh]' : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
           }}
@@ -50,7 +50,7 @@ const Product = () => {
           ref={logoRef}
           className={`text-5xl md:text-7xl font-bold text-white transition-all duration-800 ease-out font-[Montserrat]
             ${animationStage === 0 ? 'opacity-0 translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 3 ? 'md:translate-x-[17.5%]' : ''}`}
+            ${animationStage >= 3 ? 'md:translate-y-[17.5vh]' : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
           }}
