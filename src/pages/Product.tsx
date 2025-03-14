@@ -34,10 +34,10 @@ const Product = () => {
         {/* "Your" text */}
         <div 
           ref={yourRef}
-          className={`text-[5.75rem] md:text-[8.05rem] font-bold transition-all duration-1000 ease-out font-[Montserrat] z-10
+          className={`text-[5.46rem] md:text-[7.65rem] font-bold transition-all duration-1000 ease-out font-[Montserrat] z-10
             ${animationStage === 0 ? 'opacity-0 -translate-y-20' : 'opacity-100 translate-y-0'} 
             ${animationStage >= 2 ? 'text-white' : 'text-primary'} 
-            ${animationStage >= 3 ? (isMobile ? '-translate-y-[150%]' : 'md:-translate-x-[120%]') : ''}`}
+            ${animationStage >= 3 ? (isMobile ? '-translate-y-[120%]' : 'md:-translate-x-[75%]') : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
             transitionDuration: animationStage === 2 ? "500ms" : "1000ms" // Slower color transition
@@ -49,9 +49,9 @@ const Product = () => {
         {/* "Logo" text */}
         <div 
           ref={logoRef}
-          className={`text-[5.75rem] md:text-[8.05rem] font-bold text-white transition-all duration-1000 ease-out font-[Montserrat]
+          className={`text-[5.46rem] md:text-[7.65rem] font-bold text-white transition-all duration-1000 ease-out font-[Montserrat]
             ${animationStage === 0 ? 'opacity-0 translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 3 ? (isMobile ? 'translate-y-[150%]' : 'md:translate-x-[120%]') : ''}`}
+            ${animationStage >= 3 ? (isMobile ? 'translate-y-[120%]' : 'md:translate-x-[75%]') : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
           }}
