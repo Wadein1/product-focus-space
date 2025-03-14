@@ -39,7 +39,7 @@ const Product = () => {
         {/* Logo image (initially hidden) */}
         <img 
           ref={imageRef}
-          src="/lovable-uploads/05bc8e60-71cb-45b5-899a-2e6d87489436.png"
+          src="/lovable-uploads/1a9bebe2-b509-4243-8871-405678c9ae52.png"
           alt="Logo"
           className={`absolute w-20 md:w-32 transition-all duration-300 z-20
             ${animationStage >= 5 ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
@@ -55,7 +55,7 @@ const Product = () => {
           className={`text-5xl md:text-7xl font-bold transition-all duration-1000 ease-out font-[Montserrat] z-10
             ${animationStage === 0 ? 'opacity-0 -translate-y-20' : 'opacity-100 translate-y-0'} 
             ${animationStage >= 2 ? 'text-white' : 'text-primary'} 
-            ${animationStage >= 3 ? (isMobile ? '-translate-y-[17.5vh]' : 'md:-translate-x-[17.5vw]') : ''}
+            ${animationStage >= 3 ? (isMobile ? '-translate-y-[17.5vh]' : '-translate-x-[17.5vw]') : ''}
             ${animationStage >= 5 ? 'opacity-80' : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
@@ -70,7 +70,7 @@ const Product = () => {
           ref={logoRef}
           className={`text-5xl md:text-7xl font-bold text-white transition-all duration-1000 ease-out font-[Montserrat]
             ${animationStage === 0 ? 'opacity-0 translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 3 ? (isMobile ? 'translate-y-[17.5vh]' : 'md:translate-x-[17.5vw]') : ''}
+            ${animationStage >= 3 ? (isMobile ? 'translate-y-[17.5vh]' : 'translate-x-[17.5vw]') : ''}
             ${animationStage >= 5 ? 'opacity-80' : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
@@ -81,7 +81,8 @@ const Product = () => {
       </div>
       
       {/* CSS for the glitch animation */}
-      <style jsx>{`
+      <style>
+        {`
         @keyframes glitch {
           0% {
             clip-path: inset(40% 0 61% 0);
@@ -115,7 +116,8 @@ const Product = () => {
             filter: none;
           }
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
