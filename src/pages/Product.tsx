@@ -60,7 +60,7 @@ const Product = () => {
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
             transitionDuration: animationStage === 2 ? "500ms" : "1000ms", // Slower color transition
-            position: "relative", // Ensure it's positioned relative to the flow
+            position: "absolute", // Changed from relative to absolute positioning
             zIndex: 10
           }}
         >
@@ -76,7 +76,7 @@ const Product = () => {
             ${animationStage >= 5 ? 'opacity-80' : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-            position: "relative", // Ensure it's positioned relative to the flow
+            position: "absolute", // Changed from relative to absolute positioning
             zIndex: 10
           }}
         >
