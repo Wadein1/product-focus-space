@@ -49,9 +49,9 @@ const Product = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden">
       <div className="relative flex flex-col items-center justify-center w-full h-full">
-        {/* Logo container */}
+        {/* Logo container - absolute positioning with transform to ensure consistent positioning */}
         <div 
-          className={`absolute z-20 transform transition-all duration-500 ${
+          className={`absolute z-20 left-1/2 -translate-x-1/2 transition-all duration-500 ${
             animationStage >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
           }`}
           style={{
@@ -64,7 +64,7 @@ const Product = () => {
             ref={logoImageRef}
             src="/lovable-uploads/e4668e58-44af-46a9-9887-8dac7f9ac75c.png" 
             alt="Logo" 
-            className={`w-32 md:w-48 absolute top-0 left-0 transition-all duration-700 ${
+            className={`w-32 md:w-48 transition-all duration-700 ${
               animationStage === 3 ? 'animate-glitch' : ''
             } ${showSecondLogo ? 'opacity-0 -translate-x-full blur-sm' : 'opacity-100'}`}
             style={{
@@ -77,7 +77,7 @@ const Product = () => {
             ref={secondLogoImageRef}
             src="/lovable-uploads/f923f914-68d3-46aa-9928-585445452189.png" 
             alt="Second Logo" 
-            className={`w-32 md:w-48 absolute top-0 left-0 transition-all duration-700 ${
+            className={`w-32 md:w-48 transition-all duration-700 ${
               showSecondLogo && !showThirdLogo ? 'opacity-100 translate-x-0 animate-glitch' : 
               showSecondLogo && showThirdLogo ? 'opacity-0 -translate-x-full blur-sm' : 
               'opacity-0 translate-x-full blur-sm'
@@ -87,7 +87,7 @@ const Product = () => {
             }}
           />
           
-          {/* Third logo that appears with swipe fade transition - significantly bigger */}
+          {/* Third logo that appears with swipe fade transition - bigger size */}
           <img 
             ref={thirdLogoImageRef}
             src="/lovable-uploads/ce3838a6-2d2a-4686-a9b2-13db346e7b3f.png" 
@@ -101,32 +101,39 @@ const Product = () => {
           />
         </div>
         
-        {/* "Your" text */}
-        <div 
-          ref={yourRef}
-          className={`text-5xl md:text-7xl font-bold transition-all duration-1000 ease-out font-[Montserrat] z-10
-            ${animationStage === 0 ? 'opacity-0 -translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 2 ? 'text-white' : 'text-primary'} 
-            ${animationStage >= 3 ? (isMobile ? '-translate-y-[200%]' : 'md:-translate-x-[200%]') : ''}`}
-          style={{
-            transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-            transitionDuration: animationStage === 2 ? "500ms" : "1000ms" // Slower color transition
-          }}
-        >
-          Your
-        </div>
-        
-        {/* "Logo" text */}
-        <div 
-          ref={logoRef}
-          className={`text-5xl md:text-7xl font-bold text-white transition-all duration-1000 ease-out font-[Montserrat]
-            ${animationStage === 0 ? 'opacity-0 translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 3 ? (isMobile ? 'translate-y-[200%]' : 'md:translate-x-[200%]') : ''}`}
-          style={{
-            transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
-          }}
-        >
-          Logo
+        {/* Text container to ensure consistent positioning */}
+        <div className="relative flex flex-col items-center justify-center">
+          {/* "Your" text - using fixed values for transform to ensure consistent movement */}
+          <div 
+            ref={yourRef}
+            className={`text-5xl md:text-7xl font-bold transition-all duration-1000 ease-out font-[Montserrat] z-10 absolute
+              ${animationStage === 0 ? 'opacity-0 -translate-y-20' : 'opacity-100 translate-y-0'} 
+              ${animationStage >= 2 ? 'text-white' : 'text-primary'}`}
+            style={{
+              transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+              transitionDuration: animationStage === 2 ? "500ms" : "1000ms", // Slower color transition
+              transform: animationStage >= 3 ? (isMobile ? 'translateY(-150px)' : 'translateY(-150px)') : 'translateY(0)'
+            }}
+          >
+            Your
+          </div>
+          
+          {/* "Logo" text - using fixed values for transform to ensure consistent movement */}
+          <div 
+            ref={logoRef}
+            className={`text-5xl md:text-7xl font-bold text-white transition-all duration-1000 ease-out font-[Montserrat] absolute`}
+            style={{
+              transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+              opacity: animationStage === 0 ? 0 : 1,
+              transform: animationStage === 0 
+                ? 'translateY(20px)'
+                : animationStage >= 3 
+                  ? (isMobile ? 'translateY(150px)' : 'translateY(150px)') 
+                  : 'translateY(0)'
+            }}
+          >
+            Logo
+          </div>
         </div>
       </div>
 
