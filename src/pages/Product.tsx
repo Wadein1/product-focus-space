@@ -5,11 +5,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const Product = () => {
   const [animationStage, setAnimationStage] = useState(0);
   const [showSecondLogo, setShowSecondLogo] = useState(false);
+  const [showThirdLogo, setShowThirdLogo] = useState(false);
   const isMobile = useIsMobile();
   const yourRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const logoImageRef = useRef<HTMLImageElement>(null);
   const secondLogoImageRef = useRef<HTMLImageElement>(null);
+  const thirdLogoImageRef = useRef<HTMLImageElement>(null);
   
   // Control the animation sequence with slower timings
   useEffect(() => {
@@ -19,6 +21,7 @@ const Product = () => {
     // Stage 3: Words separate - takes 0.5 seconds
     // Stage 4: First logo glitches - takes 0.5 seconds
     // Stage 5: Logo transition to second logo - takes 0.7 seconds
+    // Stage 6: Second logo to third logo transition - takes 0.7 seconds
     
     // Initial animation (coming together) - 1 second
     setTimeout(() => setAnimationStage(1), 1000);
@@ -32,10 +35,15 @@ const Product = () => {
     // Words separate
     setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
     
-    // Start logo swipe transition
+    // Start logo swipe transition to second logo
     setTimeout(() => {
       setShowSecondLogo(true);
     }, 3200); // 2700 + 500
+    
+    // Start logo swipe transition to third logo
+    setTimeout(() => {
+      setShowThirdLogo(true);
+    }, 4000); // 3200 + 800
   }, []);
 
   return (
@@ -69,8 +77,23 @@ const Product = () => {
             ref={secondLogoImageRef}
             src="/lovable-uploads/f923f914-68d3-46aa-9928-585445452189.png" 
             alt="Second Logo" 
+            className={`w-32 md:w-48 absolute top-0 left-0 transition-all duration-700 ${
+              showSecondLogo && !showThirdLogo ? 'opacity-100 translate-x-0 animate-glitch' : 
+              showSecondLogo && showThirdLogo ? 'opacity-0 -translate-x-full blur-sm' : 
+              'opacity-0 translate-x-full blur-sm'
+            }`}
+            style={{
+              transition: 'all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)'
+            }}
+          />
+          
+          {/* Third logo that appears with swipe fade transition */}
+          <img 
+            ref={thirdLogoImageRef}
+            src="/lovable-uploads/ce3838a6-2d2a-4686-a9b2-13db346e7b3f.png" 
+            alt="Third Logo" 
             className={`w-32 md:w-48 transition-all duration-700 ${
-              showSecondLogo ? 'opacity-100 translate-x-0 animate-glitch' : 'opacity-0 translate-x-full blur-sm'
+              showThirdLogo ? 'opacity-100 translate-x-0 animate-glitch' : 'opacity-0 translate-x-full blur-sm'
             }`}
             style={{
               transition: 'all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)'
