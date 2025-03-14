@@ -64,7 +64,7 @@ const Product = () => {
             ref={logoImageRef}
             src="/lovable-uploads/e4668e58-44af-46a9-9887-8dac7f9ac75c.png" 
             alt="Logo" 
-            className={`w-32 md:w-48 absolute left-1/2 transform -translate-x-1/2 transition-all duration-700 ${
+            className={`w-32 md:w-48 absolute top-0 left-0 transition-all duration-700 ${
               animationStage === 3 ? 'animate-glitch' : ''
             } ${showSecondLogo ? 'opacity-0 -translate-x-full blur-sm' : 'opacity-100'}`}
             style={{
@@ -77,7 +77,7 @@ const Product = () => {
             ref={secondLogoImageRef}
             src="/lovable-uploads/f923f914-68d3-46aa-9928-585445452189.png" 
             alt="Second Logo" 
-            className={`w-32 md:w-48 absolute left-1/2 transform -translate-x-1/2 transition-all duration-700 ${
+            className={`w-32 md:w-48 absolute top-0 left-0 transition-all duration-700 ${
               showSecondLogo && !showThirdLogo ? 'opacity-100 translate-x-0 animate-glitch' : 
               showSecondLogo && showThirdLogo ? 'opacity-0 -translate-x-full blur-sm' : 
               'opacity-0 translate-x-full blur-sm'
@@ -87,12 +87,12 @@ const Product = () => {
             }}
           />
           
-          {/* Third logo that appears with swipe fade transition - 150% larger than previous size */}
+          {/* Third logo that appears with swipe fade transition - significantly bigger */}
           <img 
             ref={thirdLogoImageRef}
             src="/lovable-uploads/ce3838a6-2d2a-4686-a9b2-13db346e7b3f.png" 
             alt="Third Logo" 
-            className={`w-[180px] md:w-[270px] transition-all duration-700 ${
+            className={`w-[120px] md:w-[180px] transition-all duration-700 ${
               showThirdLogo ? 'opacity-100 translate-x-0 animate-glitch' : 'opacity-0 translate-x-full blur-sm'
             }`}
             style={{
@@ -135,27 +135,27 @@ const Product = () => {
         {`
           @keyframes glitch {
             0% {
-              transform: translate(-50%, 0);
+              transform: translate(0);
               filter: brightness(1);
             }
             20% {
-              transform: translate(calc(-50% - 5px), 5px);
+              transform: translate(-5px, 5px);
               filter: brightness(1.1);
             }
             40% {
-              transform: translate(calc(-50% - 5px), -5px);
+              transform: translate(-5px, -5px);
               filter: brightness(0.9);
             }
             60% {
-              transform: translate(calc(-50% + 5px), 5px) skewX(5deg);
+              transform: translate(5px, 5px) skewX(5deg);
               filter: brightness(1.2) contrast(1.1);
             }
             80% {
-              transform: translate(calc(-50% + 5px), -5px);
+              transform: translate(5px, -5px);
               filter: brightness(0.9) contrast(1.2);
             }
             100% {
-              transform: translate(-50%, 0);
+              transform: translate(0);
               filter: brightness(1);
             }
           }
