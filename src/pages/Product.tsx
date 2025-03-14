@@ -7,6 +7,7 @@ const Product = () => {
   const isMobile = useIsMobile();
   const yourRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
+  const logoImageRef = useRef<HTMLImageElement>(null);
   
   // Control the animation sequence with slower timings
   useEffect(() => {
@@ -31,6 +32,24 @@ const Product = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden">
       <div className="relative flex flex-col items-center justify-center w-full h-full">
+        {/* Logo image that appears with glitch effect when words separate */}
+        <div 
+          className={`absolute z-20 transform transition-all duration-500 ${
+            animationStage >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+          }`}
+          style={{
+            filter: animationStage >= 3 ? 'none' : 'blur(10px)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+          }}
+        >
+          <img 
+            ref={logoImageRef}
+            src="/lovable-uploads/e4668e58-44af-46a9-9887-8dac7f9ac75c.png" 
+            alt="Logo" 
+            className={`w-16 md:w-24 ${animationStage === 3 ? 'animate-glitch' : ''}`}
+          />
+        </div>
+        
         {/* "Your" text */}
         <div 
           ref={yourRef}
@@ -59,6 +78,42 @@ const Product = () => {
           Logo
         </div>
       </div>
+
+      {/* CSS for the glitch animation */}
+      <style>
+        {`
+          @keyframes glitch {
+            0% {
+              transform: translate(0);
+              filter: brightness(1);
+            }
+            20% {
+              transform: translate(-5px, 5px);
+              filter: brightness(1.1);
+            }
+            40% {
+              transform: translate(-5px, -5px);
+              filter: brightness(0.9);
+            }
+            60% {
+              transform: translate(5px, 5px) skewX(5deg);
+              filter: brightness(1.2) contrast(1.1);
+            }
+            80% {
+              transform: translate(5px, -5px);
+              filter: brightness(0.9) contrast(1.2);
+            }
+            100% {
+              transform: translate(0);
+              filter: brightness(1);
+            }
+          }
+          
+          .animate-glitch {
+            animation: glitch 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+          }
+        `}
+      </style>
     </div>
   );
 };
