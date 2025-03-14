@@ -42,12 +42,14 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({ onAnimationComplete 
       
       <style>
         {`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+        
         .text-animation {
           display: flex;
           flex-direction: ${isMobile ? 'column' : 'row'};
           align-items: center;
           justify-content: center;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Montserrat', sans-serif;
           font-weight: bold;
           font-size: ${isMobile ? '2.5rem' : '4rem'};
           width: 100%;
