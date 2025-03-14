@@ -59,39 +59,6 @@
   @apply opacity-100 translate-y-0;
 }
 
-/* Global glitch animation for use across the site */
-@keyframes glitch {
-  0% {
-    clip-path: inset(40% 0 61% 0);
-    transform: translate(-20px, 10px);
-  }
-  20% {
-    clip-path: inset(92% 0 1% 0);
-    transform: translate(20px, -10px);
-  }
-  40% {
-    clip-path: inset(43% 0 1% 0);
-    transform: translate(-20px, -10px);
-  }
-  60% {
-    clip-path: inset(25% 0 58% 0);
-    transform: translate(20px, 10px);
-  }
-  80% {
-    clip-path: inset(54% 0 7% 0);
-    transform: translate(-20px, 10px);
-  }
-  100% {
-    clip-path: inset(0% 0 0% 0);
-    transform: translate(0, 0);
-    filter: none;
-  }
-}
-
-.glitch-animation {
-  animation: glitch 0.3s ease-in-out forwards;
-}
-
 /* Toast styling */
 [data-sonner-toaster][data-theme="light"] {
   @apply bg-white/95 backdrop-blur-sm shadow-lg !important;
