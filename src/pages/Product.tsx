@@ -37,7 +37,7 @@ const Product = () => {
           className={`text-5xl md:text-7xl font-bold transition-all duration-1000 ease-out font-[Montserrat] z-10
             ${animationStage === 0 ? 'opacity-0 -translate-y-20' : 'opacity-100 translate-y-0'} 
             ${animationStage >= 2 ? 'text-white' : 'text-primary'} 
-            ${animationStage >= 3 ? (isMobile ? '-translate-y-[15%]' : 'md:-translate-x-[15%]') : ''}`}
+            ${animationStage >= 3 ? (isMobile ? '-translate-y-[200%]' : 'md:-translate-x-[200%]') : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
             transitionDuration: animationStage === 2 ? "500ms" : "1000ms" // Slower color transition
@@ -51,7 +51,7 @@ const Product = () => {
           ref={logoRef}
           className={`text-5xl md:text-7xl font-bold text-white transition-all duration-1000 ease-out font-[Montserrat]
             ${animationStage === 0 ? 'opacity-0 translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 3 ? (isMobile ? 'translate-y-[15%]' : 'md:translate-x-[15%]') : ''}`}
+            ${animationStage >= 3 ? (isMobile ? 'translate-y-[200%]' : 'md:translate-x-[200%]') : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
           }}
