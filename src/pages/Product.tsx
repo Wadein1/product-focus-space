@@ -7,6 +7,7 @@ const Product = () => {
   const isMobile = useIsMobile();
   const yourRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
+  const logoImageRef = useRef<HTMLImageElement>(null);
   
   // Control the animation sequence with slower timings
   useEffect(() => {
@@ -14,6 +15,7 @@ const Product = () => {
     // Stage 1: Words centered - stays for 0.7 seconds
     // Stage 2: "Your" changes to white (with slower color transition) - takes 0.5 seconds
     // Stage 3: Words separate - takes 0.5 seconds
+    // Stage 4: Logo appears - with glitch effect
     
     // Initial animation (coming together) - 1 second
     setTimeout(() => setAnimationStage(1), 1000);
@@ -24,7 +26,7 @@ const Product = () => {
     // "Your" changes to white (with slower wipe transition)
     setTimeout(() => setAnimationStage(3), 2200); // 1700 + 500
     
-    // Words separate
+    // Words separate and logo appears
     setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
   }, []);
 
@@ -45,6 +47,19 @@ const Product = () => {
         >
           Your
         </div>
+        
+        {/* Logo image - appears during stage 4 */}
+        {animationStage >= 4 && (
+          <img 
+            ref={logoImageRef}
+            src="/lovable-uploads/c724ea2d-3b4d-439b-9628-99d3c7d461a4.png"
+            alt="Logo"
+            className={`absolute logo-glitch z-20 w-24 h-24 md:w-32 md:h-32 object-contain`}
+            style={{
+              opacity: 0, // Start invisible and let the animation reveal it
+            }}
+          />
+        )}
         
         {/* "Logo" text */}
         <div 
