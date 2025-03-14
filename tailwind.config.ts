@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -22,7 +21,6 @@ export default {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
         display: ["Inter", "sans-serif"],
-        montserrat: ["Montserrat", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
