@@ -92,7 +92,7 @@ const Product = () => {
             ref={thirdLogoImageRef}
             src="/lovable-uploads/ce3838a6-2d2a-4686-a9b2-13db346e7b3f.png" 
             alt="Third Logo" 
-            className={`w-[120px] md:w-[180px] transition-all duration-700 ${
+            className={`w-[180px] md:w-[270px] transition-all duration-700 ${
               showThirdLogo ? 'opacity-100 translate-x-0 animate-glitch' : 'opacity-0 translate-x-full blur-sm'
             }`}
             style={{
