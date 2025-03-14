@@ -59,7 +59,9 @@ const Product = () => {
             ${animationStage >= 5 ? 'opacity-80' : ''}`}
           style={{
             transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-            transitionDuration: animationStage === 2 ? "500ms" : "1000ms" // Slower color transition
+            transitionDuration: animationStage === 2 ? "500ms" : "1000ms", // Slower color transition
+            position: "relative", // Ensure it's positioned relative to the flow
+            zIndex: 10
           }}
         >
           Your
@@ -73,7 +75,9 @@ const Product = () => {
             ${animationStage >= 3 ? (isMobile ? 'translate-y-[17.5vh]' : 'translate-x-[17.5vw]') : ''}
             ${animationStage >= 5 ? 'opacity-80' : ''}`}
           style={{
-            transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+            transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+            position: "relative", // Ensure it's positioned relative to the flow
+            zIndex: 10
           }}
         >
           Logo
