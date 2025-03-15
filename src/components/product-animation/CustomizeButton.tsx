@@ -25,7 +25,7 @@ export const CustomizeButton: React.FC = () => {
       className={`absolute z-40 transition-all duration-800 ease-out ${animationStage >= 9 ? 'opacity-100' : 'opacity-0'}`} 
       style={{
         transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1.6)',
-        bottom: isMobile ? '-350px' : '-500px', // Increased distance for better visibility on all devices
+        bottom: isMobile ? '-125px' : '-275px', // Moved up 225px from previous position (-350px and -500px)
         left: '50%',
         transform: animationStage >= 9 ? 'translate(-50%, 0)' : 'translate(-50%, 100px)',
         width: 'fit-content'
