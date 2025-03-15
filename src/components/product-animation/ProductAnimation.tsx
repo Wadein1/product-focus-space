@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AnimationProvider } from './AnimationContext';
 import { AnimationStyles } from './AnimationStyles';
 import { AnimatedText } from './AnimatedText';

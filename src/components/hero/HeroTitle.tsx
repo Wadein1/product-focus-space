@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
@@ -12,7 +13,7 @@ export const HeroTitle = () => {
         </span>
       </h1>
       <Link 
-        to="/product" 
+        to="/customize" 
         className="inline-flex items-center gap-2 button-primary transform hover:scale-105 transition-all duration-300 text-lg px-8 py-4 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 text-white"
       >
         Get Yours Now

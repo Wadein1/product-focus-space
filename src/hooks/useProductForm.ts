@@ -178,6 +178,7 @@ export const useProductForm = () => {
   return {
     quantity,
     imagePreview,
+    setImagePreview,
     chainColors,
     selectedChainColor,
     isAddingToCart,
