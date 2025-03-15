@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -40,14 +39,14 @@ const Product = () => {
     if (isMobile) {
       return "translateY(-100px)";
     }
-    return "translateX(-200%)"; // Increased from -100% to -200% for web version
+    return "translateX(-120%)"; // Changed from -200% to -120% for web version
   };
 
   const getLowerTransformValue = () => {
     if (isMobile) {
       return "translateY(100px)";
     }
-    return "translateX(200%)"; // Increased from 100% to 200% for web version
+    return "translateX(120%)"; // Changed from 200% to 120% for web version
   };
 
   return (
