@@ -24,6 +24,10 @@ export const useProductCustomization = () => {
     }
   };
 
+  const removeImage = () => {
+    setImagePreview(null);
+  };
+
   return {
     teamName,
     setTeamName,
@@ -34,5 +38,6 @@ export const useProductCustomization = () => {
     showDiscountAnimation,
     setShowDiscountAnimation,
     handleFileChange,
+    removeImage,
   };
 };
