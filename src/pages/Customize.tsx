@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 import { ArrowRight, Upload, Check, Minus, Plus } from "lucide-react";
@@ -400,7 +399,8 @@ const Customize = () => {
       </div>
 
       {/* Add animation keyframes */}
-      <style jsx>{`
+      <style>
+        {`
         @keyframes strikethrough {
           0% { width: 0; }
           100% { width: 100%; }
@@ -423,7 +423,8 @@ const Customize = () => {
           0% { opacity: 1; }
           100% { opacity: 0; }
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

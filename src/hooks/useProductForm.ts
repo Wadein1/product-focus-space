@@ -11,7 +11,8 @@ export const useProductForm = () => {
     imagePreview: customization.imagePreview,
     teamName: customization.teamName,
     teamLocation: customization.teamLocation,
-    quantity: quantityManager.quantity
+    quantity: quantityManager.quantity,
+    selectedChainColor: "Designers' Choice" // Adding the default value to fix the type error
   });
 
   return {
