@@ -73,7 +73,7 @@ const Product = () => {
               ${animationStage >= 2 ? 'text-white' : 'text-primary'}`}
             style={{
               transform: animationStage === 0 
-                ? 'translateY(-490px)' 
+                ? 'translateY(-1000px)' 
                 : animationStage >= 3 
                   ? getTransformValue() 
                   : 'translateY(-15px)',
@@ -90,7 +90,7 @@ const Product = () => {
               ${animationStage === 0 ? 'opacity-0' : 'opacity-100'}`}
             style={{
               transform: animationStage === 0 
-                ? 'translateY(490px)' 
+                ? 'translateY(1000px)' 
                 : animationStage >= 3 
                   ? getLowerTransformValue() 
                   : 'translateY(15px)',
