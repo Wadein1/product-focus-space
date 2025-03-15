@@ -80,8 +80,8 @@ const Product = () => {
           }}
         >
           <img 
-            src="/lovable-uploads/09401015-36b1-4951-87d2-96e01806a71e.png" 
-            alt="Second Logo" 
+            src="/lovable-uploads/0714db33-c114-424b-97d9-9d52f0946db7.png" 
+            alt="Spartan Logo" 
             className={`w-32 md:w-48 ${animationStage === 5 ? 'animate-second-logo-glitch' : ''}`}
           />
         </div>
