@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -15,7 +14,6 @@ import Support from "./pages/Support";
 import Fundraising from "./pages/Fundraising";
 import FundraiserPage from "./pages/FundraiserPage";
 import { OrderSuccess } from "./components/checkout/OrderSuccess";
-import Customize from "./pages/Customize";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +35,6 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/product" element={<Product />} />
-              <Route path="/customize" element={<Customize />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/success" element={<Success />} />
               <Route path="/cancel" element={<Cancel />} />

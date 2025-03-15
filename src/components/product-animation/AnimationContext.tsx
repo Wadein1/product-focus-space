@@ -3,21 +3,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface AnimationContextType {
   animationStage: number;
-  startExitAnimation: () => void;
-  isExiting: boolean;
 }
 
-const AnimationContext = createContext<AnimationContextType>({ 
-  animationStage: 0, 
-  startExitAnimation: () => {}, 
-  isExiting: false 
-});
+const AnimationContext = createContext<AnimationContextType>({ animationStage: 0 });
 
 export const useAnimationContext = () => useContext(AnimationContext);
 
 export const AnimationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [animationStage, setAnimationStage] = useState(0);
-  const [isExiting, setIsExiting] = useState(false);
   
   // Control the animation sequence with stable timings
   useEffect(() => {
@@ -60,12 +53,8 @@ export const AnimationProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, []);
 
-  const startExitAnimation = () => {
-    setIsExiting(true);
-  };
-
   return (
-    <AnimationContext.Provider value={{ animationStage, startExitAnimation, isExiting }}>
+    <AnimationContext.Provider value={{ animationStage }}>
       {children}
     </AnimationContext.Provider>
   );

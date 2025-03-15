@@ -4,28 +4,20 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useAnimationContext } from './AnimationContext';
 import { useTransformValues } from './TransformUtils';
-import { useNavigate } from 'react-router-dom';
 
 export const CustomizeButton: React.FC = () => {
   const {
-    animationStage,
-    startExitAnimation
+    animationStage
   } = useAnimationContext();
   const {
     isMobile
   } = useTransformValues();
-  const navigate = useNavigate();
 
-  // Button click handler to navigate to the product customization page with animation
+  // Button click handler to navigate to the product customization page
   const handleCustomizeClick = () => {
     console.log("Customize button clicked");
-    // Start the exit animation
-    startExitAnimation();
-    
-    // Navigate after animation completes
-    setTimeout(() => {
-      navigate("/customize");
-    }, 800); // Match this with animation duration
+    // Navigate to the customization page
+    window.location.href = "/customize";
   };
 
   return (
