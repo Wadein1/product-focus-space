@@ -8,20 +8,21 @@ const Product = () => {
   
   // Control the animation sequence with stable timings
   useEffect(() => {
-    // Stage 0: Initial stage (words coming in) - takes 1 second
+    // Stage 0: Initial stage (words coming in) - takes 1.2 seconds
     // Stage 1: Words centered - stays for 0.7 seconds
-    // Stage 2: "Your" changes to white - takes 0.5 seconds
-    // Stage 3: Words separate - takes 0.5 seconds
-    // Stage 4: Logo transitions to second logo - takes 0.5 seconds
-    // Stage 5: Second logo fades in - takes 0.5 seconds
-    // Stage 6: Third logo fades in - takes 0.5 seconds
+    // Stage 2: "Your" changes to white - takes 0.6 seconds
+    // Stage 3: Words separate - takes 0.6 seconds
+    // Stage 4: Logo transitions to second logo - takes 0.6 seconds
+    // Stage 5: Second logo fades in - takes 0.6 seconds and stays for 1 second
+    // Stage 6: Third logo fades in - takes 0.6 seconds
     
-    const timer1 = setTimeout(() => setAnimationStage(1), 1000);
-    const timer2 = setTimeout(() => setAnimationStage(2), 1700); // 1000 + 700
-    const timer3 = setTimeout(() => setAnimationStage(3), 2200); // 1700 + 500
-    const timer4 = setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
-    const timer5 = setTimeout(() => setAnimationStage(5), 3200); // 2700 + 500
-    const timer6 = setTimeout(() => setAnimationStage(6), 3700); // 3200 + 500
+    const timer1 = setTimeout(() => setAnimationStage(1), 1200);
+    const timer2 = setTimeout(() => setAnimationStage(2), 1900); // 1200 + 700
+    const timer3 = setTimeout(() => setAnimationStage(3), 2500); // 1900 + 600
+    const timer4 = setTimeout(() => setAnimationStage(4), 3100); // 2500 + 600
+    const timer5 = setTimeout(() => setAnimationStage(5), 3700); // 3100 + 600
+    // Add extra 1000ms hold time before transitioning to the third logo
+    const timer6 = setTimeout(() => setAnimationStage(6), 5300); // 3700 + 600 + 1000 (hold time)
     
     // Cleanup timers to prevent memory leaks
     return () => {
