@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 import { ArrowRight, Upload, Check, Minus, Plus } from "lucide-react";
@@ -192,31 +191,6 @@ const Customize = () => {
           {step === 2 && (
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gray-900/40 p-6 rounded-xl border border-gray-800">
-                  {productForm.imagePreview ? (
-                    <div className="mb-4">
-                      <img 
-                        src={productForm.imagePreview} 
-                        alt="Your design" 
-                        className="w-full h-64 object-contain" 
-                      />
-                    </div>
-                  ) : (
-                    <div className="bg-gray-800/60 rounded-lg mb-4 h-64 flex items-center justify-center">
-                      <p className="text-white text-lg">
-                        {productForm.teamName && productForm.teamLocation ? (
-                          <>
-                            <span className="font-bold block text-xl">{productForm.teamName}</span>
-                            <span className="text-gray-400">{productForm.teamLocation}</span>
-                          </>
-                        ) : (
-                          <span className="text-gray-400">No image uploaded</span>
-                        )}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                
                 <div>
                   <div className="mb-6">
                     <label className="block text-white font-medium mb-2">Chain Links Color</label>
