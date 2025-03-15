@@ -12,16 +12,16 @@ const Product = () => {
     // Stage 1: Words centered - stays for 0.7 seconds
     // Stage 2: "Your" changes to white - takes 0.5 seconds
     // Stage 3: Words separate - takes 0.5 seconds
-    // Stage 4: Logo transitions to second logo - takes 0.8 seconds
-    // Stage 5: Second logo fades in - takes 0.8 seconds
-    // Stage 6: Third logo fades in - takes 0.8 seconds
+    // Stage 4: Logo transitions to second logo - takes 0.5 seconds
+    // Stage 5: Second logo fades in - takes 0.5 seconds
+    // Stage 6: Third logo fades in - takes 0.5 seconds
     
     const timer1 = setTimeout(() => setAnimationStage(1), 1000);
     const timer2 = setTimeout(() => setAnimationStage(2), 1700); // 1000 + 700
     const timer3 = setTimeout(() => setAnimationStage(3), 2200); // 1700 + 500
     const timer4 = setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
-    const timer5 = setTimeout(() => setAnimationStage(5), 3500); // 2700 + 800
-    const timer6 = setTimeout(() => setAnimationStage(6), 4300); // 3500 + 800
+    const timer5 = setTimeout(() => setAnimationStage(5), 3200); // 2700 + 500
+    const timer6 = setTimeout(() => setAnimationStage(6), 3700); // 3200 + 500
     
     // Cleanup timers to prevent memory leaks
     return () => {
@@ -73,11 +73,11 @@ const Product = () => {
 
         {/* Second Logo image with slide-in effect */}
         <div 
-          className={`absolute z-20 transition-all duration-800 ${
+          className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 5 && animationStage < 6 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
           }`}
           style={{
-            transition: 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -86,17 +86,17 @@ const Product = () => {
           <img 
             src="/lovable-uploads/0714db33-c114-424b-97d9-9d52f0946db7.png" 
             alt="Spartan Logo" 
-            className={`w-32 md:w-48 ${animationStage === 5 ? 'animate-second-logo-glitch' : ''}`}
+            className={`w-32 md:w-48 ${animationStage === 5 ? 'animate-glitch' : ''}`}
           />
         </div>
         
         {/* Third Logo image with slide-in effect */}
         <div 
-          className={`absolute z-20 transition-all duration-800 ${
+          className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 6 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
           }`}
           style={{
-            transition: 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -105,7 +105,7 @@ const Product = () => {
           <img 
             src="/lovable-uploads/18f78706-7039-417a-bf70-837045f5e1de.png" 
             alt="Blue Logo" 
-            className={`w-32 md:w-48 ${animationStage === 6 ? 'animate-third-logo-glitch' : ''}`}
+            className={`w-32 md:w-48 ${animationStage === 6 ? 'animate-glitch' : ''}`}
           />
         </div>
         
@@ -179,76 +179,6 @@ const Product = () => {
           
           .animate-glitch {
             animation: glitch 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-          }
-
-          @keyframes second-logo-glitch {
-            0% {
-              transform: translate(0) scale(1);
-              filter: brightness(1);
-            }
-            15% {
-              transform: translate(-8px, 8px) scale(1.05);
-              filter: brightness(1.2) hue-rotate(5deg);
-            }
-            30% {
-              transform: translate(8px, -8px) scale(0.95);
-              filter: brightness(0.8) hue-rotate(-5deg);
-            }
-            45% {
-              transform: translate(-5px, -7px) skewX(-5deg) scale(1.03);
-              filter: brightness(1.3) contrast(1.1) hue-rotate(10deg);
-            }
-            60% {
-              transform: translate(5px, 7px) skewY(5deg) scale(0.97);
-              filter: brightness(0.7) contrast(1.2) hue-rotate(-10deg);
-            }
-            75% {
-              transform: translate(3px, -3px) scale(1.01);
-              filter: brightness(1.1) hue-rotate(5deg);
-            }
-            100% {
-              transform: translate(0) scale(1);
-              filter: brightness(1);
-            }
-          }
-          
-          .animate-second-logo-glitch {
-            animation: second-logo-glitch 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-          }
-
-          @keyframes third-logo-glitch {
-            0% {
-              transform: translate(0) scale(1);
-              filter: brightness(1);
-            }
-            15% {
-              transform: translate(-8px, 8px) scale(1.05);
-              filter: brightness(1.2) hue-rotate(5deg);
-            }
-            30% {
-              transform: translate(8px, -8px) scale(0.95);
-              filter: brightness(0.8) hue-rotate(-5deg);
-            }
-            45% {
-              transform: translate(-5px, -7px) skewX(-5deg) scale(1.03);
-              filter: brightness(1.3) contrast(1.1) hue-rotate(10deg);
-            }
-            60% {
-              transform: translate(5px, 7px) skewY(5deg) scale(0.97);
-              filter: brightness(0.7) contrast(1.2) hue-rotate(-10deg);
-            }
-            75% {
-              transform: translate(3px, -3px) scale(1.01);
-              filter: brightness(1.1) hue-rotate(5deg);
-            }
-            100% {
-              transform: translate(0) scale(1);
-              filter: brightness(1);
-            }
-          }
-          
-          .animate-third-logo-glitch {
-            animation: third-logo-glitch 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
           }
         `}
       </style>
