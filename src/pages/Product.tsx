@@ -40,14 +40,14 @@ const Product = () => {
     if (isMobile) {
       return "translateY(-100px)";
     }
-    return "translateX(-100%)";
+    return "translateX(-200%)"; // Increased from -100% to -200% for web version
   };
 
   const getLowerTransformValue = () => {
     if (isMobile) {
       return "translateY(100px)";
     }
-    return "translateX(100%)";
+    return "translateX(200%)"; // Increased from 100% to 200% for web version
   };
 
   return (
