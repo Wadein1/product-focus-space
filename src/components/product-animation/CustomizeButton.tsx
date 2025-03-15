@@ -20,10 +20,9 @@ export const CustomizeButton: React.FC = () => {
   
   return <div className={`absolute z-40 transition-all duration-800 ease-out ${animationStage >= 9 ? 'opacity-100' : 'opacity-0'}`} style={{
     transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1.6)',
-    transform: animationStage >= 9 ? 'translateY(0)' : 'translateY(100px)',
     // Moved down significantly to be well below the chain image
     bottom: isMobile ? '-100px' : '-200px',
-    // Center-aligned properly by removing marginLeft and using transform
+    // Center-aligned properly using transform
     left: '50%',
     transform: animationStage >= 9 
       ? 'translate(-50%, 0)' 
