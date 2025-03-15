@@ -65,7 +65,7 @@ const Product = () => {
         </div>
         
         {/* Words container - gives a stable reference point */}
-        <div className="relative h-20 md:h-24 flex items-center justify-center">
+        <div className="relative h-32 md:h-40 flex items-center justify-center">
           {/* "Your" text */}
           <div 
             className={`absolute text-5xl md:text-7xl font-bold transition-all duration-1000 font-[Montserrat] z-10
@@ -73,10 +73,10 @@ const Product = () => {
               ${animationStage >= 2 ? 'text-white' : 'text-primary'}`}
             style={{
               transform: animationStage === 0 
-                ? 'translateY(-20px)' 
+                ? 'translateY(-30px)' 
                 : animationStage >= 3 
                   ? getTransformValue() 
-                  : 'translateY(0)',
+                  : 'translateY(-15px)',
               transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
               transitionDuration: animationStage === 2 ? "500ms" : "1000ms"
             }}
@@ -90,10 +90,10 @@ const Product = () => {
               ${animationStage === 0 ? 'opacity-0' : 'opacity-100'}`}
             style={{
               transform: animationStage === 0 
-                ? 'translateY(20px)' 
+                ? 'translateY(30px)' 
                 : animationStage >= 3 
                   ? getLowerTransformValue() 
-                  : 'translateY(0)',
+                  : 'translateY(15px)',
               transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
             }}
           >
