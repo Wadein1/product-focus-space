@@ -130,9 +130,7 @@ const Product = () => {
             <img 
               src="/lovable-uploads/9eb90291-d123-4a36-a72b-6bb0eb6bbc64.png" 
               alt="Chain Logo" 
-              style={{ 
-                width: isMobile ? '200vw' : '160rem' // Increased from 80vw to 200vw for mobile (250% increase)
-              }}
+              className={isMobile ? "w-4/5" : "w-[160rem]"}
             />
           </div>
         </div>
