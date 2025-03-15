@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
-import { ProductImage } from "@/components/product/ProductImage";
-import { ProductDetails } from "@/components/product/ProductDetails";
 import { ArrowRight, Upload, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +23,6 @@ const Customize = () => {
   
   // Set initial animation state
   useEffect(() => {
-    // Set a timeout to change animation state to idle
     const timer = setTimeout(() => {
       setAnimationState("idle");
     }, 800);
@@ -56,129 +53,124 @@ const Customize = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col justify-between" 
-         style={{ 
-           background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-           backgroundSize: "cover",
-           backgroundAttachment: "fixed" 
-         }}>
-      <div className="container mx-auto px-4 py-12 flex-grow flex items-center justify-center">
-        <div className={`max-w-5xl w-full transition-all duration-800 ease-out transform 
+    <div className="min-h-screen flex flex-col justify-between overflow-hidden" 
+      style={{ 
+        background: "linear-gradient(135deg, #000000 0%, #000000 75%, #0ca2ed20 100%)",
+        backgroundSize: "cover",
+        backgroundAttachment: "fixed" 
+      }}>
+      <div className="container mx-auto px-4 py-6 flex-grow flex items-center justify-center">
+        <div className={`w-full max-w-4xl transition-all duration-800 ease-out transform 
           ${animationState === "entering" ? "translate-x-[100%] opacity-0" : 
             animationState === "exiting" ? "translate-x-[-100%] opacity-0" : 
             "translate-x-0 opacity-100"}`}
         >
-          <h1 className="text-3xl font-bold mb-8 text-center text-white">Customize Your Medallion</h1>
-          
           {step === 1 && (
-            <div className="bg-[#1e293b]/70 backdrop-blur-sm rounded-xl shadow-xl p-8 md:p-10">
-              <h2 className="text-2xl font-semibold mb-6 text-white">Upload Your Design</h2>
-              
-              <div className="mb-8 border-2 border-dashed border-gray-400 rounded-lg p-8 text-center hover:border-[#0ca2ed] transition-colors duration-300">
-                <input 
-                  type="file" 
-                  id="design-upload" 
-                  className="hidden" 
-                  accept="image/*" 
-                  onChange={handleFileInputChange}
-                />
-                <label 
-                  htmlFor="design-upload" 
-                  className="cursor-pointer flex flex-col items-center justify-center"
-                >
-                  {productForm.imagePreview ? (
-                    <div className="w-full">
-                      <div className="relative w-64 h-64 mx-auto mb-4">
-                        <img 
-                          src={productForm.imagePreview} 
-                          alt="Preview" 
-                          className="w-full h-full object-contain rounded-md" 
-                        />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-md">
-                          <p className="text-white font-medium">Click to change</p>
+            <div className="space-y-8">
+              <div className="mb-8 flex flex-col md:flex-row gap-8">
+                {/* Modern upload design box */}
+                <div className="w-full md:w-1/2">
+                  <input 
+                    type="file" 
+                    id="design-upload" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleFileInputChange}
+                  />
+                  <label 
+                    htmlFor="design-upload" 
+                    className={`cursor-pointer flex flex-col items-center justify-center h-64 rounded-xl transition-all duration-300 
+                      ${productForm.imagePreview ? 
+                        'bg-gray-900/40 border border-gray-700' : 
+                        'bg-gray-900/40 border-2 border-dashed border-gray-700 hover:border-[#0ca2ed] hover:bg-gray-900/60'}`}
+                  >
+                    {productForm.imagePreview ? (
+                      <div className="w-full h-full p-4">
+                        <div className="relative w-full h-full">
+                          <img 
+                            src={productForm.imagePreview} 
+                            alt="Preview" 
+                            className="w-full h-full object-contain" 
+                          />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-md">
+                            <p className="text-white font-medium">Replace image</p>
+                          </div>
+                          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-[#00bf63] text-white px-3 py-1 rounded-full flex items-center text-sm">
+                            <Check className="mr-1" size={14} /> Uploaded
+                          </div>
                         </div>
                       </div>
-                      <p className="text-green-400 flex items-center justify-center">
-                        <Check className="mr-2" size={18} /> Image uploaded successfully
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="w-16 h-16 text-gray-400 mb-4" />
-                      <p className="text-lg font-medium text-white mb-2">Drag and drop or click to upload</p>
-                      <p className="text-gray-400 mb-4">PNG, JPG or SVG (max 10MB)</p>
-                      <Button className="bg-[#0ca2ed] hover:bg-[#0ca2ed]/80 text-white">
-                        Select File
-                      </Button>
-                    </>
-                  )}
-                </label>
-              </div>
-              
-              <div className="flex items-center my-8">
-                <div className="flex-grow h-px bg-gray-600"></div>
-                <span className="px-4 text-gray-400 font-medium">OR</span>
-                <div className="flex-grow h-px bg-gray-600"></div>
-              </div>
-              
-              <div className="space-y-6 mb-8">
-                <div>
-                  <label htmlFor="team-name" className="block text-white font-medium mb-2">Team Name</label>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-6 text-center">
+                        <div className="w-16 h-16 bg-gray-800/80 rounded-full flex items-center justify-center mb-4">
+                          <Upload className="w-8 h-8 text-[#0ca2ed]" />
+                        </div>
+                        <p className="text-[#0ca2ed] text-sm">Drop your image here or click to browse</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                
+                {/* Team info section */}
+                <div className="w-full md:w-1/2 space-y-4">
+                  <div className="flex items-center my-4 md:hidden">
+                    <div className="flex-grow h-px bg-gray-800"></div>
+                    <span className="px-4 text-gray-400 text-sm font-medium">OR</span>
+                    <div className="flex-grow h-px bg-gray-800"></div>
+                  </div>
+                  
+                  <p className="text-white text-sm font-medium mb-2 hidden md:block">Team Information</p>
+                  
                   <input
-                    id="team-name"
                     type="text"
                     value={productForm.teamName}
                     onChange={(e) => productForm.setTeamName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-[#0ca2ed] focus:ring-1 focus:ring-[#0ca2ed] outline-none transition-colors"
-                    placeholder="Enter your team name"
+                    className="w-full px-4 py-3 rounded-lg bg-gray-900/40 text-white border border-gray-700 focus:border-[#0ca2ed] focus:ring-1 focus:ring-[#0ca2ed] outline-none transition-colors"
+                    placeholder="Team Name"
+                    disabled={!!productForm.imagePreview}
                   />
-                </div>
-                
-                <div>
-                  <label htmlFor="team-location" className="block text-white font-medium mb-2">Team Location</label>
+                  
                   <input
-                    id="team-location"
                     type="text"
                     value={productForm.teamLocation}
                     onChange={(e) => productForm.setTeamLocation(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-[#0ca2ed] focus:ring-1 focus:ring-[#0ca2ed] outline-none transition-colors"
-                    placeholder="Enter your team location"
+                    className="w-full px-4 py-3 rounded-lg bg-gray-900/40 text-white border border-gray-700 focus:border-[#0ca2ed] focus:ring-1 focus:ring-[#0ca2ed] outline-none transition-colors"
+                    placeholder="Team Location"
+                    disabled={!!productForm.imagePreview}
                   />
                 </div>
               </div>
               
-              <div className="flex justify-end">
+              <div className="flex justify-center">
                 <Button 
                   onClick={handleNextStep}
                   disabled={!isValid}
                   className={`px-6 py-3 flex items-center justify-center rounded-lg transition-all duration-300 ${
                     isValid 
                       ? "bg-[#00bf63] hover:bg-[#00bf63]/90 text-white" 
-                      : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-800 text-gray-500 cursor-not-allowed"
                   }`}
                 >
-                  Next Step <ArrowRight className="ml-2" size={18} />
+                  Next <ArrowRight className="ml-2" size={18} />
                 </Button>
               </div>
             </div>
           )}
           
           {step === 2 && (
-            <div className="bg-[#1e293b]/70 backdrop-blur-sm rounded-xl shadow-xl p-8 md:p-10">
-              <h2 className="text-2xl font-semibold mb-6 text-white">Choose Chain Color</h2>
-              
+            <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gray-800/50 p-6 rounded-lg">
+                <div className="bg-gray-900/40 p-6 rounded-xl border border-gray-800">
                   {productForm.imagePreview ? (
                     <div className="mb-4">
                       <img 
                         src={productForm.imagePreview} 
                         alt="Your design" 
-                        className="w-full h-64 object-contain rounded-md" 
+                        className="w-full h-64 object-contain" 
                       />
                     </div>
                   ) : (
-                    <div className="bg-gray-700 p-6 rounded-lg mb-4 h-64 flex items-center justify-center">
+                    <div className="bg-gray-800/60 rounded-lg mb-4 h-64 flex items-center justify-center">
                       <p className="text-white text-lg">
                         {productForm.teamName && productForm.teamLocation ? (
                           <>
@@ -196,36 +188,36 @@ const Customize = () => {
                 <div>
                   <div className="mb-6">
                     <label className="block text-white font-medium mb-2">Chain Color</label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-3">
                       {productForm.chainColors.map((color) => (
                         <button
                           key={color.id}
                           type="button"
                           onClick={() => productForm.setSelectedChainColor(color.name)}
-                          className={`p-4 rounded-lg border transition-all ${
+                          className={`p-3 rounded-lg transition-all ${
                             productForm.selectedChainColor === color.name
-                              ? "border-[#0ca2ed] bg-gray-700"
-                              : "border-gray-600 bg-gray-800/50 hover:border-gray-400"
+                              ? "border-[#0ca2ed] bg-gray-800/80 border-2"
+                              : "border border-gray-700 bg-gray-900/40 hover:border-gray-500"
                           }`}
                         >
-                          <span className="text-white">{color.name}</span>
+                          <span className="text-white text-sm">{color.name}</span>
                         </button>
                       ))}
                       <button
                         type="button"
                         onClick={() => productForm.setSelectedChainColor("Designers' Choice")}
-                        className={`p-4 rounded-lg border transition-all ${
+                        className={`p-3 rounded-lg transition-all ${
                           productForm.selectedChainColor === "Designers' Choice"
-                            ? "border-[#0ca2ed] bg-gray-700"
-                            : "border-gray-600 bg-gray-800/50 hover:border-gray-400"
+                            ? "border-[#0ca2ed] bg-gray-800/80 border-2"
+                            : "border border-gray-700 bg-gray-900/40 hover:border-gray-500"
                         }`}
                       >
-                        <span className="text-white">Designers' Choice</span>
+                        <span className="text-white text-sm">Designer's Choice</span>
                       </button>
                     </div>
                   </div>
                   
-                  <div className="flex gap-4">
+                  <div className="flex justify-center gap-4">
                     <Button 
                       onClick={() => {
                         setAnimationState("exiting");
@@ -235,15 +227,15 @@ const Customize = () => {
                           setTimeout(() => setAnimationState("idle"), 800);
                         }, 800);
                       }}
-                      className="px-6 py-3 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-lg"
+                      className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg"
                     >
                       Back
                     </Button>
                     <Button 
                       onClick={handleNextStep}
-                      className="px-6 py-3 flex-1 flex items-center justify-center bg-[#00bf63] hover:bg-[#00bf63]/90 text-white rounded-lg"
+                      className="px-6 py-3 flex-1 bg-[#00bf63] hover:bg-[#00bf63]/90 text-white rounded-lg"
                     >
-                      Next Step <ArrowRight className="ml-2" size={18} />
+                      Next <ArrowRight className="ml-2" size={18} />
                     </Button>
                   </div>
                 </div>
@@ -252,21 +244,19 @@ const Customize = () => {
           )}
           
           {step === 3 && (
-            <div className="bg-[#1e293b]/70 backdrop-blur-sm rounded-xl shadow-xl p-8 md:p-10">
-              <h2 className="text-2xl font-semibold mb-6 text-white">Review and Purchase</h2>
-              
+            <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gray-800/50 p-6 rounded-lg">
+                <div className="bg-gray-900/40 p-6 rounded-xl border border-gray-800">
                   {productForm.imagePreview ? (
                     <div className="mb-4">
                       <img 
                         src={productForm.imagePreview} 
                         alt="Your design" 
-                        className="w-full h-64 object-contain rounded-md" 
+                        className="w-full h-64 object-contain" 
                       />
                     </div>
                   ) : (
-                    <div className="bg-gray-700 p-6 rounded-lg mb-4 h-64 flex items-center justify-center">
+                    <div className="bg-gray-800/60 rounded-lg mb-4 h-64 flex items-center justify-center">
                       <p className="text-white text-lg">
                         {productForm.teamName && productForm.teamLocation ? (
                           <>
@@ -291,7 +281,7 @@ const Customize = () => {
                 </div>
                 
                 <div>
-                  <div className="bg-gray-800/50 p-6 rounded-lg mb-6">
+                  <div className="bg-gray-900/40 p-6 rounded-xl border border-gray-800 mb-6">
                     <h3 className="text-xl font-semibold mb-4 text-white">Order Summary</h3>
                     <div className="space-y-4 text-white">
                       <div className="flex justify-between">
@@ -302,7 +292,7 @@ const Customize = () => {
                         <span>Quantity</span>
                         <span>x{productForm.quantity}</span>
                       </div>
-                      <div className="flex justify-between border-t border-gray-600 pt-4">
+                      <div className="flex justify-between border-t border-gray-700 pt-4">
                         <span className="font-medium">Subtotal</span>
                         <span>${(29.99 * productForm.quantity).toFixed(2)}</span>
                       </div>
@@ -310,7 +300,7 @@ const Customize = () => {
                         <span>Shipping</span>
                         <span>$8.00</span>
                       </div>
-                      <div className="flex justify-between border-t border-gray-600 pt-4 text-lg font-bold">
+                      <div className="flex justify-between border-t border-gray-700 pt-4 text-lg font-bold">
                         <span>Total</span>
                         <span>${(29.99 * productForm.quantity + 8).toFixed(2)}</span>
                       </div>
@@ -334,7 +324,7 @@ const Customize = () => {
                     </Button>
                   </div>
                   
-                  <div className="mt-6">
+                  <div className="mt-6 flex justify-center">
                     <Button 
                       onClick={() => {
                         setAnimationState("exiting");
@@ -344,7 +334,7 @@ const Customize = () => {
                           setTimeout(() => setAnimationState("idle"), 800);
                         }, 800);
                       }}
-                      className="px-6 py-3 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-lg"
+                      className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg"
                     >
                       Back
                     </Button>
@@ -356,26 +346,13 @@ const Customize = () => {
         </div>
       </div>
       
-      {/* Step Indicator */}
-      <div className="py-8 bg-gray-900/50 backdrop-blur-sm">
+      {/* Modern step indicator with thin lines */}
+      <div className="py-6 bg-black/50 backdrop-blur-sm">
         <div className="container mx-auto px-4">
-          <div className="flex justify-center items-center">
-            <div className="flex items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium 
-                ${step >= 1 ? "bg-[#00bf63]" : "bg-gray-600"}`}>
-                1
-              </div>
-              <div className={`w-16 md:w-24 h-1 ${step > 1 ? "bg-[#00bf63]" : "bg-gray-600"}`}></div>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium 
-                ${step >= 2 ? "bg-[#00bf63]" : "bg-gray-600"}`}>
-                2
-              </div>
-              <div className={`w-16 md:w-24 h-1 ${step > 2 ? "bg-[#00bf63]" : "bg-gray-600"}`}></div>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium 
-                ${step >= 3 ? "bg-[#00bf63]" : "bg-gray-600"}`}>
-                3
-              </div>
-            </div>
+          <div className="flex justify-center items-center space-x-4">
+            <div className={`h-1 w-24 md:w-32 rounded-full transition-colors duration-300 ${step >= 1 ? "bg-[#00bf63]" : "bg-gray-700"}`}></div>
+            <div className={`h-1 w-24 md:w-32 rounded-full transition-colors duration-300 ${step >= 2 ? "bg-[#00bf63]" : "bg-gray-700"}`}></div>
+            <div className={`h-1 w-24 md:w-32 rounded-full transition-colors duration-300 ${step >= 3 ? "bg-[#00bf63]" : "bg-gray-700"}`}></div>
           </div>
         </div>
       </div>
