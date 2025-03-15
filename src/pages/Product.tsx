@@ -1,8 +1,6 @@
+
 import React, { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
 
 const Product = () => {
   const [animationStage, setAnimationStage] = useState(0);
@@ -18,8 +16,6 @@ const Product = () => {
     // Stage 5: Second logo fades in - takes 0.6 seconds and stays until 4.8s
     // Stage 6: Third logo fades in - takes 0.6 seconds
     // Stage 7: Chain logo crashes in - takes 0.6 seconds
-    // Stage 8: Chain logo stays - for 0.8 seconds
-    // Stage 9: Chain logo slides up and scales down, button appears
     
     const timer1 = setTimeout(() => setAnimationStage(1), 1200);
     const timer2 = setTimeout(() => setAnimationStage(2), 1900); // 1200 + 700
@@ -31,11 +27,6 @@ const Product = () => {
     // Add crash zoom animation for the chain logo after the blue logo
     const timer7 = setTimeout(() => setAnimationStage(7), 5400); // 4800 + 600
     
-    // Hold chain logo on screen for 0.8 seconds
-    const timer8 = setTimeout(() => setAnimationStage(8), 6200); // 5400 + 800
-    // Slide up chain logo and bring in button
-    const timer9 = setTimeout(() => setAnimationStage(9), 6500); // 6200 + 300
-    
     // Cleanup timers to prevent memory leaks
     return () => {
       clearTimeout(timer1);
@@ -45,8 +36,6 @@ const Product = () => {
       clearTimeout(timer5);
       clearTimeout(timer6);
       clearTimeout(timer7);
-      clearTimeout(timer8);
-      clearTimeout(timer9);
     };
   }, []);
 
@@ -131,10 +120,8 @@ const Product = () => {
             animationStage >= 7 ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
           }`}
           style={{
-            transition: animationStage >= 9 ? 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6)',
-            transform: animationStage >= 9 
-              ? 'translate(-50%, -75%) scale(0.85)' 
-              : 'translate(-50%, -50%) scale(1)',
+            transition: 'all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6)',
+            transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%',
             width: isMobile ? '120vw' : 'auto',
@@ -146,25 +133,6 @@ const Product = () => {
             alt="Chain Logo" 
             className={`w-full md:w-[240rem] ${animationStage === 7 ? 'animate-push-zoom' : ''}`}
           />
-        </div>
-        
-        {/* Customize Now Button */}
-        <div 
-          className={`absolute z-40 transition-all duration-500 ${
-            animationStage >= 9 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'
-          }`}
-          style={{
-            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1.6)',
-            bottom: isMobile ? '10%' : '5%',
-            left: '50%',
-            transform: 'translateX(-50%)'
-          }}
-        >
-          <Link to="/customization" className="block">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 font-bold text-white px-6 py-6 text-lg">
-              Customize Now <ChevronRight className="ml-1" />
-            </Button>
-          </Link>
         </div>
         
         {/* Words container - gives a stable reference point */}
