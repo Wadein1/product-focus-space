@@ -1,81 +1,104 @@
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Product = () => {
   const [animationStage, setAnimationStage] = useState(0);
   const isMobile = useIsMobile();
-  const yourRef = useRef<HTMLDivElement>(null);
-  const logoRef = useRef<HTMLDivElement>(null);
-  const logoImageRef = useRef<HTMLImageElement>(null);
   
-  // Control the animation sequence with slower timings
+  // Control the animation sequence with stable timings
   useEffect(() => {
     // Stage 0: Initial stage (words coming in) - takes 1 second
     // Stage 1: Words centered - stays for 0.7 seconds
-    // Stage 2: "Your" changes to white (with slower color transition) - takes 0.5 seconds
+    // Stage 2: "Your" changes to white - takes 0.5 seconds
     // Stage 3: Words separate - takes 0.5 seconds
     
-    // Initial animation (coming together) - 1 second
-    setTimeout(() => setAnimationStage(1), 1000);
+    const timer1 = setTimeout(() => setAnimationStage(1), 1000);
+    const timer2 = setTimeout(() => setAnimationStage(2), 1700); // 1000 + 700
+    const timer3 = setTimeout(() => setAnimationStage(3), 2200); // 1700 + 500
+    const timer4 = setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
     
-    // Words stay centered for 0.7 seconds
-    setTimeout(() => setAnimationStage(2), 1700); // 1000 + 700
-    
-    // "Your" changes to white (with slower wipe transition)
-    setTimeout(() => setAnimationStage(3), 2200); // 1700 + 500
-    
-    // Words separate
-    setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
+    // Cleanup timers to prevent memory leaks
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
+    };
   }, []);
+
+  // Calculate movement distance based on screen size
+  const getTransformValue = () => {
+    if (isMobile) {
+      return "translateY(-100px)";
+    }
+    return "translateX(-100%)";
+  };
+
+  const getLowerTransformValue = () => {
+    if (isMobile) {
+      return "translateY(100px)";
+    }
+    return "translateX(100%)";
+  };
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden">
       <div className="relative flex flex-col items-center justify-center w-full h-full">
-        {/* Logo image that appears with glitch effect when words separate */}
+        {/* Logo image with more universal animation */}
         <div 
-          className={`absolute z-20 transform transition-all duration-500 ${
-            animationStage >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+          className={`absolute z-20 ${
+            animationStage >= 3 ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            filter: animationStage >= 3 ? 'none' : 'blur(10px)',
-            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)'
+            transition: 'opacity 0.5s ease-out',
+            transform: 'translate(-50%, -50%)',
+            left: '50%',
+            top: '50%'
           }}
         >
           <img 
-            ref={logoImageRef}
             src="/lovable-uploads/e4668e58-44af-46a9-9887-8dac7f9ac75c.png" 
             alt="Logo" 
             className={`w-32 md:w-48 ${animationStage === 3 ? 'animate-glitch' : ''}`}
           />
         </div>
         
-        {/* "Your" text */}
-        <div 
-          ref={yourRef}
-          className={`text-5xl md:text-7xl font-bold transition-all duration-1000 ease-out font-[Montserrat] z-10
-            ${animationStage === 0 ? 'opacity-0 -translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 2 ? 'text-white' : 'text-primary'} 
-            ${animationStage >= 3 ? (isMobile ? '-translate-y-[200%]' : 'md:-translate-x-[200%]') : ''}`}
-          style={{
-            transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-            transitionDuration: animationStage === 2 ? "500ms" : "1000ms" // Slower color transition
-          }}
-        >
-          Your
-        </div>
-        
-        {/* "Logo" text */}
-        <div 
-          ref={logoRef}
-          className={`text-5xl md:text-7xl font-bold text-white transition-all duration-1000 ease-out font-[Montserrat]
-            ${animationStage === 0 ? 'opacity-0 translate-y-20' : 'opacity-100 translate-y-0'} 
-            ${animationStage >= 3 ? (isMobile ? 'translate-y-[200%]' : 'md:translate-x-[200%]') : ''}`}
-          style={{
-            transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
-          }}
-        >
-          Logo
+        {/* Words container - gives a stable reference point */}
+        <div className="relative h-20 md:h-24 flex items-center justify-center">
+          {/* "Your" text */}
+          <div 
+            className={`absolute text-5xl md:text-7xl font-bold transition-all duration-1000 font-[Montserrat] z-10
+              ${animationStage === 0 ? 'opacity-0' : 'opacity-100'} 
+              ${animationStage >= 2 ? 'text-white' : 'text-primary'}`}
+            style={{
+              transform: animationStage === 0 
+                ? 'translateY(-20px)' 
+                : animationStage >= 3 
+                  ? getTransformValue() 
+                  : 'translateY(0)',
+              transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+              transitionDuration: animationStage === 2 ? "500ms" : "1000ms"
+            }}
+          >
+            Your
+          </div>
+          
+          {/* "Logo" text */}
+          <div 
+            className={`absolute text-5xl md:text-7xl font-bold text-white transition-all duration-1000 font-[Montserrat]
+              ${animationStage === 0 ? 'opacity-0' : 'opacity-100'}`}
+            style={{
+              transform: animationStage === 0 
+                ? 'translateY(20px)' 
+                : animationStage >= 3 
+                  ? getLowerTransformValue() 
+                  : 'translateY(0)',
+              transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+            }}
+          >
+            Logo
+          </div>
         </div>
       </div>
 
