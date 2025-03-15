@@ -16,6 +16,7 @@ const Product = () => {
     // Stage 5: Second logo fades in - takes 0.6 seconds and stays until 4.8s
     // Stage 6: Third logo fades in - takes 0.6 seconds
     // Stage 7: Chain logo crashes in - takes 0.6 seconds
+    // Stage 8: Chain logo scales down and moves up slightly - after 1.2s delay
     
     const timer1 = setTimeout(() => setAnimationStage(1), 1200);
     const timer2 = setTimeout(() => setAnimationStage(2), 1900); // 1200 + 700
@@ -26,6 +27,8 @@ const Product = () => {
     const timer6 = setTimeout(() => setAnimationStage(6), 4800); // 3700 + 1100 (hold time)
     // Add crash zoom animation for the chain logo after the blue logo
     const timer7 = setTimeout(() => setAnimationStage(7), 5400); // 4800 + 600
+    // Scale down and move up the chain logo after 1.2s delay
+    const timer8 = setTimeout(() => setAnimationStage(8), 6600); // 5400 + 1200
     
     // Cleanup timers to prevent memory leaks
     return () => {
@@ -36,6 +39,7 @@ const Product = () => {
       clearTimeout(timer5);
       clearTimeout(timer6);
       clearTimeout(timer7);
+      clearTimeout(timer8);
     };
   }, []);
 
@@ -121,7 +125,7 @@ const Product = () => {
           }`}
           style={{
             transition: 'all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6)',
-            transform: 'translate(-50%, -50%)',
+            transform: `translate(-50%, -50%) ${animationStage >= 8 ? 'translateY(-40px) scale(0.9)' : ''}`,
             left: '50%',
             top: '50%',
             width: isMobile ? '120vw' : 'auto',
