@@ -130,7 +130,7 @@ const Product = () => {
             <img 
               src="/lovable-uploads/9eb90291-d123-4a36-a72b-6bb0eb6bbc64.png" 
               alt="Chain Logo" 
-              className="w-[2880px] md:w-[3840px]" // Increased by 600% from w-[480px] md:w-[640px]
+              className="w-[80vw] md:w-[3840px]" // 80% viewport width on mobile, keep desktop size
             />
           </div>
         </div>
