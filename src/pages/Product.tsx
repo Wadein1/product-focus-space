@@ -6,22 +6,22 @@ const Product = () => {
   const [animationStage, setAnimationStage] = useState(0);
   const isMobile = useIsMobile();
   
-  // Control the animation sequence with slightly slower timings
+  // Control the animation sequence with stable timings
   useEffect(() => {
-    // Stage 0: Initial stage (words coming in) - takes 1.2 seconds (slightly slower)
-    // Stage 1: Words centered - stays for 0.8 seconds (slightly slower)
-    // Stage 2: "Your" changes to white - takes 0.6 seconds (slightly slower)
-    // Stage 3: Words separate - takes 0.6 seconds (slightly slower)
-    // Stage 4: Logo transitions to second logo - takes 0.6 seconds (slightly slower)
-    // Stage 5: Second logo fades in - takes 0.6 seconds (slightly slower)
-    // Stage 6: Third logo fades in - takes 0.6 seconds (slightly slower)
+    // Stage 0: Initial stage (words coming in) - takes 1 second
+    // Stage 1: Words centered - stays for 0.7 seconds
+    // Stage 2: "Your" changes to white - takes 0.5 seconds
+    // Stage 3: Words separate - takes 0.5 seconds
+    // Stage 4: Logo transitions to second logo - takes 0.5 seconds
+    // Stage 5: Second logo fades in - takes 0.5 seconds
+    // Stage 6: Third logo fades in - takes 0.5 seconds
     
-    const timer1 = setTimeout(() => setAnimationStage(1), 1200);  // 1200ms instead of 1000ms
-    const timer2 = setTimeout(() => setAnimationStage(2), 2000);  // 1200 + 800ms
-    const timer3 = setTimeout(() => setAnimationStage(3), 2600);  // 2000 + 600ms
-    const timer4 = setTimeout(() => setAnimationStage(4), 3200);  // 2600 + 600ms
-    const timer5 = setTimeout(() => setAnimationStage(5), 3800);  // 3200 + 600ms
-    const timer6 = setTimeout(() => setAnimationStage(6), 4400);  // 3800 + 600ms
+    const timer1 = setTimeout(() => setAnimationStage(1), 1000);
+    const timer2 = setTimeout(() => setAnimationStage(2), 1700); // 1000 + 700
+    const timer3 = setTimeout(() => setAnimationStage(3), 2200); // 1700 + 500
+    const timer4 = setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
+    const timer5 = setTimeout(() => setAnimationStage(5), 3200); // 2700 + 500
+    const timer6 = setTimeout(() => setAnimationStage(6), 3700); // 3200 + 500
     
     // Cleanup timers to prevent memory leaks
     return () => {
@@ -54,11 +54,11 @@ const Product = () => {
       <div className="relative flex flex-col items-center justify-center w-full h-full">
         {/* First Logo image */}
         <div 
-          className={`absolute z-20 transition-all duration-600 ${
+          className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 3 && animationStage < 5 ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            transition: 'opacity 0.6s ease-out',
+            transition: 'opacity 0.5s ease-out',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -73,11 +73,11 @@ const Product = () => {
 
         {/* Second Logo image with slide-in effect */}
         <div 
-          className={`absolute z-20 transition-all duration-600 ${
+          className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 5 && animationStage < 6 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
           }`}
           style={{
-            transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -92,11 +92,11 @@ const Product = () => {
         
         {/* Third Logo image with slide-in effect */}
         <div 
-          className={`absolute z-20 transition-all duration-600 ${
+          className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 6 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
           }`}
           style={{
-            transition: 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -113,7 +113,7 @@ const Product = () => {
         <div className="relative h-32 md:h-40 flex items-center justify-center">
           {/* "Your" text */}
           <div 
-            className={`absolute text-5xl md:text-7xl font-bold transition-all duration-1200 font-[Montserrat] z-10
+            className={`absolute text-5xl md:text-7xl font-bold transition-all duration-1000 font-[Montserrat] z-10
               ${animationStage === 0 ? 'opacity-0' : 'opacity-100'} 
               ${animationStage >= 2 ? 'text-white' : 'text-primary'}`}
             style={{
@@ -123,7 +123,7 @@ const Product = () => {
                   ? getTransformValue() 
                   : 'translateY(-35px)', // Added more separation here
               transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-              transitionDuration: animationStage === 2 ? "600ms" : "1200ms"
+              transitionDuration: animationStage === 2 ? "500ms" : "1000ms"
             }}
           >
             Your
@@ -131,7 +131,7 @@ const Product = () => {
           
           {/* "Logo" text */}
           <div 
-            className={`absolute text-5xl md:text-7xl font-bold text-white transition-all duration-1200 font-[Montserrat]
+            className={`absolute text-5xl md:text-7xl font-bold text-white transition-all duration-1000 font-[Montserrat]
               ${animationStage === 0 ? 'opacity-0' : 'opacity-100'}`}
             style={{
               transform: animationStage === 0 
