@@ -69,10 +69,10 @@ const Customize = () => {
                 <p className="text-gray-300 text-lg">Upload your design or enter your team details</p>
               </div>
 
-              <div className="bg-gray-900 rounded-2xl p-6 md:p-8 shadow-xl mb-8">
+              <div className="bg-gray-900/80 rounded-2xl p-6 md:p-8 shadow-xl mb-8 border border-gray-800">
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-white mb-4">Upload Your Design</h2>
-                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
+                  <div className="border-2 border-dashed border-primary/50 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer bg-gray-800/50">
                     <Input
                       type="file"
                       accept="image/*"
@@ -86,13 +86,13 @@ const Customize = () => {
                     />
                     <label htmlFor="designUpload" className="cursor-pointer">
                       <div className="flex flex-col items-center">
-                        <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4 border border-primary/40">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                           </svg>
                         </div>
                         <span className="text-white font-medium">Click to upload</span>
-                        <span className="text-gray-400 text-sm mt-1">SVG, PNG, JPG (max. 5MB)</span>
+                        <span className="text-primary/80 text-sm mt-1">SVG, PNG, JPG (max. 5MB)</span>
                       </div>
                     </label>
                     {productForm.imagePreview && (
@@ -101,8 +101,20 @@ const Customize = () => {
                           <img 
                             src={productForm.imagePreview} 
                             alt="Preview" 
-                            className="w-full h-full object-contain rounded-lg" 
+                            className="w-full h-full object-contain rounded-lg border border-primary/30" 
                           />
+                          <button 
+                            onClick={() => {
+                              if (productForm.imagePreview) {
+                                productForm.setImagePreview(null);
+                              }
+                            }}
+                            className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-1 hover:bg-primary/80 transition-colors"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     )}
@@ -111,7 +123,7 @@ const Customize = () => {
 
                 <div className="relative flex items-center justify-center py-4">
                   <div className="flex-grow border-t border-gray-600"></div>
-                  <span className="mx-4 flex-shrink-0 text-gray-300 text-lg font-medium">OR</span>
+                  <span className="mx-4 flex-shrink-0 text-primary text-lg font-medium">OR</span>
                   <div className="flex-grow border-t border-gray-600"></div>
                 </div>
 
@@ -128,7 +140,7 @@ const Customize = () => {
                         placeholder="Enter your team name"
                         value={productForm.teamName}
                         onChange={(e) => productForm.setTeamName(e.target.value)}
-                        className="bg-gray-800 border-gray-700 text-white focus:ring-primary focus:border-primary"
+                        className="bg-gray-800 border-gray-700 text-white focus:ring-primary focus:border-primary placeholder:text-gray-500"
                         disabled={!!productForm.imagePreview}
                       />
                     </div>
@@ -142,7 +154,7 @@ const Customize = () => {
                         placeholder="City, State"
                         value={productForm.teamLocation}
                         onChange={(e) => productForm.setTeamLocation(e.target.value)}
-                        className="bg-gray-800 border-gray-700 text-white focus:ring-primary focus:border-primary"
+                        className="bg-gray-800 border-gray-700 text-white focus:ring-primary focus:border-primary placeholder:text-gray-500"
                         disabled={!!productForm.imagePreview}
                       />
                     </div>
