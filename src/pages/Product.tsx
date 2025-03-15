@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -38,7 +37,7 @@ const Product = () => {
       clearTimeout(timer7);
     };
   }, []);
-
+  
   // Calculate movement distance based on screen size
   const getTransformValue = () => {
     if (isMobile) {
@@ -130,8 +129,10 @@ const Product = () => {
             <img 
               src="/lovable-uploads/9eb90291-d123-4a36-a72b-6bb0eb6bbc64.png" 
               alt="Chain Logo" 
+              className="w-full"
               style={{ 
-                width: isMobile ? '80vw' : '160rem'
+                width: isMobile ? '80vw' : '160rem',
+                maxWidth: isMobile ? '80%' : 'none'
               }}
             />
           </div>
