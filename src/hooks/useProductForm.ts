@@ -188,7 +188,6 @@ export const useProductForm = () => {
     setTeamName,
     setTeamLocation,
     setSelectedChainColor,
-    setImagePreview, // Added this line to expose the setImagePreview function
     handleQuantityChange,
     handleFileChange,
     addToCart,
