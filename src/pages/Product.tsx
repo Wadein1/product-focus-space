@@ -61,9 +61,9 @@ const Product = () => {
         <div 
           className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 3 && animationStage < 5 ? 'opacity-100' : 'opacity-0'
-          }`}
+          } ${animationStage >= 7 ? 'push-out' : ''}`}
           style={{
-            transition: 'opacity 0.5s ease-out',
+            transition: 'opacity 0.5s ease-out, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1.6)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -80,9 +80,9 @@ const Product = () => {
         <div 
           className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 5 && animationStage < 6 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
-          }`}
+          } ${animationStage >= 7 ? 'push-out' : ''}`}
           style={{
-            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1.6)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -99,9 +99,9 @@ const Product = () => {
         <div 
           className={`absolute z-20 transition-all duration-500 ${
             animationStage >= 6 && animationStage < 7 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
-          }`}
+          } ${animationStage >= 7 ? 'push-out' : ''}`}
           style={{
-            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1.6)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%'
@@ -114,24 +114,24 @@ const Product = () => {
           />
         </div>
         
-        {/* Chain Logo with crash zoom effect - 50% bigger */}
+        {/* Chain Logo with push-zoom effect - 50% bigger */}
         <div 
-          className={`absolute z-30 transition-all duration-500 ${
+          className={`absolute z-30 transition-all duration-700 ${
             animationStage >= 7 ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
           }`}
           style={{
-            transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1.3)',
+            transition: 'all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%',
-            width: isMobile ? '120vw' : 'auto', // Increased from 80vw to 120vw (50% bigger)
-            maxWidth: isMobile ? '120%' : 'none' // Increased from 80% to 120%
+            width: isMobile ? '120vw' : 'auto',
+            maxWidth: isMobile ? '120%' : 'none'
           }}
         >
           <img 
             src="/lovable-uploads/0a05a66e-e97e-4a5a-a5f2-8156112f7765.png" 
             alt="Chain Logo" 
-            className={`w-full md:w-[240rem] ${animationStage === 7 ? 'animate-crash-zoom' : ''}`} // Increased from 160rem to 240rem (50% bigger)
+            className={`w-full md:w-[240rem] ${animationStage === 7 ? 'animate-push-zoom' : ''}`}
           />
         </div>
         
@@ -141,13 +141,14 @@ const Product = () => {
           <div 
             className={`absolute text-5xl md:text-7xl font-bold transition-all duration-1000 font-[Montserrat] z-10
               ${animationStage === 0 ? 'opacity-0' : 'opacity-100'} 
-              ${animationStage >= 2 ? 'text-white' : 'text-primary'}`}
+              ${animationStage >= 2 ? 'text-white' : 'text-primary'}
+              ${animationStage >= 7 ? 'push-out-top' : ''}`}
             style={{
               transform: animationStage === 0 
                 ? 'translateY(-95px)' 
                 : animationStage >= 3 
                   ? getTransformValue() 
-                  : 'translateY(-35px)', // Added more separation here
+                  : 'translateY(-35px)',
               transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
               transitionDuration: animationStage === 2 ? "500ms" : "1000ms"
             }}
@@ -158,13 +159,14 @@ const Product = () => {
           {/* "Logo" text */}
           <div 
             className={`absolute text-5xl md:text-7xl font-bold text-white transition-all duration-1000 font-[Montserrat]
-              ${animationStage === 0 ? 'opacity-0' : 'opacity-100'}`}
+              ${animationStage === 0 ? 'opacity-0' : 'opacity-100'}
+              ${animationStage >= 7 ? 'push-out-bottom' : ''}`}
             style={{
               transform: animationStage === 0 
                 ? 'translateY(95px)' 
                 : animationStage >= 3 
                   ? getLowerTransformValue() 
-                  : 'translateY(35px)', // Added more separation here
+                  : 'translateY(35px)',
               transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
             }}
           >
@@ -173,7 +175,7 @@ const Product = () => {
         </div>
       </div>
 
-      {/* CSS for the glitch and crash zoom animations */}
+      {/* CSS for the animations */}
       <style>
         {`
           @keyframes glitch {
@@ -207,30 +209,37 @@ const Product = () => {
             animation: glitch 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
           }
           
-          @keyframes crash-zoom {
+          @keyframes push-zoom {
             0% {
-              transform: scale(0);
+              transform: scale(0.1);
               opacity: 0;
-              filter: blur(20px);
-            }
-            40% {
-              transform: scale(1.15);
-              opacity: 1;
-              filter: blur(0);
-            }
-            70% {
-              transform: scale(0.95);
-            }
-            85% {
-              transform: scale(1.02);
             }
             100% {
               transform: scale(1);
+              opacity: 1;
             }
           }
           
-          .animate-crash-zoom {
-            animation: crash-zoom 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+          .animate-push-zoom {
+            animation: push-zoom 0.7s cubic-bezier(0.16, 1, 0.3, 1.6) forwards;
+          }
+          
+          .push-out {
+            transform: translate(200%, 200%) scale(0.5) !important;
+            opacity: 0 !important;
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6) !important;
+          }
+          
+          .push-out-top {
+            transform: translate(-200%, -300%) scale(0.5) !important;
+            opacity: 0 !important;
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6) !important;
+          }
+          
+          .push-out-bottom {
+            transform: translate(200%, 300%) scale(0.5) !important;
+            opacity: 0 !important;
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6) !important;
           }
         `}
       </style>
