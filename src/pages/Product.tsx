@@ -76,7 +76,7 @@ const Product = () => {
                 ? 'translateY(-95px)' 
                 : animationStage >= 3 
                   ? getTransformValue() 
-                  : 'translateY(-15px)',
+                  : 'translateY(-35px)', // Added more separation here
               transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
               transitionDuration: animationStage === 2 ? "500ms" : "1000ms"
             }}
@@ -93,7 +93,7 @@ const Product = () => {
                 ? 'translateY(95px)' 
                 : animationStage >= 3 
                   ? getLowerTransformValue() 
-                  : 'translateY(15px)',
+                  : 'translateY(35px)', // Added more separation here
               transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)"
             }}
           >
