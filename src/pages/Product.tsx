@@ -13,7 +13,7 @@ const Product = () => {
     // Stage 2: "Your" changes to white - takes 0.6 seconds
     // Stage 3: Words separate - takes 0.6 seconds
     // Stage 4: Logo transitions to second logo - takes 0.6 seconds
-    // Stage 5: Second logo fades in - takes 0.6 seconds and stays briefly
+    // Stage 5: Second logo fades in - takes 0.6 seconds and stays until 4.8s
     // Stage 6: Third logo fades in - takes 0.6 seconds
     
     const timer1 = setTimeout(() => setAnimationStage(1), 1200);
@@ -21,8 +21,8 @@ const Product = () => {
     const timer3 = setTimeout(() => setAnimationStage(3), 2500); // 1900 + 600
     const timer4 = setTimeout(() => setAnimationStage(4), 3100); // 2500 + 600
     const timer5 = setTimeout(() => setAnimationStage(5), 3700); // 3100 + 600
-    // Hold second logo from 3.7s to 4.5s (0.8s hold time)
-    const timer6 = setTimeout(() => setAnimationStage(6), 4500); // 3700 + 800 (hold time)
+    // Hold second logo from 3.7s to 4.8s (1.1s hold time)
+    const timer6 = setTimeout(() => setAnimationStage(6), 4800); // 3700 + 1100 (hold time)
     
     // Cleanup timers to prevent memory leaks
     return () => {
