@@ -22,7 +22,7 @@ export const CustomizeButton: React.FC = () => {
       style={{
         transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1.6)',
         transform: animationStage >= 9 ? 'translateY(0)' : 'translateY(100px)',
-        bottom: isMobile ? '10%' : '5%',
+        bottom: isMobile ? '10%' : '15%',
         left: '50%',
         marginLeft: '-100px',
       }}
