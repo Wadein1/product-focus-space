@@ -46,7 +46,7 @@ const Product = () => {
             ref={logoImageRef}
             src="/lovable-uploads/e4668e58-44af-46a9-9887-8dac7f9ac75c.png" 
             alt="Logo" 
-            className={`w-16 md:w-24 ${animationStage === 3 ? 'animate-glitch' : ''}`}
+            className={`w-32 md:w-48 ${animationStage === 3 ? 'animate-glitch' : ''}`}
           />
         </div>
         
