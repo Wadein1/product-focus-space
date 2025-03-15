@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,7 @@ const Product = () => {
     const timer6 = setTimeout(() => setAnimationStage(6), 4800); // 3700 + 1100 (hold time)
     // Add crash zoom animation for the chain logo after the blue logo
     const timer7 = setTimeout(() => setAnimationStage(7), 5400); // 4800 + 600
+    
     // Hold chain logo on screen for 0.8 seconds
     const timer8 = setTimeout(() => setAnimationStage(8), 6200); // 5400 + 800
     // Slide up chain logo and bring in button
@@ -151,11 +151,11 @@ const Product = () => {
         {/* Customize Now Button */}
         <div 
           className={`absolute z-40 transition-all duration-500 ${
-            animationStage >= 9 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
+            animationStage >= 9 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-40'
           }`}
           style={{
-            transition: 'all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            bottom: '15%',
+            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1.6)',
+            bottom: isMobile ? '10%' : '5%',
             left: '50%',
             transform: 'translateX(-50%)'
           }}
