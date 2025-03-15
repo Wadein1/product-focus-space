@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 import { ArrowRight, Upload, Check, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Customize = () => {
   const productForm = useProductForm();
@@ -11,6 +11,7 @@ const Customize = () => {
   const [isValid, setIsValid] = useState(false);
   const [showPriceAnimation, setShowPriceAnimation] = useState(false);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [animationStep, setAnimationStep] = useState(0);
   
   // Check if the form is valid to enable the Next button
   useEffect(() => {
@@ -29,6 +30,42 @@ const Customize = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Animation sequence for price reveal
+  useEffect(() => {
+    if (showPriceAnimation) {
+      const sequence = [
+        { step: 1, delay: 0 },     // Show initial price
+        { step: 2, delay: 1200 },  // Start strikethrough animation
+        { step: 3, delay: 800 },   // Show discounted price
+        { step: 4, delay: 1500 }   // Complete animation and proceed
+      ];
+
+      let timeoutId: NodeJS.Timeout;
+      
+      sequence.forEach(({ step, delay }, index) => {
+        const cumulativeDelay = sequence.slice(0, index).reduce((acc, curr) => acc + curr.delay, 0);
+        
+        timeoutId = setTimeout(() => {
+          setAnimationStep(step);
+          
+          if (step === sequence.length) {
+            setTimeout(() => {
+              setShowPriceAnimation(false);
+              setAnimationStep(0);
+              setStep(3);
+              setAnimationState("entering");
+              setTimeout(() => {
+                setAnimationState("idle");
+              }, 800);
+            }, 600);
+          }
+        }, cumulativeDelay);
+      });
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [showPriceAnimation]);
   
   // Handle next step with animations
   const handleNextStep = () => {
@@ -39,18 +76,6 @@ const Customize = () => {
     setTimeout(() => {
       if (step === 2) {
         setShowPriceAnimation(true);
-        setTimeout(() => {
-          setAnimationComplete(true);
-          setTimeout(() => {
-            setShowPriceAnimation(false);
-            setAnimationComplete(false);
-            setStep(3);
-            setAnimationState("entering");
-            setTimeout(() => {
-              setAnimationState("idle");
-            }, 800);
-          }, 2000);
-        }, 1500);
       } else {
         setStep((prevStep) => prevStep + 1);
         setAnimationState("entering");
@@ -77,10 +102,28 @@ const Customize = () => {
       {showPriceAnimation && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black">
           <div className="text-center">
-            {!animationComplete ? (
-              <div className="text-white text-6xl md:text-8xl font-bold">$49.99</div>
-            ) : (
+            {animationStep === 1 && (
+              <div className="text-white text-6xl md:text-8xl font-bold animate-fade-in">$49.99</div>
+            )}
+            {animationStep === 2 && (
               <div className="relative">
+                <div className="text-white text-6xl md:text-8xl font-bold relative">
+                  $49.99
+                  <div className="absolute top-1/2 left-0 w-0 h-1 bg-red-500 transform -rotate-12 animate-[strikethrough_0.8s_forwards]"></div>
+                </div>
+              </div>
+            )}
+            {animationStep === 3 && (
+              <div className="relative">
+                <div className="text-white text-6xl md:text-8xl font-bold opacity-50 relative">
+                  $49.99
+                  <div className="absolute top-1/2 left-0 w-full h-1 bg-red-500 transform -rotate-12"></div>
+                </div>
+                <div className="text-[#00bf63] text-6xl md:text-8xl font-bold mt-4 animate-[bounce-in_0.6s_cubic-bezier(0.25,0.46,0.45,0.94)]">$29.99</div>
+              </div>
+            )}
+            {animationStep === 4 && (
+              <div className="relative animate-[fade-out_0.6s_forwards]">
                 <div className="text-white text-6xl md:text-8xl font-bold opacity-50 relative">
                   $49.99
                   <div className="absolute top-1/2 left-0 w-full h-1 bg-red-500 transform -rotate-12"></div>
@@ -114,21 +157,22 @@ const Customize = () => {
                     htmlFor="design-upload" 
                     className={`cursor-pointer flex flex-col items-center justify-center h-64 rounded-xl transition-all duration-300 
                       ${productForm.imagePreview ? 
-                        'bg-gray-900/40 border border-gray-700' : 
+                        'bg-transparent' : 
                         'bg-gray-900/40 border-2 border-dashed border-gray-700 hover:border-[#0ca2ed] hover:bg-gray-900/60'}`}
                   >
                     {productForm.imagePreview ? (
                       <div className="w-full h-full p-4">
                         <div className="relative w-full h-full">
+                          <div className="absolute inset-0 bg-white opacity-20 rounded-xl"></div>
                           <img 
                             src={productForm.imagePreview} 
                             alt="Preview" 
-                            className="w-full h-full object-contain" 
+                            className="w-full h-full object-contain relative z-10 rounded-xl border-2 border-white" 
                           />
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-md">
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-xl z-20">
                             <p className="text-white font-medium">Replace image</p>
                           </div>
-                          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-[#00bf63] text-white px-3 py-1 rounded-full flex items-center text-sm">
+                          <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-[#00bf63] text-white px-3 py-1 rounded-full flex items-center text-sm z-30">
                             <Check className="mr-1" size={14} /> Uploaded
                           </div>
                         </div>
@@ -147,9 +191,9 @@ const Customize = () => {
                 {/* Team info section */}
                 <div className="w-full md:w-1/2 space-y-4">
                   <div className="flex items-center my-6 md:my-8">
-                    <div className="flex-grow h-px bg-gray-700"></div>
-                    <span className="px-6 text-gray-200 text-xl font-bold">OR</span>
-                    <div className="flex-grow h-px bg-gray-700"></div>
+                    <div className="flex-grow h-[2px] bg-gray-700"></div>
+                    <span className="px-6 text-gray-200 text-2xl font-bold">OR</span>
+                    <div className="flex-grow h-[2px] bg-gray-700"></div>
                   </div>
                   
                   <input
@@ -190,47 +234,27 @@ const Customize = () => {
           
           {step === 2 && (
             <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 gap-8">
                 <div>
                   <div className="mb-6">
-                    <label className="block text-white font-medium mb-2">Chain Links Color</label>
-                    <Select
-                      value={productForm.selectedChainColor}
-                      onValueChange={productForm.setSelectedChainColor}
-                    >
-                      <SelectTrigger className="bg-gray-900/60 border border-gray-700 text-white">
-                        <SelectValue placeholder="Select a color" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border border-gray-700 text-white">
-                        <SelectItem value="Designers' Choice" className="hover:bg-gray-700">Designer's Choice</SelectItem>
-                        {productForm.chainColors.map((color) => (
-                          <SelectItem key={color.id} value={color.name} className="hover:bg-gray-700">
-                            {color.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="mb-6">
                     <label className="block text-white font-medium mb-2">Quantity</label>
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-between w-full">
                       <button
                         type="button"
                         onClick={() => productForm.handleQuantityChange(false)}
-                        className="bg-gray-800 text-white p-2 rounded-l-lg border border-gray-700"
+                        className="bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg border border-gray-700 transition-colors w-16 h-16 flex items-center justify-center"
                       >
-                        <Minus size={16} />
+                        <Minus size={20} />
                       </button>
-                      <span className="bg-gray-900/40 text-white py-2 px-4 border-t border-b border-gray-700">
+                      <span className="bg-gray-900/60 text-white py-3 px-6 rounded-lg border border-gray-700 text-xl font-medium w-24 text-center">
                         {productForm.quantity}
                       </span>
                       <button
                         type="button"
                         onClick={() => productForm.handleQuantityChange(true)}
-                        className="bg-gray-800 text-white p-2 rounded-r-lg border border-gray-700"
+                        className="bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg border border-gray-700 transition-colors w-16 h-16 flex items-center justify-center"
                       >
-                        <Plus size={16} />
+                        <Plus size={20} />
                       </button>
                     </div>
                   </div>
@@ -266,12 +290,15 @@ const Customize = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-gray-900/40 p-6 rounded-xl border border-gray-800">
                   {productForm.imagePreview ? (
-                    <div className="mb-4">
-                      <img 
-                        src={productForm.imagePreview} 
-                        alt="Your design" 
-                        className="w-full h-64 object-contain" 
-                      />
+                    <div className="mb-4 flex items-center justify-center">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-white opacity-20 rounded-xl"></div>
+                        <img 
+                          src={productForm.imagePreview} 
+                          alt="Your design" 
+                          className="w-full h-64 object-contain rounded-xl border-2 border-white relative z-10" 
+                        />
+                      </div>
                     </div>
                   ) : (
                     <div className="bg-gray-800/60 rounded-lg mb-4 h-64 flex items-center justify-center">
@@ -289,9 +316,6 @@ const Customize = () => {
                   )}
                   
                   <div className="text-white">
-                    <p className="mb-2">
-                      <span className="font-medium">Chain Links Color:</span> {productForm.selectedChainColor}
-                    </p>
                     <p>
                       <span className="font-medium">Quantity:</span> {productForm.quantity}
                     </p>
@@ -374,6 +398,32 @@ const Customize = () => {
           </div>
         </div>
       </div>
+
+      {/* Add animation keyframes */}
+      <style jsx>{`
+        @keyframes strikethrough {
+          0% { width: 0; }
+          100% { width: 100%; }
+        }
+        
+        @keyframes bounce-in {
+          0% { 
+            opacity: 0;
+            transform: scale(0.3);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.05);
+          }
+          70% { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes fade-out {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 };

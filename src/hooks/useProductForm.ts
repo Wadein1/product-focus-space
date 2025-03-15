@@ -11,7 +11,6 @@ export const useProductForm = () => {
     imagePreview: customization.imagePreview,
     teamName: customization.teamName,
     teamLocation: customization.teamLocation,
-    selectedChainColor: customization.selectedChainColor,
     quantity: quantityManager.quantity
   });
 
