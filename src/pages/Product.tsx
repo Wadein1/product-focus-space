@@ -12,11 +12,13 @@ const Product = () => {
     // Stage 1: Words centered - stays for 0.7 seconds
     // Stage 2: "Your" changes to white - takes 0.5 seconds
     // Stage 3: Words separate - takes 0.5 seconds
+    // Stage 4: Logo transitions to second logo - takes 0.8 seconds
     
     const timer1 = setTimeout(() => setAnimationStage(1), 1000);
     const timer2 = setTimeout(() => setAnimationStage(2), 1700); // 1000 + 700
     const timer3 = setTimeout(() => setAnimationStage(3), 2200); // 1700 + 500
     const timer4 = setTimeout(() => setAnimationStage(4), 2700); // 2200 + 500
+    const timer5 = setTimeout(() => setAnimationStage(5), 3500); // 2700 + 800 (added time for second logo transition)
     
     // Cleanup timers to prevent memory leaks
     return () => {
@@ -24,6 +26,7 @@ const Product = () => {
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
+      clearTimeout(timer5);
     };
   }, []);
 
@@ -45,10 +48,10 @@ const Product = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center overflow-hidden">
       <div className="relative flex flex-col items-center justify-center w-full h-full">
-        {/* Logo image with more universal animation */}
+        {/* First Logo image */}
         <div 
-          className={`absolute z-20 ${
-            animationStage >= 3 ? 'opacity-100' : 'opacity-0'
+          className={`absolute z-20 transition-all duration-500 ${
+            animationStage >= 3 && animationStage < 5 ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
             transition: 'opacity 0.5s ease-out',
@@ -61,6 +64,25 @@ const Product = () => {
             src="/lovable-uploads/e4668e58-44af-46a9-9887-8dac7f9ac75c.png" 
             alt="Logo" 
             className={`w-32 md:w-48 ${animationStage === 3 ? 'animate-glitch' : ''}`}
+          />
+        </div>
+
+        {/* Second Logo image with slide-in effect */}
+        <div 
+          className={`absolute z-20 transition-all duration-800 ${
+            animationStage >= 5 ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+          }`}
+          style={{
+            transition: 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            transform: 'translate(-50%, -50%)',
+            left: '50%',
+            top: '50%'
+          }}
+        >
+          <img 
+            src="/lovable-uploads/09401015-36b1-4951-87d2-96e01806a71e.png" 
+            alt="Second Logo" 
+            className={`w-32 md:w-48 ${animationStage === 5 ? 'animate-second-logo-glitch' : ''}`}
           />
         </div>
         
@@ -102,7 +124,7 @@ const Product = () => {
         </div>
       </div>
 
-      {/* CSS for the glitch animation */}
+      {/* CSS for the glitch animations */}
       <style>
         {`
           @keyframes glitch {
@@ -134,6 +156,41 @@ const Product = () => {
           
           .animate-glitch {
             animation: glitch 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+          }
+
+          @keyframes second-logo-glitch {
+            0% {
+              transform: translate(0) scale(1);
+              filter: brightness(1);
+            }
+            15% {
+              transform: translate(-8px, 8px) scale(1.05);
+              filter: brightness(1.2) hue-rotate(5deg);
+            }
+            30% {
+              transform: translate(8px, -8px) scale(0.95);
+              filter: brightness(0.8) hue-rotate(-5deg);
+            }
+            45% {
+              transform: translate(-5px, -7px) skewX(-5deg) scale(1.03);
+              filter: brightness(1.3) contrast(1.1) hue-rotate(10deg);
+            }
+            60% {
+              transform: translate(5px, 7px) skewY(5deg) scale(0.97);
+              filter: brightness(0.7) contrast(1.2) hue-rotate(-10deg);
+            }
+            75% {
+              transform: translate(3px, -3px) scale(1.01);
+              filter: brightness(1.1) hue-rotate(5deg);
+            }
+            100% {
+              transform: translate(0) scale(1);
+              filter: brightness(1);
+            }
+          }
+          
+          .animate-second-logo-glitch {
+            animation: second-logo-glitch 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
           }
         `}
       </style>
