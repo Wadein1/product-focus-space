@@ -47,7 +47,7 @@ const Customize = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black py-12 px-4 flex flex-col items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black py-12 px-4 flex flex-col items-center justify-between">
       <div className="w-full max-w-4xl mx-auto customize-container opacity-0 transition-opacity duration-500 ease-out">
         <AnimatePresence mode="wait" custom={direction}>
           {step === 1 && (
@@ -69,10 +69,10 @@ const Customize = () => {
                 <p className="text-gray-300 text-lg">Upload your design or enter your team details</p>
               </div>
 
-              <div className="bg-gray-900 rounded-2xl p-6 md:p-8 shadow-xl mb-8">
+              <div className="bg-gray-800 rounded-2xl p-6 md:p-8 shadow-xl mb-8 border border-gray-700">
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-white mb-4">Upload Your Design</h2>
-                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-[#0ca2ed] transition-colors cursor-pointer bg-gray-900">
                     <Input
                       type="file"
                       accept="image/*"
@@ -86,8 +86,8 @@ const Customize = () => {
                     />
                     <label htmlFor="designUpload" className="cursor-pointer">
                       <div className="flex flex-col items-center">
-                        <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4 hover:bg-[#0ca2ed]/20">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#0ca2ed]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                           </svg>
                         </div>
@@ -128,7 +128,7 @@ const Customize = () => {
                         placeholder="Enter your team name"
                         value={productForm.teamName}
                         onChange={(e) => productForm.setTeamName(e.target.value)}
-                        className="bg-gray-800 border-gray-700 text-white focus:ring-primary focus:border-primary"
+                        className="bg-gray-700 border-gray-600 text-white focus:ring-[#0ca2ed] focus:border-[#0ca2ed]"
                         disabled={!!productForm.imagePreview}
                       />
                     </div>
@@ -142,7 +142,7 @@ const Customize = () => {
                         placeholder="City, State"
                         value={productForm.teamLocation}
                         onChange={(e) => productForm.setTeamLocation(e.target.value)}
-                        className="bg-gray-800 border-gray-700 text-white focus:ring-primary focus:border-primary"
+                        className="bg-gray-700 border-gray-600 text-white focus:ring-[#0ca2ed] focus:border-[#0ca2ed]"
                         disabled={!!productForm.imagePreview}
                       />
                     </div>
@@ -151,7 +151,7 @@ const Customize = () => {
 
                 <Button 
                   onClick={handleNext} 
-                  className="w-full py-6 text-lg font-semibold bg-primary hover:bg-primary/90 text-white"
+                  className="w-full py-6 text-lg font-semibold bg-[#0ca2ed] hover:bg-[#0ca2ed]/90 text-white"
                   disabled={(!productForm.imagePreview && (!productForm.teamName || !productForm.teamLocation))}
                 >
                   Next <ArrowRight className="ml-2" />
