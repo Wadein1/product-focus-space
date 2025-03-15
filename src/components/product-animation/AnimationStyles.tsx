@@ -72,6 +72,15 @@ export const AnimationStyles: React.FC = () => {
         .ease-out {
           transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1.6);
         }
+        
+        .customize-container {
+          opacity: 0;
+          transition: opacity 0.5s ease-out;
+        }
+        
+        .customize-container.entered {
+          opacity: 1;
+        }
       `}
     </style>
   );
