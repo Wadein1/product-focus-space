@@ -24,7 +24,7 @@ export const CustomizeButton: React.FC = () => {
     transform: animationStage >= 9 ? 'translate(-50%, 0)' : 'translate(-50%, 100px)',
     width: 'fit-content'
   }}>
-      <Button onClick={handleCustomizeClick} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg text-lg text-center px-[43px] py-[27px] my-[119px] rounded-2xl">
+      <Button onClick={handleCustomizeClick} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg text-lg text-center px-[43px] py-[27px] rounded-2xl my-[108px]">
         Customize Now <ArrowRight className="ml-2" />
       </Button>
     </div>;
