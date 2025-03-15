@@ -114,7 +114,7 @@ const Product = () => {
           />
         </div>
         
-        {/* Chain "Crash" Logo image - UPDATED SIZE */}
+        {/* Chain "Crash" Logo image */}
         <div 
           className={`absolute z-30 transition-all duration-700 ${
             animationStage >= 7 ? 'opacity-100 scale-100' : 'opacity-0 scale-[2]'
@@ -130,7 +130,7 @@ const Product = () => {
             <img 
               src="/lovable-uploads/9eb90291-d123-4a36-a72b-6bb0eb6bbc64.png" 
               alt="Chain Logo" 
-              className="w-[80vw] md:w-[3840px]" // 80% viewport width on mobile, keep desktop size
+              className="w-48 md:w-64"
             />
           </div>
         </div>
