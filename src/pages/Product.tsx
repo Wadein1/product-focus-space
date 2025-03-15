@@ -114,29 +114,29 @@ const Product = () => {
           />
         </div>
         
-        {/* Chain Logo with crash zoom effect */}
+        {/* Chain Logo with crash zoom effect - 50% bigger */}
         <div 
           className={`absolute z-30 transition-all duration-500 ${
             animationStage >= 7 ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
           }`}
           style={{
-            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1.3)',
+            transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1.3)',
             transform: 'translate(-50%, -50%)',
             left: '50%',
             top: '50%',
-            width: isMobile ? '80vw' : 'auto',
-            maxWidth: isMobile ? '80%' : 'none'
+            width: isMobile ? '120vw' : 'auto', // Increased from 80vw to 120vw (50% bigger)
+            maxWidth: isMobile ? '120%' : 'none' // Increased from 80% to 120%
           }}
         >
           <img 
             src="/lovable-uploads/0a05a66e-e97e-4a5a-a5f2-8156112f7765.png" 
             alt="Chain Logo" 
-            className={`w-full md:w-[160rem] ${animationStage === 7 ? 'animate-crash-zoom' : ''}`}
+            className={`w-full md:w-[240rem] ${animationStage === 7 ? 'animate-crash-zoom' : ''}`} // Increased from 160rem to 240rem (50% bigger)
           />
         </div>
         
         {/* Words container - gives a stable reference point */}
-        <div className="relative h-32 md:h-40 flex items-center justify-center">
+        <div className={`relative h-32 md:h-40 flex items-center justify-center transition-opacity duration-300 ${animationStage >= 7 ? 'opacity-0' : 'opacity-100'}`}>
           {/* "Your" text */}
           <div 
             className={`absolute text-5xl md:text-7xl font-bold transition-all duration-1000 font-[Montserrat] z-10
@@ -209,20 +209,20 @@ const Product = () => {
           
           @keyframes crash-zoom {
             0% {
-              transform: scale(0.2);
+              transform: scale(0);
               opacity: 0;
-              filter: blur(10px);
+              filter: blur(20px);
             }
-            30% {
-              transform: scale(1.2);
+            40% {
+              transform: scale(1.15);
               opacity: 1;
               filter: blur(0);
             }
-            60% {
-              transform: scale(0.9);
+            70% {
+              transform: scale(0.95);
             }
-            80% {
-              transform: scale(1.05);
+            85% {
+              transform: scale(1.02);
             }
             100% {
               transform: scale(1);
@@ -230,7 +230,7 @@ const Product = () => {
           }
           
           .animate-crash-zoom {
-            animation: crash-zoom 0.6s cubic-bezier(0.16, 1, 0.3, 1.3) forwards;
+            animation: crash-zoom 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
           }
         `}
       </style>
