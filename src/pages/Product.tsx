@@ -1,6 +1,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const Product = () => {
   const [animationStage, setAnimationStage] = useState(0);
@@ -17,6 +19,7 @@ const Product = () => {
     // Stage 6: Third logo fades in - takes 0.6 seconds
     // Stage 7: Chain logo crashes in - takes 0.6 seconds
     // Stage 8: Chain logo scales down and moves up slightly - after 1.2s delay
+    // Stage 9: Button slides in from bottom - starts with stage 8
     
     const timer1 = setTimeout(() => setAnimationStage(1), 1200);
     const timer2 = setTimeout(() => setAnimationStage(2), 1900); // 1200 + 700
@@ -29,6 +32,8 @@ const Product = () => {
     const timer7 = setTimeout(() => setAnimationStage(7), 5400); // 4800 + 600
     // Scale down and move up the chain logo after 1.2s delay
     const timer8 = setTimeout(() => setAnimationStage(8), 6600); // 5400 + 1200
+    // Button slides in as the chain logo transforms
+    const timer9 = setTimeout(() => setAnimationStage(9), 6650); // 6600 + 50ms delay
     
     // Cleanup timers to prevent memory leaks
     return () => {
@@ -40,6 +45,7 @@ const Product = () => {
       clearTimeout(timer6);
       clearTimeout(timer7);
       clearTimeout(timer8);
+      clearTimeout(timer9);
     };
   }, []);
 
@@ -56,6 +62,11 @@ const Product = () => {
       return "translateY(100px)";
     }
     return "translateX(120%)"; // Changed from 200% to 120% for web version
+  };
+
+  // Button click handler (placeholder for now)
+  const handleCustomizeClick = () => {
+    console.log("Customize button clicked");
   };
 
   return (
@@ -137,6 +148,27 @@ const Product = () => {
             alt="Chain Logo" 
             className={`w-full md:w-[240rem] ${animationStage === 7 ? 'animate-push-zoom' : ''}`}
           />
+        </div>
+        
+        {/* Customize Now Button */}
+        <div 
+          className={`absolute z-40 transition-all duration-800 ease-out ${
+            animationStage >= 9 ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1.6)',
+            transform: animationStage >= 9 ? 'translateY(0)' : 'translateY(100px)',
+            bottom: isMobile ? '10%' : '5%',
+            left: '50%',
+            marginLeft: '-100px',
+          }}
+        >
+          <Button 
+            onClick={handleCustomizeClick}
+            className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg"
+          >
+            Customize Now <ArrowRight className="ml-2" />
+          </Button>
         </div>
         
         {/* Words container - gives a stable reference point */}
@@ -244,6 +276,10 @@ const Product = () => {
             transform: translate(200%, 300%) scale(0.5) !important;
             opacity: 0 !important;
             transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1.6) !important;
+          }
+
+          .ease-out {
+            transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1.6);
           }
         `}
       </style>
