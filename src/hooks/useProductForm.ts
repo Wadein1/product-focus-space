@@ -18,6 +18,7 @@ export const useProductForm = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [teamLocation, setTeamLocation] = useState("");
+  const [showDiscountAnimation, setShowDiscountAnimation] = useState(false);
 
   const handleQuantityChange = (increment: boolean) => {
     setQuantity(prev => increment ? prev + 1 : Math.max(1, prev - 1));
@@ -186,6 +187,8 @@ export const useProductForm = () => {
     isUploading,
     teamName,
     teamLocation,
+    showDiscountAnimation,
+    setShowDiscountAnimation,
     setTeamName,
     setTeamLocation,
     setSelectedChainColor,

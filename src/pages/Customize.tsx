@@ -1,16 +1,17 @@
 
 import React, { useState, useEffect } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
-import { ArrowRight, Upload, Check } from "lucide-react";
+import { ArrowRight, Upload, Check, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Customize = () => {
   const productForm = useProductForm();
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [animationState, setAnimationState] = useState("entering"); // entering, idle, exiting
   const [isValid, setIsValid] = useState(false);
+  const [showPriceAnimation, setShowPriceAnimation] = useState(false);
+  const [animationComplete, setAnimationComplete] = useState(false);
   
   // Check if the form is valid to enable the Next button
   useEffect(() => {
@@ -37,12 +38,27 @@ const Customize = () => {
     setAnimationState("exiting");
     
     setTimeout(() => {
-      setStep((prevStep) => prevStep + 1);
-      setAnimationState("entering");
-      
-      setTimeout(() => {
-        setAnimationState("idle");
-      }, 800);
+      if (step === 2) {
+        setShowPriceAnimation(true);
+        setTimeout(() => {
+          setAnimationComplete(true);
+          setTimeout(() => {
+            setShowPriceAnimation(false);
+            setAnimationComplete(false);
+            setStep(3);
+            setAnimationState("entering");
+            setTimeout(() => {
+              setAnimationState("idle");
+            }, 800);
+          }, 2000);
+        }, 1500);
+      } else {
+        setStep((prevStep) => prevStep + 1);
+        setAnimationState("entering");
+        setTimeout(() => {
+          setAnimationState("idle");
+        }, 800);
+      }
     }, 800);
   };
   
@@ -55,10 +71,28 @@ const Customize = () => {
   return (
     <div className="min-h-screen flex flex-col justify-between overflow-hidden" 
       style={{ 
-        background: "linear-gradient(135deg, #000000 0%, #000000 75%, #0ca2ed20 100%)",
+        background: "#000000",
         backgroundSize: "cover",
         backgroundAttachment: "fixed" 
       }}>
+      {showPriceAnimation && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black">
+          <div className="text-center">
+            {!animationComplete ? (
+              <div className="text-white text-6xl md:text-8xl font-bold">$49.99</div>
+            ) : (
+              <div className="relative">
+                <div className="text-white text-6xl md:text-8xl font-bold opacity-50 relative">
+                  $49.99
+                  <div className="absolute top-1/2 left-0 w-full h-1 bg-red-500 transform -rotate-12"></div>
+                </div>
+                <div className="text-[#00bf63] text-6xl md:text-8xl font-bold mt-4">$29.99</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-6 flex-grow flex items-center justify-center">
         <div className={`w-full max-w-4xl transition-all duration-800 ease-out transform 
           ${animationState === "entering" ? "translate-x-[100%] opacity-0" : 
@@ -105,7 +139,7 @@ const Customize = () => {
                         <div className="w-16 h-16 bg-gray-800/80 rounded-full flex items-center justify-center mb-4">
                           <Upload className="w-8 h-8 text-[#0ca2ed]" />
                         </div>
-                        <p className="text-[#0ca2ed] text-sm">Drop your image here or click to browse</p>
+                        <p className="text-[#0ca2ed] text-sm">Upload your logo</p>
                       </div>
                     )}
                   </label>
@@ -113,13 +147,11 @@ const Customize = () => {
                 
                 {/* Team info section */}
                 <div className="w-full md:w-1/2 space-y-4">
-                  <div className="flex items-center my-4 md:hidden">
-                    <div className="flex-grow h-px bg-gray-800"></div>
-                    <span className="px-4 text-gray-400 text-sm font-medium">OR</span>
-                    <div className="flex-grow h-px bg-gray-800"></div>
+                  <div className="flex items-center my-6 md:my-8">
+                    <div className="flex-grow h-px bg-gray-700"></div>
+                    <span className="px-6 text-gray-200 text-xl font-bold">OR</span>
+                    <div className="flex-grow h-px bg-gray-700"></div>
                   </div>
-                  
-                  <p className="text-white text-sm font-medium mb-2 hidden md:block">Team Information</p>
                   
                   <input
                     type="text"
@@ -187,32 +219,44 @@ const Customize = () => {
                 
                 <div>
                   <div className="mb-6">
-                    <label className="block text-white font-medium mb-2">Chain Color</label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {productForm.chainColors.map((color) => (
-                        <button
-                          key={color.id}
-                          type="button"
-                          onClick={() => productForm.setSelectedChainColor(color.name)}
-                          className={`p-3 rounded-lg transition-all ${
-                            productForm.selectedChainColor === color.name
-                              ? "border-[#0ca2ed] bg-gray-800/80 border-2"
-                              : "border border-gray-700 bg-gray-900/40 hover:border-gray-500"
-                          }`}
-                        >
-                          <span className="text-white text-sm">{color.name}</span>
-                        </button>
-                      ))}
+                    <label className="block text-white font-medium mb-2">Chain Links Color</label>
+                    <Select
+                      value={productForm.selectedChainColor}
+                      onValueChange={productForm.setSelectedChainColor}
+                    >
+                      <SelectTrigger className="bg-gray-900/60 border border-gray-700 text-white">
+                        <SelectValue placeholder="Select a color" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border border-gray-700 text-white">
+                        <SelectItem value="Designers' Choice" className="hover:bg-gray-700">Designer's Choice</SelectItem>
+                        {productForm.chainColors.map((color) => (
+                          <SelectItem key={color.id} value={color.name} className="hover:bg-gray-700">
+                            {color.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <label className="block text-white font-medium mb-2">Quantity</label>
+                    <div className="flex items-center">
                       <button
                         type="button"
-                        onClick={() => productForm.setSelectedChainColor("Designers' Choice")}
-                        className={`p-3 rounded-lg transition-all ${
-                          productForm.selectedChainColor === "Designers' Choice"
-                            ? "border-[#0ca2ed] bg-gray-800/80 border-2"
-                            : "border border-gray-700 bg-gray-900/40 hover:border-gray-500"
-                        }`}
+                        onClick={() => productForm.handleQuantityChange(false)}
+                        className="bg-gray-800 text-white p-2 rounded-l-lg border border-gray-700"
                       >
-                        <span className="text-white text-sm">Designer's Choice</span>
+                        <Minus size={16} />
+                      </button>
+                      <span className="bg-gray-900/40 text-white py-2 px-4 border-t border-b border-gray-700">
+                        {productForm.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => productForm.handleQuantityChange(true)}
+                        className="bg-gray-800 text-white p-2 rounded-r-lg border border-gray-700"
+                      >
+                        <Plus size={16} />
                       </button>
                     </div>
                   </div>
@@ -272,7 +316,7 @@ const Customize = () => {
                   
                   <div className="text-white">
                     <p className="mb-2">
-                      <span className="font-medium">Chain Color:</span> {productForm.selectedChainColor}
+                      <span className="font-medium">Chain Links Color:</span> {productForm.selectedChainColor}
                     </p>
                     <p>
                       <span className="font-medium">Quantity:</span> {productForm.quantity}
