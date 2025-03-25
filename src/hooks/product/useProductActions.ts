@@ -43,7 +43,7 @@ export const useProductActions = (
         id: crypto.randomUUID(),
         cart_id: crypto.randomUUID(),
         product_name: 'Custom Medallion',
-        price: 29.99,
+        price: 49.99,
         quantity: productDetails.quantity,
         image_path: productDetails.imagePreview || undefined,
         chain_color: productDetails.selectedChainColor !== "Designers' Choice" ? productDetails.selectedChainColor : undefined,
@@ -110,7 +110,7 @@ export const useProductActions = (
         body: {
           items: [{
             product_name: 'Custom Medallion',
-            price: 29.99,
+            price: 49.99,
             quantity: productDetails.quantity,
             image_path: finalImageUrl,
             chain_color: productDetails.selectedChainColor,

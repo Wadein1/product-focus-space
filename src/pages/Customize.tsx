@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 import { ArrowRight, Upload, Check, Minus, Plus, X } from "lucide-react";
@@ -103,12 +102,12 @@ const Customize = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black">
           <div className="text-center">
             {animationStep === 1 && (
-              <div className="text-white text-6xl md:text-8xl font-bold animate-fade-in">$49.99</div>
+              <div className="text-white text-6xl md:text-8xl font-bold animate-fade-in">$59.99</div>
             )}
             {animationStep === 2 && (
               <div className="relative">
                 <div className="text-white text-6xl md:text-8xl font-bold relative">
-                  $49.99
+                  $59.99
                   <div className="absolute top-1/2 left-0 w-0 h-1 bg-red-500 transform -rotate-12 animate-[strikethrough_0.6s_forwards]"></div>
                 </div>
               </div>
@@ -116,19 +115,19 @@ const Customize = () => {
             {animationStep === 3 && (
               <div className="relative">
                 <div className="text-white text-6xl md:text-8xl font-bold opacity-50 relative">
-                  $49.99
+                  $59.99
                   <div className="absolute top-1/2 left-0 w-full h-1 bg-red-500 transform -rotate-12"></div>
                 </div>
-                <div className="text-[#00bf63] text-6xl md:text-8xl font-bold mt-4 animate-[bounce-in_0.5s_cubic-bezier(0.25,0.46,0.45,0.94)]">$29.99</div>
+                <div className="text-[#00bf63] text-6xl md:text-8xl font-bold mt-4 animate-[bounce-in_0.5s_cubic-bezier(0.25,0.46,0.45,0.94)]">$49.99</div>
               </div>
             )}
             {animationStep === 4 && (
               <div className="relative animate-[fade-out_0.5s_forwards]">
                 <div className="text-white text-6xl md:text-8xl font-bold opacity-50 relative">
-                  $49.99
+                  $59.99
                   <div className="absolute top-1/2 left-0 w-full h-1 bg-red-500 transform -rotate-12 animate-pulse"></div>
                 </div>
-                <div className="text-[#00bf63] text-6xl md:text-8xl font-bold mt-4 animate-bounce">$29.99</div>
+                <div className="text-[#00bf63] text-6xl md:text-8xl font-bold mt-4 animate-bounce">$49.99</div>
               </div>
             )}
           </div>
@@ -330,7 +329,7 @@ const Customize = () => {
                     <div className="space-y-4 text-white">
                       <div className="flex justify-between">
                         <span>Custom Medallion</span>
-                        <span>$29.99</span>
+                        <span>$49.99</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Quantity</span>
@@ -338,7 +337,7 @@ const Customize = () => {
                       </div>
                       <div className="flex justify-between border-t border-gray-700 pt-4">
                         <span className="font-medium">Subtotal</span>
-                        <span>${(29.99 * productForm.quantity).toFixed(2)}</span>
+                        <span>${(49.99 * productForm.quantity).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Shipping</span>
@@ -346,7 +345,7 @@ const Customize = () => {
                       </div>
                       <div className="flex justify-between border-t border-gray-700 pt-4 text-lg font-bold">
                         <span>Total</span>
-                        <span>${(29.99 * productForm.quantity + 8).toFixed(2)}</span>
+                        <span>${(49.99 * productForm.quantity + 8).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
