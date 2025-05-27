@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
@@ -54,23 +55,13 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   const handleReAuthenticate = async () => {
     setIsAuthenticating(true);
     try {
-      const { data: adminUser, error: adminError } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('username', username)
-        .single();
-
-      if (adminError || !adminUser) {
-        throw new Error('Invalid credentials');
-      }
-
-      if (password !== 'thanksculvers!') {
+      // Check credentials directly
+      if (username !== 'gonzwad' || password !== 'thanksculvers!') {
         throw new Error('Invalid credentials');
       }
 
       // Store admin session
       sessionStorage.setItem('adminAuthenticated', 'true');
-      sessionStorage.setItem('adminId', adminUser.id);
       
       setShowAuthDialog(false);
       
@@ -260,7 +251,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Username"
+              placeholder="Username (gonzwad)"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />

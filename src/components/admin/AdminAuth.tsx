@@ -24,18 +24,38 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
     setIsLoading(true);
 
     try {
-      const { data: adminUser, error: adminError } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('username', username)
-        .single();
-
-      if (adminError || !adminUser) {
+      // Check credentials directly
+      if (username !== 'gonzwad' || password !== 'thanksculvers!') {
         throw new Error('Invalid credentials');
       }
 
-      if (password !== 'thanksculvers!') {
-        throw new Error('Invalid credentials');
+      // Try to find or create the admin user in the database
+      let { data: adminUser, error: adminError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('username', 'gonzwad')
+        .single();
+
+      // If user doesn't exist, create it
+      if (adminError && adminError.code === 'PGRST116') {
+        const { data: newUser, error: createError } = await supabase
+          .from('admin_users')
+          .insert({
+            username: 'gonzwad',
+            email: 'gonzwad@admin.com',
+            password_hash: 'thanksculvers!' // In production, this should be hashed
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating admin user:', createError);
+          throw new Error('Failed to create admin user');
+        }
+        adminUser = newUser;
+      } else if (adminError) {
+        console.error('Database error:', adminError);
+        throw new Error('Database connection error');
       }
 
       // Update last login timestamp
@@ -83,6 +103,9 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
           <h2 className="text-center text-3xl font-bold">Admin Login</h2>
+          <p className="text-center text-sm text-gray-600 mt-2">
+            Username: gonzwad
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
