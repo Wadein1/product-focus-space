@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
@@ -65,7 +64,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         throw new Error('Invalid credentials');
       }
 
-      if (password !== 'thanksculvers') {
+      if (password !== 'thanksculvers!') {
         throw new Error('Invalid credentials');
       }
 

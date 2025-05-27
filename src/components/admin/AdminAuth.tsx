@@ -34,7 +34,7 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
         throw new Error('Invalid credentials');
       }
 
-      if (password !== 'thanksculvers') {
+      if (password !== 'thanksculvers!') {
         throw new Error('Invalid credentials');
       }
 
