@@ -97,7 +97,7 @@ const ProductPage = () => {
             {/* 1. Custom Medallion, 17% off - same line with larger text */}
             <div className="flex items-center justify-between gap-3">
               <h1 className="text-3xl font-bold tracking-tight">Custom Medallion</h1>
-              <div className="bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap">
+              <div className="bg-red-500 text-white px-4 py-2 rounded-full text-2xl font-semibold whitespace-nowrap">
                 17% OFF
               </div>
             </div>
