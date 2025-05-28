@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { MinusIcon, PlusIcon } from 'lucide-react';
@@ -19,6 +20,7 @@ interface ProductDetailsProps {
   chainColors?: { id: string; name: string; color?: string | null }[];
   selectedChainColor: string;
   onChainColorChange: (value: string) => void;
+  isMobile?: boolean;
 }
 
 export const ProductDetails = ({
@@ -30,27 +32,46 @@ export const ProductDetails = ({
   isProcessing = false,
   chainColors = [],
   selectedChainColor,
-  onChainColorChange
+  onChainColorChange,
+  isMobile = false
 }: ProductDetailsProps) => {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Custom Medallion</h1>
-        <div className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold w-fit">
-          17% OFF
+      {/* Desktop title and discount */}
+      {!isMobile && (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Custom Medallion</h1>
+            <div className="bg-red-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold w-fit">
+              17% OFF
+            </div>
+          </div>
+          <p className="text-lg text-gray-600">
+            Gradient coloring is not supported and will be modified by our designers if submitted
+          </p>
+          <div className="border-t border-b py-4">
+            <h2 className="text-xl font-semibold mb-2">Features:</h2>
+            <ul className="space-y-2 text-gray-600">
+              <li>• Premium quality lightweight materials</li>
+              <li>• Up to 10 x 10 inch design</li>
+              <li>• Custom designed and made</li>
+            </ul>
+          </div>
+        </>
+      )}
+
+      {/* Features section - hidden on mobile */}
+      {!isMobile && (
+        <div className="border-t border-b py-4">
+          <h2 className="text-xl font-semibold mb-2">Features:</h2>
+          <ul className="space-y-2 text-gray-600">
+            <li>• Premium quality lightweight materials</li>
+            <li>• Up to 10 x 10 inch design</li>
+            <li>• Custom designed and made</li>
+          </ul>
         </div>
-      </div>
-      <p className="text-lg text-gray-600">
-        Gradient coloring is not supported and will be modified by our designers if submitted
-      </p>
-      <div className="border-t border-b py-4">
-        <h2 className="text-xl font-semibold mb-2">Features:</h2>
-        <ul className="space-y-2 text-gray-600">
-          <li>• Premium quality lightweight materials</li>
-          <li>• Up to 10 x 10 inch design</li>
-          <li>• Custom designed and made</li>
-        </ul>
-      </div>
+      )}
+
       <div className="space-y-4">
         <div className="flex flex-wrap items-baseline gap-2">
           <p className="text-2xl font-bold">$49.99</p>

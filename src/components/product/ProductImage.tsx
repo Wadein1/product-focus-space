@@ -20,6 +20,7 @@ interface ProductImageProps {
   teamLocation: string;
   onTeamNameChange: (value: string) => void;
   onTeamLocationChange: (value: string) => void;
+  isMobile?: boolean;
 }
 
 const PRODUCT_IMAGES = [
@@ -36,7 +37,8 @@ export const ProductImage = ({
   teamName,
   teamLocation,
   onTeamNameChange,
-  onTeamLocationChange
+  onTeamLocationChange,
+  isMobile = false
 }: ProductImageProps) => {
   const { toast } = useToast();
   const [carouselRef, carouselApi] = useEmblaCarousel({ 
@@ -135,7 +137,7 @@ export const ProductImage = ({
       <div className="space-y-4">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            Upload Your Design
+            {isMobile ? "Upload Your Logo" : "Upload Your Design"}
           </label>
           <Input
             type="file"
@@ -145,7 +147,7 @@ export const ProductImage = ({
             disabled={isUploading || (!!teamName || !!teamLocation)}
           />
           <p className="text-sm text-gray-500">
-            Upload the image you want on your medallion
+            {isMobile ? "Upload the logo you want on your medallion" : "Upload the image you want on your medallion"}
           </p>
         </div>
 

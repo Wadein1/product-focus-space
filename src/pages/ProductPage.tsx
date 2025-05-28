@@ -8,11 +8,13 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ProductPage = () => {
   const { toast } = useToast();
   const { uploadImage, isUploading } = useImageUpload();
   const [selectedChainColor, setSelectedChainColor] = useState("Designers' Choice");
+  const isMobile = useIsMobile();
   
   const {
     teamName,
@@ -35,7 +37,7 @@ const ProductPage = () => {
       const { data, error } = await supabase
         .from('inventory_variations')
         .select('id, name, color')
-        .eq('item_id', 'chain-colors'); // Assuming you have chain colors in inventory
+        .eq('item_id', 'chain-colors');
       
       if (error) {
         console.error('Error fetching chain colors:', error);
@@ -51,12 +53,10 @@ const ProductPage = () => {
       reader.onloadend = async () => {
         const dataUrl = reader.result as string;
         
-        // Upload to Supabase storage
         try {
           const imageUrl = await uploadImage(dataUrl);
           console.log('Image uploaded successfully:', imageUrl);
           
-          // Also save to gallery_images table
           const { error: dbError } = await supabase
             .from('gallery_images')
             .insert({
@@ -87,6 +87,58 @@ const ProductPage = () => {
       });
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24 pb-16">
+          <div className="max-w-lg mx-auto space-y-6">
+            {/* 1. Custom Medallion, 17% off - same line */}
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="text-2xl font-bold tracking-tight">Custom Medallion</h1>
+              <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+                17% OFF
+              </div>
+            </div>
+
+            {/* 2. Gradient coloring disclaimer */}
+            <p className="text-sm text-gray-600">
+              Gradient coloring is not supported and will be modified by our designers if submitted
+            </p>
+
+            {/* 3. Images/Gallery */}
+            <ProductImage
+              imagePreview={imagePreview}
+              onFileChange={handleFileChange}
+              isUploading={isUploading}
+              teamName={teamName}
+              teamLocation={teamLocation}
+              onTeamNameChange={setTeamName}
+              onTeamLocationChange={setTeamLocation}
+              isMobile={true}
+            />
+
+            {/* 5. No features section on mobile (skipped) */}
+
+            {/* 6. Price, chain links color, quantity and buy now section */}
+            <ProductDetails
+              quantity={quantity}
+              onQuantityChange={handleQuantityChange}
+              onBuyNow={() => handleBuyNow(selectedChainColor)}
+              onAddToCart={() => handleAddToCart(selectedChainColor)}
+              isAddingToCart={isAddingToCart}
+              isProcessing={isProcessing}
+              chainColors={chainColors}
+              selectedChainColor={selectedChainColor}
+              onChainColorChange={setSelectedChainColor}
+              isMobile={true}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
