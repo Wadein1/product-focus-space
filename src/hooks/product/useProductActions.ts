@@ -27,7 +27,7 @@ export const useProductActions = ({
     const hasImage = !!imagePreview;
     const hasTeamInfo = !!(teamName && teamLocation);
     
-    // Allow ordering if either image is uploaded OR team info is provided
+    // Allow ordering if either image is uploaded OR both team name and location are provided
     if (!hasImage && !hasTeamInfo) {
       throw new Error("Please upload an image or enter team information");
     }
