@@ -193,6 +193,13 @@ export type Database = {
             foreignKeyName: "fundraiser_orders_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
             isOneToOne: false
+            referencedRelation: "fundraiser_totals"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "fundraiser_orders_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
@@ -251,6 +258,13 @@ export type Database = {
             foreignKeyName: "fundraiser_transactions_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
             isOneToOne: false
+            referencedRelation: "fundraiser_totals"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "fundraiser_transactions_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
@@ -292,6 +306,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fundraiser_variations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_totals"
+            referencedColumns: ["fundraiser_id"]
+          },
           {
             foreignKeyName: "fundraiser_variations_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
@@ -537,6 +558,7 @@ export type Database = {
           order_status: string | null
           price: number
           product_name: string
+          quantity: number
           shipping_address: Json
           shipping_cost: number
           status: string
@@ -558,6 +580,7 @@ export type Database = {
           order_status?: string | null
           price: number
           product_name: string
+          quantity?: number
           shipping_address: Json
           shipping_cost?: number
           status?: string
@@ -579,6 +602,7 @@ export type Database = {
           order_status?: string | null
           price?: number
           product_name?: string
+          quantity?: number
           shipping_address?: Json
           shipping_cost?: number
           status?: string
@@ -648,7 +672,16 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      fundraiser_totals: {
+        Row: {
+          donation_amount: number | null
+          fundraiser_id: string | null
+          title: string | null
+          total_items_sold: number | null
+          total_raised: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_fundraiser_total: {
@@ -666,6 +699,13 @@ export type Database = {
       cleanup_inactive_carts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_fundraiser_stats: {
+        Args: { fundraiser_id_param: string }
+        Returns: {
+          total_items_sold: number
+          total_raised: number
+        }[]
       }
     }
     Enums: {

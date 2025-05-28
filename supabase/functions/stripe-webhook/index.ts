@@ -74,7 +74,7 @@ serve(async (req) => {
           customer_email: session.customer_details?.email,
           product_name: item.description,
           price: item.amount_total ? item.amount_total / 100 : 0,
-          quantity: item.quantity,
+          quantity: item.quantity || 1,
           status: session.metadata?.order_status || 'received',
           shipping_address: session.shipping_details,
           shipping_cost: shippingCost,
@@ -82,6 +82,8 @@ serve(async (req) => {
           total_amount: session.amount_total ? session.amount_total / 100 : 0,
           is_fundraiser: isFundraiser
         };
+
+        console.log('Creating order with data:', orderData);
 
         // Create the order
         const { data: orderData_, error: orderError } = await supabase
@@ -95,18 +97,21 @@ serve(async (req) => {
           throw orderError;
         }
 
+        console.log('Order created successfully:', orderData_.id);
+
         // If this is a fundraiser order, create the fundraiser order record
         if (isFundraiser && fundraiserId && variationId && orderData_) {
           console.log('Processing fundraiser order:', {
             fundraiserId,
             variationId,
-            orderId: orderData_.id
+            orderId: orderData_.id,
+            quantity: orderData.quantity
           });
 
           // Get the fundraiser details to calculate donation amount
           const { data: fundraiser, error: fundraiserError } = await supabase
             .from('fundraisers')
-            .select('donation_percentage')
+            .select('donation_percentage, donation_amount, donation_type')
             .eq('id', fundraiserId)
             .single();
 
@@ -115,8 +120,15 @@ serve(async (req) => {
             throw fundraiserError;
           }
 
-          const donationPercentage = fundraiser.donation_percentage / 100;
-          const donationAmount = orderData.price * donationPercentage;
+          // Calculate donation amount based on type
+          let donationPerItem = 0;
+          if (fundraiser.donation_type === 'percentage') {
+            donationPerItem = (orderData.price / orderData.quantity) * (fundraiser.donation_percentage / 100);
+          } else {
+            donationPerItem = fundraiser.donation_amount || 0;
+          }
+
+          const totalDonationAmount = donationPerItem * orderData.quantity;
 
           // Create fundraiser order record
           const { error: fundraiserOrderError } = await supabase
@@ -126,7 +138,7 @@ serve(async (req) => {
               variation_id: variationId,
               order_id: orderData_.id,
               amount: orderData.price,
-              donation_amount: donationAmount
+              donation_amount: totalDonationAmount
             }]);
 
           if (fundraiserOrderError) {
@@ -134,7 +146,7 @@ serve(async (req) => {
             throw fundraiserOrderError;
           }
 
-          console.log(`Successfully processed fundraiser order. Donation amount: $${donationAmount}`);
+          console.log(`Successfully processed fundraiser order. Donation amount: $${totalDonationAmount} for ${orderData.quantity} items`);
         }
       }
     }

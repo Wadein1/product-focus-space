@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +26,6 @@ export const FundraiserList = () => {
   const { data: fundraisers, isLoading, error, refetch } = useQuery({
     queryKey: ['fundraisers', searchTerm],
     queryFn: async () => {
-      // Ensure we're using the service role key for admin access
       const { data, error } = await supabase
         .from('fundraisers')
         .select(`
@@ -34,7 +34,8 @@ export const FundraiserList = () => {
             id,
             title,
             image_path,
-            is_default
+            is_default,
+            price
           )
         `)
         .or(`title.ilike.%${searchTerm}%,custom_link.ilike.%${searchTerm}%`)
@@ -48,22 +49,65 @@ export const FundraiserList = () => {
 
   const deleteFundraiser = async (id: string) => {
     try {
-      // First, delete associated variations
+      console.log('Deleting fundraiser:', id);
+
+      // First, get all image paths from variations to clean up storage
+      const { data: variations } = await supabase
+        .from('fundraiser_variations')
+        .select('image_path')
+        .eq('fundraiser_id', id);
+
+      // Delete fundraiser orders first (foreign key constraint)
+      const { error: ordersError } = await supabase
+        .from('fundraiser_orders')
+        .delete()
+        .eq('fundraiser_id', id);
+
+      if (ordersError) {
+        console.error('Error deleting fundraiser orders:', ordersError);
+        throw ordersError;
+      }
+
+      // Delete associated variations
       const { error: variationsError } = await supabase
         .from('fundraiser_variations')
         .delete()
         .eq('fundraiser_id', id);
 
-      if (variationsError) throw variationsError;
+      if (variationsError) {
+        console.error('Error deleting fundraiser variations:', variationsError);
+        throw variationsError;
+      }
 
-      // Then delete the fundraiser
+      // Clean up images from storage
+      if (variations && variations.length > 0) {
+        const imagePaths = variations
+          .filter(v => v.image_path)
+          .map(v => v.image_path);
+        
+        if (imagePaths.length > 0) {
+          const { error: storageError } = await supabase.storage
+            .from('gallery')
+            .remove(imagePaths);
+          
+          if (storageError) {
+            console.warn('Error cleaning up images:', storageError);
+          }
+        }
+      }
+
+      // Finally delete the fundraiser
       const { error } = await supabase
         .from('fundraisers')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting fundraiser:', error);
+        throw error;
+      }
 
+      console.log('Fundraiser deleted successfully');
       toast({
         title: "Fundraiser deleted",
         description: "The fundraiser has been deleted successfully."

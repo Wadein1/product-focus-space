@@ -71,7 +71,7 @@ export const FundraiserPurchase = ({
   const handleBuyNow = async () => {
     try {
       const shippingCost = deliveryMethod === 'shipping' ? 8.00 : 0;
-      console.log('Creating checkout with shipping cost:', shippingCost);
+      console.log('Creating checkout with quantity:', quantity, 'shipping cost:', shippingCost);
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -118,7 +118,7 @@ export const FundraiserPurchase = ({
     <div className="space-y-6 bg-gray-50 p-4 rounded-lg">
       <div className="border-t border-b py-4">
         <div className="flex items-baseline gap-2">
-          <p className="text-2xl font-bold">${price}</p>
+          <p className="text-2xl font-bold">${(price * quantity).toFixed(2)}</p>
           {deliveryMethod === "shipping" && (
             <p className="text-sm text-gray-500">(+$8.00 shipping, +5% tax)</p>
           )}

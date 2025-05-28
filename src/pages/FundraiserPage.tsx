@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -39,6 +40,25 @@ const FundraiserPage = () => {
     },
   });
 
+  // Get fundraiser stats using the new function
+  const { data: fundraiserStats } = useQuery({
+    queryKey: ['fundraiser-stats', fundraiser?.id],
+    queryFn: async () => {
+      if (!fundraiser?.id) return null;
+      
+      const { data, error } = await supabase
+        .rpc('get_fundraiser_stats', { fundraiser_id_param: fundraiser.id });
+
+      if (error) {
+        console.error('Error fetching fundraiser stats:', error);
+        return null;
+      }
+
+      return data[0] || { total_items_sold: 0, total_raised: 0 };
+    },
+    enabled: !!fundraiser?.id,
+  });
+
   const defaultVariation = fundraiser?.fundraiser_variations?.find(v => v.is_default);
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
 
@@ -75,11 +95,13 @@ const FundraiserPage = () => {
   }
 
   const getDonationText = () => {
-    if (fundraiser.donation_type === 'percentage') {
-      return `${fundraiser.donation_percentage}% of each sale is donated`;
-    } else {
-      return `$${fundraiser.donation_amount.toFixed(2)} from each sale is donated`;
-    }
+    const donationAmount = fundraiser.donation_type === 'percentage' 
+      ? (fundraiser.base_price * (fundraiser.donation_percentage || 0) / 100)
+      : (fundraiser.donation_amount || 0);
+    
+    const totalRaised = fundraiserStats?.total_raised || 0;
+    
+    return `$${donationAmount.toFixed(2)} of each item bought is donated, total of $${totalRaised.toFixed(2)} raised already!`;
   };
 
   return (
@@ -90,7 +112,7 @@ const FundraiserPage = () => {
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold mb-4">{fundraiser.title}</h1>
             <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-green-600">
+              <p className="text-green-600 font-medium">
                 {getDonationText()}
               </p>
             </div>
