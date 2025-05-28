@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -146,9 +145,6 @@ export const ProductImage = ({
             className="w-full"
             disabled={isUploading || (!!teamName || !!teamLocation)}
           />
-          <p className="text-sm text-gray-500">
-            {isMobile ? "Upload the logo you want on your medallion" : "Upload the image you want on your medallion"}
-          </p>
         </div>
 
         <div className="flex items-center">
@@ -159,7 +155,7 @@ export const ProductImage = ({
 
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            Team Information
+            Team information - We'll find your logo
           </label>
           <Input
             type="text"
@@ -177,9 +173,6 @@ export const ProductImage = ({
             className="w-full"
             disabled={!!imagePreview}
           />
-          <p className="text-sm text-gray-500">
-            Enter your team details and we'll find and verify your team's logo
-          </p>
         </div>
       </div>
     </div>
