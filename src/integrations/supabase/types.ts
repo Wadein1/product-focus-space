@@ -547,6 +547,7 @@ export type Database = {
       orders: {
         Row: {
           cart_id: string | null
+          chain_color: string | null
           created_at: string
           customer_email: string
           design_notes: string | null
@@ -564,11 +565,14 @@ export type Database = {
           status: string
           stl_file_path: string | null
           tax_amount: number
+          team_location: string | null
+          team_name: string | null
           total_amount: number
           tracking_number: string | null
         }
         Insert: {
           cart_id?: string | null
+          chain_color?: string | null
           created_at?: string
           customer_email: string
           design_notes?: string | null
@@ -586,11 +590,14 @@ export type Database = {
           status?: string
           stl_file_path?: string | null
           tax_amount: number
+          team_location?: string | null
+          team_name?: string | null
           total_amount: number
           tracking_number?: string | null
         }
         Update: {
           cart_id?: string | null
+          chain_color?: string | null
           created_at?: string
           customer_email?: string
           design_notes?: string | null
@@ -608,6 +615,8 @@ export type Database = {
           status?: string
           stl_file_path?: string | null
           tax_amount?: number
+          team_location?: string | null
+          team_name?: string | null
           total_amount?: number
           tracking_number?: string | null
         }
