@@ -24,7 +24,10 @@ export const useProductActions = ({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const createOrderItem = (chainColor: string) => {
-    if (!imagePreview && !teamName && !teamLocation) {
+    const hasImage = !!imagePreview;
+    const hasTeamInfo = !!(teamName && teamLocation);
+    
+    if (!hasImage && !hasTeamInfo) {
       throw new Error("Please upload an image or enter team information");
     }
 
