@@ -352,7 +352,7 @@ const Customize = () => {
                   
                   <div className="space-y-4">
                     <Button 
-                      onClick={productForm.handleBuyNow}
+                      onClick={() => productForm.handleBuyNow()}
                       disabled={productForm.isProcessing}
                       className="w-full bg-[#0ca2ed] hover:bg-[#0ca2ed]/90 text-white px-6 py-3 rounded-lg font-medium"
                     >
