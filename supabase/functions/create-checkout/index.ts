@@ -60,7 +60,20 @@ serve(async (req) => {
       });
     }
 
-    console.log('Creating Stripe session with metadata:', metadata);
+    // Prepare session metadata with all order details
+    const sessionMetadata = {
+      ...metadata,
+      order_status: 'received',
+      // Add item-specific data to session metadata
+      item_image_path: items[0]?.image_path || '',
+      item_chain_color: items[0]?.chain_color || "Designers' Choice",
+      item_team_name: items[0]?.team_name || '',
+      item_team_location: items[0]?.team_location || '',
+      item_quantity: (items[0]?.quantity || 1).toString(),
+      item_product_name: items[0]?.product_name || ''
+    };
+
+    console.log('Creating Stripe session with metadata:', sessionMetadata);
 
     // Use the application domain instead of the request URL origin
     const appDomain = "gimmedrip.lovable.app";
@@ -72,10 +85,7 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `https://${appDomain}/success`,
       cancel_url: `https://${appDomain}/cancel`,
-      metadata: {
-        ...metadata,
-        order_status: 'received',
-      },
+      metadata: sessionMetadata,
       ...(customerEmail && { customer_email: customerEmail }),
       // Enable promotion code support
       allow_promotion_codes: true,

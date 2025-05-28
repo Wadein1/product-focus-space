@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,8 @@ export const useCheckout = () => {
     quantity: number;
     image_path?: string;
     chain_color?: string;
+    team_name?: string;
+    team_location?: string;
   }) => {
     setIsProcessing(true);
     try {
@@ -22,6 +25,12 @@ export const useCheckout = () => {
           items: [item],
           customerEmail: null,
           shippingAddress: null,
+          metadata: {
+            image_path: item.image_path || '',
+            chain_color: item.chain_color || '',
+            team_name: item.team_name || '',
+            team_location: item.team_location || ''
+          },
         },
       });
 

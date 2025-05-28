@@ -70,17 +70,23 @@ serve(async (req) => {
       
       // Process each product line item (excluding shipping)
       for (const item of productItems) {
+        // Extract custom order data from session metadata
         const orderData = {
           customer_email: session.customer_details?.email,
-          product_name: item.description,
+          product_name: session.metadata?.item_product_name || item.description,
           price: item.amount_total ? item.amount_total / 100 : 0,
-          quantity: item.quantity || 1,
+          quantity: parseInt(session.metadata?.item_quantity || '1'),
           status: session.metadata?.order_status || 'received',
           shipping_address: session.shipping_details,
           shipping_cost: shippingCost,
           tax_amount: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
           total_amount: session.amount_total ? session.amount_total / 100 : 0,
-          is_fundraiser: isFundraiser
+          is_fundraiser: isFundraiser,
+          // Add custom fields from metadata
+          image_path: session.metadata?.item_image_path || null,
+          chain_color: session.metadata?.item_chain_color || null,
+          team_name: session.metadata?.item_team_name || null,
+          team_location: session.metadata?.item_team_location || null
         };
 
         console.log('Creating order with data:', orderData);
