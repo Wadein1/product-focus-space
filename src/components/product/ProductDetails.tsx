@@ -60,17 +60,7 @@ export const ProductDetails = ({
         </>
       )}
 
-      {/* Features section - hidden on mobile */}
-      {!isMobile && (
-        <div className="border-t border-b py-4">
-          <h2 className="text-xl font-semibold mb-2">Features:</h2>
-          <ul className="space-y-2 text-gray-600">
-            <li>• Premium quality lightweight materials</li>
-            <li>• Up to 10 x 10 inch design</li>
-            <li>• Custom designed and made</li>
-          </ul>
-        </div>
-      )}
+      {/* Removed duplicate features section */}
 
       <div className="space-y-4">
         <div className="flex flex-wrap items-baseline gap-2">

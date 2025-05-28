@@ -101,10 +101,7 @@ const ProductPage = () => {
               </div>
             </div>
 
-            {/* 2. Gradient coloring disclaimer */}
-            <p className="text-sm text-gray-600">
-              Gradient coloring is not supported and will be modified by our designers if submitted
-            </p>
+            {/* 2. Gradient coloring disclaimer removed for mobile */}
 
             {/* 3. Images/Gallery */}
             <ProductImage
