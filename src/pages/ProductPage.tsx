@@ -1,17 +1,14 @@
+
 import React, { useState } from 'react';
 import Navbar from "@/components/Navbar";
 import { ProductImage } from '@/components/product/ProductImage';
 import { ProductDetails } from '@/components/product/ProductDetails';
 import { useProductForm } from '@/hooks/useProductForm';
-import { useImageUpload } from '@/hooks/useImageUpload';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ProductPage = () => {
-  const { toast } = useToast();
-  const { uploadImage, isUploading } = useImageUpload();
   const [selectedChainColor, setSelectedChainColor] = useState("Designers' Choice");
   const isMobile = useIsMobile();
   
@@ -26,7 +23,9 @@ const ProductPage = () => {
     handleAddToCart,
     handleBuyNow,
     isAddingToCart,
-    isProcessing
+    isProcessing,
+    handleFileChange,
+    isUploading
   } = useProductForm();
 
   // Fetch chain colors from database
@@ -45,47 +44,6 @@ const ProductPage = () => {
       return data || [];
     },
   });
-
-  const handleFileChange = async (file: File) => {
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const dataUrl = reader.result as string;
-        
-        try {
-          const imageUrl = await uploadImage(dataUrl);
-          console.log('Image uploaded successfully:', imageUrl);
-          
-          const { error: dbError } = await supabase
-            .from('gallery_images')
-            .insert({
-              image_path: imageUrl,
-              title: 'Custom Design Upload',
-              description: 'User uploaded custom design'
-            });
-          
-          if (dbError) {
-            console.error('Error saving to gallery:', dbError);
-          }
-          
-          toast({
-            title: "Image uploaded",
-            description: "Your design has been uploaded successfully",
-          });
-        } catch (error) {
-          console.error('Upload failed:', error);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Error handling file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process image",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (isMobile) {
     return (
