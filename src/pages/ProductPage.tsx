@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 const ProductPage = () => {
   const {
     toast
@@ -91,10 +90,10 @@ const ProductPage = () => {
         <Navbar />
         <div className="container mx-auto px-4 pt-24 pb-16">
           <div className="max-w-lg mx-auto space-y-6">
-            {/* 1. Custom Medallion, 17% off - same line with responsive width */}
-            <div className="flex items-center justify-between w-full">
-              <h1 className="font-bold tracking-tight text-2xl flex-1 pr-2">Custom Medallion</h1>
-              <div className="bg-red-500 text-white px-4 py-2 rounded-full text-lg font-semibold whitespace-nowrap">
+            {/* 1. Custom Medallion, 17% off - same line with larger text */}
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="font-bold tracking-tight text-3xl">Custom Medallion</h1>
+              <div className="bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap">
                 17% OFF
               </div>
             </div>
@@ -134,5 +133,4 @@ const ProductPage = () => {
       </div>
     </div>;
 };
-
 export default ProductPage;
