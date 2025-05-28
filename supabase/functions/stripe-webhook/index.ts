@@ -47,10 +47,14 @@ serve(async (req) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
+      console.log('Session metadata:', session.metadata);
+      
       // Check if this is a fundraiser order
       const isFundraiser = session.metadata?.is_fundraiser === 'true';
       const fundraiserId = session.metadata?.fundraiser_id;
       const variationId = session.metadata?.variation_id;
+      
+      console.log('Fundraiser check:', { isFundraiser, fundraiserId, variationId });
       
       // Get line items to extract product metadata
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
@@ -114,7 +118,7 @@ serve(async (req) => {
             quantity: orderData.quantity
           });
 
-          // Get the fundraiser details to calculate donation amount
+          // First, verify the fundraiser and variation exist
           const { data: fundraiser, error: fundraiserError } = await supabase
             .from('fundraisers')
             .select('donation_percentage, donation_amount, donation_type')
@@ -126,6 +130,20 @@ serve(async (req) => {
             throw fundraiserError;
           }
 
+          const { data: variation, error: variationError } = await supabase
+            .from('fundraiser_variations')
+            .select('price')
+            .eq('id', variationId)
+            .single();
+
+          if (variationError) {
+            console.error('Error fetching variation:', variationError);
+            throw variationError;
+          }
+
+          console.log('Found fundraiser:', fundraiser);
+          console.log('Found variation:', variation);
+
           // Calculate donation amount based on type
           let donationPerItem = 0;
           if (fundraiser.donation_type === 'percentage') {
@@ -136,8 +154,15 @@ serve(async (req) => {
 
           const totalDonationAmount = donationPerItem * orderData.quantity;
 
+          console.log('Calculated donation amount:', {
+            donationPerItem,
+            totalDonationAmount,
+            orderPrice: orderData.price,
+            quantity: orderData.quantity
+          });
+
           // Create fundraiser order record
-          const { error: fundraiserOrderError } = await supabase
+          const { data: fundraiserOrderData, error: fundraiserOrderError } = await supabase
             .from('fundraiser_orders')
             .insert([{
               fundraiser_id: fundraiserId,
@@ -145,14 +170,19 @@ serve(async (req) => {
               order_id: orderData_.id,
               amount: orderData.price,
               donation_amount: totalDonationAmount
-            }]);
+            }])
+            .select()
+            .single();
 
           if (fundraiserOrderError) {
             console.error('Error creating fundraiser order:', fundraiserOrderError);
             throw fundraiserOrderError;
           }
 
-          console.log(`Successfully processed fundraiser order. Donation amount: $${totalDonationAmount} for ${orderData.quantity} items`);
+          console.log(`Successfully processed fundraiser order:`, fundraiserOrderData);
+          console.log(`Donation amount: $${totalDonationAmount} for ${orderData.quantity} items`);
+        } else if (isFundraiser) {
+          console.warn('Missing fundraiser data:', { fundraiserId, variationId, orderExists: !!orderData_ });
         }
       }
     }

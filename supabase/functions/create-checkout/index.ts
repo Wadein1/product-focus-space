@@ -35,7 +35,8 @@ serve(async (req) => {
           metadata: {
             chain_color: item.chain_color || "Designers' Choice",
             image_url: item.image_path || '',
-            delivery_method: item.delivery_method || 'shipping'
+            delivery_method: item.delivery_method || 'shipping',
+            is_fundraiser: item.is_fundraiser ? 'true' : 'false'
           }
         },
         unit_amount: Math.round(item.price * 100),
@@ -77,7 +78,11 @@ serve(async (req) => {
       item_team_name: items[0]?.team_name || '',
       item_team_location: items[0]?.team_location || '',
       item_quantity: (items[0]?.quantity || 1).toString(),
-      item_product_name: items[0]?.product_name || ''
+      item_product_name: items[0]?.product_name || '',
+      // Ensure fundraiser metadata is properly set
+      is_fundraiser: metadata?.is_fundraiser || (items[0]?.is_fundraiser ? 'true' : 'false'),
+      fundraiser_id: metadata?.fundraiser_id || '',
+      variation_id: metadata?.variation_id || ''
     };
 
     console.log('Creating Stripe session with metadata:', sessionMetadata);
