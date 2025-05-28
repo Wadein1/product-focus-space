@@ -24,53 +24,22 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
     setIsLoading(true);
 
     try {
-      // Check credentials directly
+      console.log('Attempting login with:', { username, password });
+      
+      // Check credentials directly first
       if (username !== 'gonzwad' || password !== 'thanksculvers!') {
+        console.log('Invalid credentials provided');
         throw new Error('Invalid credentials');
       }
 
-      // Try to find or create the admin user in the database
-      let { data: adminUser, error: adminError } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('username', 'gonzwad')
-        .single();
-
-      // If user doesn't exist, create it
-      if (adminError && adminError.code === 'PGRST116') {
-        const { data: newUser, error: createError } = await supabase
-          .from('admin_users')
-          .insert({
-            username: 'gonzwad',
-            email: 'gonzwad@admin.com',
-            password_hash: 'thanksculvers!' // In production, this should be hashed
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('Error creating admin user:', createError);
-          throw new Error('Failed to create admin user');
-        }
-        adminUser = newUser;
-      } else if (adminError) {
-        console.error('Database error:', adminError);
-        throw new Error('Database connection error');
-      }
-
-      // Update last login timestamp
-      const { error: updateError } = await supabase
-        .from('admin_users')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', adminUser.id);
-
-      if (updateError) {
-        console.error('Error updating last login:', updateError);
-      }
-
-      // Store admin session
+      console.log('Credentials are correct, storing session...');
+      
+      // Store admin session immediately without database dependency
       sessionStorage.setItem('adminAuthenticated', 'true');
-      sessionStorage.setItem('adminId', adminUser.id);
+      sessionStorage.setItem('adminUsername', 'gonzwad');
+      sessionStorage.setItem('adminLoginTime', new Date().toISOString());
+      
+      console.log('Session stored successfully');
       
       toast({
         title: "Login successful",
@@ -105,6 +74,9 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
           <h2 className="text-center text-3xl font-bold">Admin Login</h2>
           <p className="text-center text-sm text-gray-600 mt-2">
             Username: gonzwad
+          </p>
+          <p className="text-center text-xs text-gray-500 mt-1">
+            Password: thanksculvers!
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>

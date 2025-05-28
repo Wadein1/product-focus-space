@@ -55,13 +55,20 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
   const handleReAuthenticate = async () => {
     setIsAuthenticating(true);
     try {
+      console.log('Re-authenticating with:', { username, password });
+      
       // Check credentials directly
       if (username !== 'gonzwad' || password !== 'thanksculvers!') {
+        console.log('Invalid re-auth credentials');
         throw new Error('Invalid credentials');
       }
 
+      console.log('Re-auth successful, storing session...');
+      
       // Store admin session
       sessionStorage.setItem('adminAuthenticated', 'true');
+      sessionStorage.setItem('adminUsername', 'gonzwad');
+      sessionStorage.setItem('adminLoginTime', new Date().toISOString());
       
       setShowAuthDialog(false);
       
@@ -71,7 +78,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         setPendingAction(null);
       }
     } catch (error: any) {
-      console.error('Authentication error:', error);
+      console.error('Re-authentication error:', error);
       toast({
         title: "Authentication failed",
         description: "Invalid username or password",
@@ -84,6 +91,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
 
   const checkCustomLinkAvailability = async (customLink: string) => {
     if (!sessionStorage.getItem('adminAuthenticated')) {
+      console.log('Not authenticated, showing auth dialog');
       setShowAuthDialog(true);
       return false;
     }
@@ -111,12 +119,16 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
     const submitAction = async () => {
       setIsSubmitting(true);
       try {
+        console.log('Submitting fundraiser form...');
+        
         if (!sessionStorage.getItem('adminAuthenticated')) {
+          console.log('Not authenticated, setting pending action and showing auth dialog');
           setPendingAction(() => () => onSubmit(data));
           setShowAuthDialog(true);
           return;
         }
 
+        console.log('Checking custom link availability...');
         const isLinkAvailable = await checkCustomLinkAvailability(data.customLink);
         
         if (!isLinkAvailable) {
@@ -128,6 +140,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           return;
         }
 
+        console.log('Creating/updating fundraiser...');
         const fundraiserData = {
           title: data.title,
           description: data.description,
@@ -167,6 +180,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
 
         if (fundraiserError) throw fundraiserError;
 
+        console.log('Processing variations...');
         // Handle variations
         for (const variation of data.variations) {
           if (!variation.title) continue;
@@ -199,6 +213,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           }
         }
 
+        console.log('Fundraiser saved successfully');
         toast({
           title: fundraiser ? "Fundraiser updated" : "Fundraiser created",
           description: fundraiser 
@@ -257,7 +272,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
             />
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="Password (thanksculvers!)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
