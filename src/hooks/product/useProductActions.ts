@@ -25,11 +25,11 @@ export const useProductActions = ({
 
   const createOrderItem = (chainColor: string) => {
     const hasImage = !!imagePreview;
-    const hasTeamInfo = !!(teamName && teamLocation);
+    const hasCompleteTeamInfo = !!(teamName && teamLocation);
     
-    // Allow ordering if either image is uploaded OR both team name and location are provided
-    if (!hasImage && !hasTeamInfo) {
-      throw new Error("Please upload an image or enter team information");
+    // Allow ordering if either image is uploaded OR complete team info is provided
+    if (!hasImage && !hasCompleteTeamInfo) {
+      throw new Error("Please upload an image or enter complete team information (both name and location)");
     }
 
     return {
