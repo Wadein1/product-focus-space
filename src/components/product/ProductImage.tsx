@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -143,7 +144,7 @@ export const ProductImage = ({
             accept="image/*"
             onChange={handleFileChange}
             className="w-full"
-            disabled={isUploading || (!!teamName || !!teamLocation)}
+            disabled={isUploading}
           />
         </div>
 
@@ -163,7 +164,6 @@ export const ProductImage = ({
             value={teamName}
             onChange={(e) => onTeamNameChange(e.target.value)}
             className="w-full"
-            disabled={!!imagePreview}
           />
           <Input
             type="text"
@@ -171,7 +171,6 @@ export const ProductImage = ({
             value={teamLocation}
             onChange={(e) => onTeamLocationChange(e.target.value)}
             className="w-full"
-            disabled={!!imagePreview}
           />
         </div>
       </div>
