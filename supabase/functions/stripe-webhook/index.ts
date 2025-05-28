@@ -86,6 +86,9 @@ serve(async (req) => {
           tax_amount: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
           total_amount: session.amount_total ? session.amount_total / 100 : 0,
           is_fundraiser: isFundraiser,
+          // Add fundraiser tracking columns to orders table
+          fundraiser_id: fundraiserId || null,
+          variation_id: variationId || null,
           // Add custom fields from metadata
           image_path: session.metadata?.item_image_path || null,
           chain_color: session.metadata?.item_chain_color || null,
@@ -95,7 +98,7 @@ serve(async (req) => {
 
         console.log('Creating order with data:', orderData);
 
-        // Create the order
+        // Create the order with fundraiser tracking
         const { data: orderData_, error: orderError } = await supabase
           .from('orders')
           .insert([orderData])

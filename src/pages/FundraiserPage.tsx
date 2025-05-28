@@ -40,21 +40,21 @@ const FundraiserPage = () => {
     },
   });
 
-  // Get fundraiser stats using the new function
+  // Get fundraiser stats using the improved function
   const { data: fundraiserStats } = useQuery({
     queryKey: ['fundraiser-stats', fundraiser?.id],
     queryFn: async () => {
       if (!fundraiser?.id) return null;
       
       const { data, error } = await supabase
-        .rpc('get_fundraiser_stats', { fundraiser_id_param: fundraiser.id });
+        .rpc('get_fundraiser_stats_improved', { fundraiser_id_param: fundraiser.id });
 
       if (error) {
         console.error('Error fetching fundraiser stats:', error);
         return null;
       }
 
-      return data[0] || { total_items_sold: 0, total_raised: 0 };
+      return data[0] || { total_items_sold: 0, total_raised: 0, total_orders: 0 };
     },
     enabled: !!fundraiser?.id,
   });
@@ -100,8 +100,9 @@ const FundraiserPage = () => {
       : (fundraiser.donation_amount || 0);
     
     const totalRaised = fundraiserStats?.total_raised || 0;
+    const totalItems = fundraiserStats?.total_items_sold || 0;
     
-    return `$${donationAmount.toFixed(2)} of each item bought is donated, total of $${totalRaised.toFixed(2)} raised already!`;
+    return `$${donationAmount.toFixed(2)} of each item bought is donated. ${totalItems} items sold, $${totalRaised.toFixed(2)} raised so far!`;
   };
 
   return (

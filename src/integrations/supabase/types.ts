@@ -552,6 +552,7 @@ export type Database = {
           customer_email: string
           design_notes: string | null
           first_name: string | null
+          fundraiser_id: string | null
           id: string
           image_path: string | null
           is_fundraiser: boolean | null
@@ -569,6 +570,7 @@ export type Database = {
           team_name: string | null
           total_amount: number
           tracking_number: string | null
+          variation_id: string | null
         }
         Insert: {
           cart_id?: string | null
@@ -577,6 +579,7 @@ export type Database = {
           customer_email: string
           design_notes?: string | null
           first_name?: string | null
+          fundraiser_id?: string | null
           id?: string
           image_path?: string | null
           is_fundraiser?: boolean | null
@@ -594,6 +597,7 @@ export type Database = {
           team_name?: string | null
           total_amount: number
           tracking_number?: string | null
+          variation_id?: string | null
         }
         Update: {
           cart_id?: string | null
@@ -602,6 +606,7 @@ export type Database = {
           customer_email?: string
           design_notes?: string | null
           first_name?: string | null
+          fundraiser_id?: string | null
           id?: string
           image_path?: string | null
           is_fundraiser?: boolean | null
@@ -619,8 +624,31 @@ export type Database = {
           team_name?: string | null
           total_amount?: number
           tracking_number?: string | null
+          variation_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_totals"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "orders_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_variations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shopping_carts: {
         Row: {
@@ -714,6 +742,27 @@ export type Database = {
         Returns: {
           total_items_sold: number
           total_raised: number
+        }[]
+      }
+      get_fundraiser_stats_improved: {
+        Args: { fundraiser_id_param: string }
+        Returns: {
+          total_items_sold: number
+          total_raised: number
+          total_orders: number
+        }[]
+      }
+      recover_fundraiser_orders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      validate_fundraiser_tracking: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          order_id: string
+          product_name: string
+          is_fundraiser: boolean
+          has_tracking: boolean
         }[]
       }
     }

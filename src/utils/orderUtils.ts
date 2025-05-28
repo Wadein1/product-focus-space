@@ -1,3 +1,4 @@
+
 import { RawOrder, Order, OrderStatus } from '@/types/order';
 
 export const formatShippingAddress = (rawAddress: Record<string, unknown>) => ({
@@ -24,6 +25,9 @@ export const mapRawOrderToOrder = (rawOrder: RawOrder): Order => {
     shipping_cost: rawOrder.shipping_cost,
     tax_amount: rawOrder.tax_amount,
     stl_file_path: rawOrder.stl_file_path || undefined,
-    tracking_number: rawOrder.tracking_number || undefined
+    tracking_number: rawOrder.tracking_number || undefined,
+    // Add fundraiser tracking fields
+    fundraiser_id: rawOrder.fundraiser_id || undefined,
+    variation_id: rawOrder.variation_id || undefined
   };
 };

@@ -1,3 +1,4 @@
+
 export interface ShippingAddress {
   address: string;
   city: string;
@@ -24,6 +25,8 @@ export interface Order {
   tax_amount: number;
   stl_file_path?: string;
   tracking_number?: string;
+  fundraiser_id?: string;
+  variation_id?: string;
 }
 
 export interface RawOrder {
@@ -43,4 +46,6 @@ export interface RawOrder {
   tax_amount: number;
   total_amount: number;
   tracking_number: string | null;
+  fundraiser_id: string | null;
+  variation_id: string | null;
 }
