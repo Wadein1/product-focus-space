@@ -1,9 +1,12 @@
 
+import { useState } from "react";
 import { useProductCustomization } from "./product/useProductCustomization";
 import { useQuantityManager } from "./product/useQuantityManager";
 import { useProductActions } from "./product/useProductActions";
 
 export const useProductForm = () => {
+  const [selectedChainColor, setSelectedChainColor] = useState("Designers' Choice");
+  
   const customization = useProductCustomization();
   const quantityManager = useQuantityManager();
   
@@ -12,12 +15,14 @@ export const useProductForm = () => {
     teamName: customization.teamName,
     teamLocation: customization.teamLocation,
     quantity: quantityManager.quantity,
-    selectedChainColor: "Designers' Choice" // Adding the default value to fix the type error
+    selectedChainColor
   });
 
   return {
     ...customization,
     ...quantityManager,
     ...productActions,
+    selectedChainColor,
+    setSelectedChainColor,
   };
 };

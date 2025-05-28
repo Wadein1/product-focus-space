@@ -1,9 +1,9 @@
 
 import React from "react";
-import { ProductAnimation } from "@/components/product-animation/ProductAnimation";
+import ProductPage from "./ProductPage";
 
 const Product = () => {
-  return <ProductAnimation />;
+  return <ProductPage />;
 };
 
 export default Product;
