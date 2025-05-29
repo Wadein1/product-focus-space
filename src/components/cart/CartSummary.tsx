@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { CartItem as CartItemType } from "@/types/cart";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,8 +15,6 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
 
   const handleCheckout = async () => {
     try {
-      console.log('Starting checkout process');
-      
       // Update any Custom Medallion prices to match the new pricing
       const processedItems = items.map(item => ({
         ...item,
@@ -56,9 +53,6 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
         const designType = item.image_path ? 'custom_upload' : 'team_logo';
         metadata[`item_${index}_design_type`] = designType;
       });
-      
-      console.log('Sending checkout metadata:', metadata);
-      console.log('Shipping cost being applied:', shippingCost);
 
       // Create checkout session
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
@@ -73,12 +67,10 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
       });
 
       if (error) {
-        console.error('Supabase function error:', error);
         throw error;
       }
 
       if (!checkoutData?.url) {
-        console.error('No checkout URL received:', checkoutData);
         throw new Error('No checkout URL received from Stripe');
       }
 
@@ -87,11 +79,9 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
         .filter(item => item.image_path?.startsWith('data:'))
         .map(async (item) => {
           try {
-            console.log('Processing image upload for item:', item.product_name);
             const imageUrl = await uploadImage(item.image_path!);
             return { originalUrl: item.image_path, newUrl: imageUrl };
           } catch (error) {
-            console.error('Failed to upload image:', error);
             return { originalUrl: item.image_path, newUrl: null };
           }
         });
@@ -99,14 +89,17 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
       // Handle image uploads in the background
       Promise.all(imageUploads)
         .then(results => {
-          results.forEach(({ originalUrl, newUrl }) => {
-            if (newUrl) {
-              console.log('Image uploaded successfully:', { originalUrl, newUrl });
+          results.forEach(({ newUrl }) => {
+            if (!newUrl) {
+              toast({
+                title: "Warning",
+                description: "Some images may not have uploaded properly. Our team will handle this for you.",
+                variant: "destructive",
+              });
             }
           });
         })
-        .catch(error => {
-          console.error('Background image upload failed:', error);
+        .catch(() => {
           toast({
             title: "Warning",
             description: "Some images may not have uploaded properly. Our team will handle this for you.",
@@ -115,10 +108,8 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
         });
 
       // Redirect to Stripe checkout
-      console.log('Redirecting to Stripe checkout:', checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error: any) {
-      console.error('Checkout error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create checkout session. Please try again.",
