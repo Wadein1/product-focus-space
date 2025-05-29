@@ -26,7 +26,6 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [orderTypeFilter, setOrderTypeFilter] = useState('regular');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Get orders using the filters
   const { orders, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(
@@ -61,7 +60,6 @@ const Dashboard = () => {
 
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);
-    setIsDialogOpen(true);
   };
 
   const handleDeleteOrder = async (orderId: string) => {
@@ -165,16 +163,13 @@ const Dashboard = () => {
         </Tabs>
       </div>
 
-      {selectedOrder && (
-        <OrderDetailsDialog
-          order={selectedOrder}
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onStatusUpdate={(orderId, newStatus) => {
-            updateOrderStatus.mutate({ orderId, newStatus });
-          }}
-        />
-      )}
+      <OrderDetailsDialog
+        order={selectedOrder}
+        onOpenChange={(open) => !open && setSelectedOrder(null)}
+        onStatusUpdate={(orderId, newStatus) => {
+          updateOrderStatus.mutate({ orderId, newStatus });
+        }}
+      />
     </div>
   );
 };
