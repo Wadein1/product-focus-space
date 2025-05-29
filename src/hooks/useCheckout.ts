@@ -18,6 +18,8 @@ export const useCheckout = () => {
   }) => {
     setIsProcessing(true);
     try {
+      console.log('Creating checkout session with item:', item);
+
       // Always add $5 shipping for Custom Medallion
       const shippingCost = item.product_name === 'Custom Medallion' ? 5.00 : 0;
 
@@ -37,15 +39,18 @@ export const useCheckout = () => {
       });
 
       if (error) {
+        console.error('Supabase function error:', error);
         throw error;
       }
 
       if (!checkoutData?.url) {
+        console.error('No checkout URL received:', checkoutData);
         throw new Error('No checkout URL received from Stripe');
       }
 
       window.location.href = checkoutData.url;
     } catch (error: any) {
+      console.error('Error processing checkout:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to process checkout",

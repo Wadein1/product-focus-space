@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,8 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
 
   const handleSubmit = async (data: CheckoutFormData) => {
     try {
+      console.log('Preparing checkout data:', { formData: data, cartItems });
+
       if (!cartItems || cartItems.length === 0) {
         throw new Error('No items in cart');
       }
@@ -51,15 +52,19 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
       });
 
       if (error) {
+        console.error('Supabase function error:', error);
         throw error;
       }
 
       if (!checkoutData?.url) {
+        console.error('No checkout URL received:', checkoutData);
         throw new Error('No checkout URL received from Stripe');
       }
 
+      console.log('Redirecting to Stripe checkout:', checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error: any) {
+      console.error('Checkout error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create checkout session. Please try again.",
