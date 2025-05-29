@@ -72,6 +72,12 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
           <h2 className="text-center text-3xl font-bold">Admin Login</h2>
+          <p className="text-center text-sm text-gray-600 mt-2">
+            Username: gonzwad
+          </p>
+          <p className="text-center text-xs text-gray-500 mt-1">
+            Password: thanksculvers!
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
