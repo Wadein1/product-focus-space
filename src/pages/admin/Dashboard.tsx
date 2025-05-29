@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,29 @@ import { AnalyticsSection } from "@/components/admin/analytics/AnalyticsSection"
 import { InventoryManagement } from "@/components/admin/inventory/InventoryManagement";
 import { FundraiserManagement } from "@/components/admin/fundraiser/FundraiserManagement";
 import { DashboardControls } from "@/components/admin/DashboardControls";
+import { OrderDetailsDialog } from "@/components/admin/OrderDetailsDialog";
+import { useOrders } from "@/hooks/useOrders";
 import { useToast } from "@/hooks/use-toast";
+import { Order } from "@/types/order";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading, logout } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [orderTypeFilter, setOrderTypeFilter] = useState('regular');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Get orders using the filters
+  const { orders, isLoading: ordersLoading, updateOrderStatus, deleteOrder } = useOrders(
+    searchTerm,
+    statusFilter,
+    orderTypeFilter
+  );
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -37,6 +54,28 @@ const Dashboard = () => {
       toast({
         title: "Logout failed",
         description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      await deleteOrder.mutateAsync(orderId);
+      toast({
+        title: "Order deleted",
+        description: "Order has been successfully deleted",
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Delete failed",
+        description: "Failed to delete order",
         variant: "destructive",
       });
     }
@@ -85,7 +124,25 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="orders">
-            <OrdersTable />
+            <div className="space-y-4">
+              <DashboardControls
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                orderTypeFilter={orderTypeFilter}
+                onOrderTypeFilterChange={setOrderTypeFilter}
+              />
+              {ordersLoading ? (
+                <div className="text-center py-8">Loading orders...</div>
+              ) : (
+                <OrdersTable
+                  orders={orders || []}
+                  onViewDetails={handleViewDetails}
+                  onDeleteOrder={handleDeleteOrder}
+                />
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="analytics">
@@ -101,10 +158,23 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="controls">
-            <DashboardControls />
+            <div className="text-center py-8">
+              <p className="text-gray-500">System controls will be available here</p>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
+
+      {selectedOrder && (
+        <OrderDetailsDialog
+          order={selectedOrder}
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onStatusUpdate={(orderId, newStatus) => {
+            updateOrderStatus.mutate({ orderId, newStatus });
+          }}
+        />
+      )}
     </div>
   );
 };
