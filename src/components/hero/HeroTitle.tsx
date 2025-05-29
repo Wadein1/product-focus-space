@@ -14,7 +14,7 @@ export const HeroTitle = () => {
         </p>
       </div>
       <Link 
-        to="/customize" 
+        to="/product" 
         className="inline-flex items-center gap-2 button-primary transform hover:scale-105 transition-all duration-300 text-lg px-8 py-4 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 text-white"
       >
         Get Yours Now
