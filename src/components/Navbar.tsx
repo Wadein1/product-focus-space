@@ -24,7 +24,7 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || isMenuOpen ? "bg-white/80 backdrop-blur-md shadow-sm" : "bg-transparent"
+        isScrolled || isMenuOpen ? "bg-background/80 backdrop-blur-md shadow-sm" : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,9 +34,9 @@ const Navbar = () => {
               <img 
                 src="/lovable-uploads/e0958741-0938-4578-a927-aaf3a48b2418.png" 
                 alt="Logo" 
-                className="h-10 w-auto"
+                className="h-8 w-auto"
               />
-              <span className="text-xl font-semibold">Gimme Drip</span>
+              <span className="text-xl font-semibold text-foreground">Gimme Drip</span>
             </Link>
           </div>
 

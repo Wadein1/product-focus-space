@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <main className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <Navbar />
       <Suspense fallback={<HeroSkeleton />}>
         <Hero />
