@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Menu, X, ShoppingCart } from "lucide-react";
 
@@ -31,6 +32,13 @@ export const MobileNav = ({ isMenuOpen, setIsMenuOpen }: MobileNavProps) => {
       {isMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 z-50">
           <div className="mx-4 p-4 space-y-3 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-100">
+            <Link
+              to="/about"
+              className="block w-full px-4 py-2 text-left rounded-md text-base font-medium hover:bg-gray-50 transition-colors duration-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              About
+            </Link>
             <Link
               to="/fundraising"
               className="block w-full px-4 py-2 text-left rounded-md text-base font-medium hover:bg-gray-50 transition-colors duration-200"

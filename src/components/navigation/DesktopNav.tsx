@@ -1,9 +1,13 @@
+
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 
 export const DesktopNav = () => {
   return (
     <div className="hidden md:flex items-center space-x-8">
+      <Link to="/about" className="nav-link">
+        About
+      </Link>
       <Link to="/fundraising" className="nav-link">
         Fundraising
       </Link>
