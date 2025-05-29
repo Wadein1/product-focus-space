@@ -31,7 +31,7 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
         (item.delivery_method === "shipping" || (!item.delivery_method && !item.is_fundraiser))
       );
       
-      // Set shipping cost based on whether there are items requiring shipping
+      // Set shipping cost to $5 for all items that require shipping
       const shippingCost = hasShippingItems ? 5.00 : 0;
 
       // Prepare metadata with all available information from each item

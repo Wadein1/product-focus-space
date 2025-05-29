@@ -120,22 +120,28 @@ const FundraiserPage = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <FundraiserImages
-              mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
-              title={selectedVariationData?.title || fundraiser.title}
-            />
-
+            {/* Left Column - Images and Variations (Desktop) */}
             <div className="space-y-6">
-              <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
+              <FundraiserImages
+                mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
+                title={selectedVariationData?.title || fundraiser.title}
+              />
               
-              {fundraiser.fundraiser_variations && (
-                <FundraiserVariations
-                  variations={fundraiser.fundraiser_variations}
-                  selectedVariation={selectedVariation}
-                  onVariationSelect={setSelectedVariation}
-                />
-              )}
+              {/* Variations below image on desktop only */}
+              <div className="hidden md:block">
+                {fundraiser.fundraiser_variations && (
+                  <FundraiserVariations
+                    variations={fundraiser.fundraiser_variations}
+                    selectedVariation={selectedVariation}
+                    onVariationSelect={setSelectedVariation}
+                  />
+                )}
+              </div>
+            </div>
 
+            {/* Right Column - Purchase, Description, Variations (Mobile) */}
+            <div className="space-y-6">
+              {/* Purchase section at top on desktop */}
               {selectedVariationData && (
                 <FundraiserPurchase
                   price={selectedVariationData.price}
@@ -149,6 +155,24 @@ const FundraiserPage = () => {
                   imagePath={selectedVariationData.image_path}
                 />
               )}
+              
+              {/* Description below purchase on desktop */}
+              <div className="hidden md:block">
+                <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
+              </div>
+              
+              {/* Mobile layout - description and variations */}
+              <div className="md:hidden space-y-6">
+                <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
+                
+                {fundraiser.fundraiser_variations && (
+                  <FundraiserVariations
+                    variations={fundraiser.fundraiser_variations}
+                    selectedVariation={selectedVariation}
+                    onVariationSelect={setSelectedVariation}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>

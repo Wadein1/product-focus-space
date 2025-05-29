@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Minus, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface FundraiserPurchaseProps {
   price: number;
@@ -71,7 +71,7 @@ export const FundraiserPurchase = ({
 
   const handleBuyNow = async () => {
     try {
-      const shippingCost = deliveryMethod === 'shipping' ? 8.00 : 0;
+      const shippingCost = deliveryMethod === 'shipping' ? 5.00 : 0;
       console.log('Creating fundraiser checkout with:', {
         quantity,
         shippingCost,
@@ -127,7 +127,7 @@ export const FundraiserPurchase = ({
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">${(price * quantity).toFixed(2)}</p>
           {deliveryMethod === "shipping" && (
-            <p className="text-sm text-gray-500">(+$8.00 shipping)</p>
+            <p className="text-sm text-gray-500">(+$5.00 shipping)</p>
           )}
         </div>
       </div>
@@ -135,20 +135,15 @@ export const FundraiserPurchase = ({
       <div className="space-y-6">
         <div className="space-y-4">
           <Label className="text-lg font-medium">Delivery Method</Label>
-          <RadioGroup defaultValue="shipping" value={deliveryMethod} onValueChange={handleDeliveryMethodChange}>
-            <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <RadioGroupItem value="shipping" id="shipping" />
-              <Label htmlFor="shipping" className="text-base font-medium cursor-pointer flex-grow">
-                Ship to me (+$8.00)
-              </Label>
-            </div>
-            <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <RadioGroupItem value="pickup" id="pickup" />
-              <Label htmlFor="pickup" className="text-base font-medium cursor-pointer flex-grow">
-                Pickup from my team
-              </Label>
-            </div>
-          </RadioGroup>
+          <Select value={deliveryMethod} onValueChange={handleDeliveryMethodChange}>
+            <SelectTrigger className="w-full h-12 text-base">
+              <SelectValue placeholder="Select delivery method" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="shipping">Ship to me (+$5.00)</SelectItem>
+              <SelectItem value="pickup">Pickup from my team</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-3">
