@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,7 +93,7 @@ const Support = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <Navbar />
       <div className="container mx-auto px-4 py-16 mt-8">
         <div className="max-w-3xl mx-auto">
@@ -100,12 +101,12 @@ const Support = () => {
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
               How Can We Help?
             </h1>
-            <p className="text-gray-600 text-lg md:block hidden">
+            <p className="text-muted-foreground text-lg md:block hidden">
               We're here to assist you with any questions or concerns
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm backdrop-filter animate-fade-up">
+          <div className="bg-card rounded-2xl shadow-xl p-8 backdrop-blur-sm backdrop-filter animate-fade-up border border-border">
             <SupportForm
               supportType={supportType}
               setSupportType={setSupportType}
@@ -120,7 +121,7 @@ const Support = () => {
             />
           </div>
 
-          <div className="text-center text-gray-600 mt-8">
+          <div className="text-center text-muted-foreground mt-8">
             <p>We aim to respond to all support requests within 24-48 hours.</p>
           </div>
         </div>

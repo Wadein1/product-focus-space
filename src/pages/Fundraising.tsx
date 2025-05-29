@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +64,7 @@ const Fundraising = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <Navbar />
       <div className="container mx-auto px-4 py-16 mt-8">
         <div className="max-w-3xl mx-auto">
@@ -71,15 +72,15 @@ const Fundraising = () => {
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
               Fundraising Opportunities
             </h1>
-            <p className="text-gray-600 text-lg md:block hidden">
+            <p className="text-muted-foreground text-lg md:block hidden">
               Partner with us to create meaningful fundraising campaigns for your organization
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm backdrop-filter">
+          <div className="bg-card rounded-2xl shadow-xl p-8 backdrop-blur-sm backdrop-filter border border-border">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="companyName" className="text-sm font-medium text-gray-700">
+                <label htmlFor="companyName" className="text-sm font-medium text-foreground">
                   Organization Name
                 </label>
                 <Input
@@ -93,7 +94,7 @@ const Fundraising = () => {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="text-sm font-medium text-foreground">
                   Contact Email
                 </label>
                 <Input
@@ -108,7 +109,7 @@ const Fundraising = () => {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium text-gray-700">
+                <label htmlFor="description" className="text-sm font-medium text-foreground">
                   Tell us about your fundraising needs
                 </label>
                 <Textarea
@@ -137,7 +138,7 @@ const Fundraising = () => {
             </form>
           </div>
 
-          <div className="mt-12 text-center text-gray-600">
+          <div className="mt-12 text-center text-muted-foreground">
             <p className="text-sm">
               We typically respond to fundraising requests within 2-3 business days.
             </p>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +33,7 @@ export const SupportForm = ({
   return (
     <form onSubmit={onSubmit} className="space-y-8">
       <div className="space-y-4">
-        <label className="text-sm font-medium text-gray-700 block">Support Type</label>
+        <label className="text-sm font-medium text-foreground block">Support Type</label>
         <div className="grid grid-cols-2 gap-4">
           <Button
             type="button"
@@ -58,7 +59,7 @@ export const SupportForm = ({
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium text-gray-700 block">
+        <label htmlFor="email" className="text-sm font-medium text-foreground block">
           Email Address
         </label>
         <Input
@@ -73,7 +74,7 @@ export const SupportForm = ({
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="description" className="text-sm font-medium text-gray-700 block">
+        <label htmlFor="description" className="text-sm font-medium text-foreground block">
           Description
         </label>
         <Textarea
@@ -88,7 +89,7 @@ export const SupportForm = ({
 
       {supportType === "broken_replacement" && (
         <div className="space-y-2">
-          <label htmlFor="image" className="text-sm font-medium text-gray-700 block">
+          <label htmlFor="image" className="text-sm font-medium text-foreground block">
             Upload Image
           </label>
           <Input
@@ -99,7 +100,7 @@ export const SupportForm = ({
             required
             className="w-full cursor-pointer transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Please upload a clear image of the issue
           </p>
         </div>

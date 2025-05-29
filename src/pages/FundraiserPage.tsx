@@ -70,7 +70,7 @@ const FundraiserPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
         <Navbar />
         <div className="container mx-auto px-4 pt-24 pb-16">
           <div className="max-w-6xl mx-auto">
@@ -106,14 +106,14 @@ const FundraiserPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <Navbar />
       <div className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold mb-4">{fundraiser.title}</h1>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-green-600 font-medium">
+            <h1 className="text-4xl font-bold mb-4 text-foreground">{fundraiser.title}</h1>
+            <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-lg">
+              <p className="text-green-400 font-medium">
                 {getDonationText()}
               </p>
             </div>
@@ -126,7 +126,7 @@ const FundraiserPage = () => {
             />
 
             <div className="space-y-6">
-              <p className="text-lg text-gray-600">{fundraiser.description}</p>
+              <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
               
               {fundraiser.fundraiser_variations && (
                 <FundraiserVariations
