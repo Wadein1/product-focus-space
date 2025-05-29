@@ -119,29 +119,26 @@ const FundraiserPage = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Left Column - Images and Variations (Desktop) */}
+          {/* Desktop Layout */}
+          <div className="hidden md:grid md:grid-cols-2 gap-8">
+            {/* Left Column - Image and Variations */}
             <div className="space-y-6">
               <FundraiserImages
                 mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
                 title={selectedVariationData?.title || fundraiser.title}
               />
               
-              {/* Variations below image on desktop only */}
-              <div className="hidden md:block">
-                {fundraiser.fundraiser_variations && (
-                  <FundraiserVariations
-                    variations={fundraiser.fundraiser_variations}
-                    selectedVariation={selectedVariation}
-                    onVariationSelect={setSelectedVariation}
-                  />
-                )}
-              </div>
+              {fundraiser.fundraiser_variations && (
+                <FundraiserVariations
+                  variations={fundraiser.fundraiser_variations}
+                  selectedVariation={selectedVariation}
+                  onVariationSelect={setSelectedVariation}
+                />
+              )}
             </div>
 
-            {/* Right Column - Purchase, Description, Variations (Mobile) */}
+            {/* Right Column - Purchase Section */}
             <div className="space-y-6">
-              {/* Purchase section at top on desktop */}
               {selectedVariationData && (
                 <FundraiserPurchase
                   price={selectedVariationData.price}
@@ -155,25 +152,40 @@ const FundraiserPage = () => {
                   imagePath={selectedVariationData.image_path}
                 />
               )}
-              
-              {/* Description below purchase on desktop */}
-              <div className="hidden md:block">
-                <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
-              </div>
-              
-              {/* Mobile layout - description and variations */}
-              <div className="md:hidden space-y-6">
-                <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
-                
-                {fundraiser.fundraiser_variations && (
-                  <FundraiserVariations
-                    variations={fundraiser.fundraiser_variations}
-                    selectedVariation={selectedVariation}
-                    onVariationSelect={setSelectedVariation}
-                  />
-                )}
-              </div>
             </div>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden space-y-6">
+            {/* Product Image */}
+            <FundraiserImages
+              mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
+              title={selectedVariationData?.title || fundraiser.title}
+            />
+            
+            {/* Variations */}
+            {fundraiser.fundraiser_variations && (
+              <FundraiserVariations
+                variations={fundraiser.fundraiser_variations}
+                selectedVariation={selectedVariation}
+                onVariationSelect={setSelectedVariation}
+              />
+            )}
+            
+            {/* Purchase Section */}
+            {selectedVariationData && (
+              <FundraiserPurchase
+                price={selectedVariationData.price}
+                quantity={quantity}
+                onQuantityChange={(increment) => 
+                  setQuantity(increment ? quantity + 1 : Math.max(1, quantity - 1))
+                }
+                fundraiserId={fundraiser.id}
+                variationId={selectedVariation || defaultVariation?.id || ''}
+                productName={`${fundraiser.title} - ${selectedVariationData.title}`}
+                imagePath={selectedVariationData.image_path}
+              />
+            )}
           </div>
         </div>
       </div>

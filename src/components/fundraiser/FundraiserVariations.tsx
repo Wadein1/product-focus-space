@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,11 +93,6 @@ export const FundraiserVariations = ({
               <p className="text-gray-500 text-xs">No image</p>
             </div>
           )}
-          <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-1">
-            <p className="text-white text-xs text-center truncate">
-              {variation.title}
-            </p>
-          </div>
         </button>
       ))}
     </div>
