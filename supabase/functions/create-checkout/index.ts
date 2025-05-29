@@ -44,12 +44,12 @@ serve(async (req) => {
       quantity: item.quantity || 1,
     }));
 
-    // Always add $8 shipping for Custom Medallion orders
+    // Always add $5 shipping for Custom Medallion orders
     const hasCustomMedallion = items.some((item: any) => 
       item.product_name === 'Custom Medallion'
     );
     
-    const finalShippingCost = hasCustomMedallion ? 8.00 : shipping_cost;
+    const finalShippingCost = hasCustomMedallion ? 5.00 : shipping_cost;
 
     // Add shipping as a separate line item if cost is provided
     if (finalShippingCost > 0) {

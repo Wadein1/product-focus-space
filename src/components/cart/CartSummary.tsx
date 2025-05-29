@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { CartItem as CartItemType } from "@/types/cart";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +32,7 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
       );
       
       // Set shipping cost based on whether there are items requiring shipping
-      const shippingCost = hasShippingItems ? 8.00 : 0;
+      const shippingCost = hasShippingItems ? 5.00 : 0;
 
       // Prepare metadata with all available information from each item
       const metadata = {

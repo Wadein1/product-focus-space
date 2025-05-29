@@ -60,13 +60,11 @@ export const ProductDetails = ({
         </>
       )}
 
-      {/* Removed duplicate features section */}
-
       <div className="space-y-4">
         <div className="flex flex-wrap items-baseline gap-2">
           <p className="text-2xl font-bold">$49.99</p>
           <p className="text-sm line-through text-gray-400">$59.99</p>
-          <p className="text-sm text-gray-500">(+$8.00 shipping)</p>
+          <p className="text-sm text-gray-500">(+$5.00 shipping)</p>
         </div>
         
         <div className="space-y-4">

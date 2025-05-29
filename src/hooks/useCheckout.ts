@@ -20,8 +20,8 @@ export const useCheckout = () => {
     try {
       console.log('Creating checkout session with item:', item);
 
-      // Always add $8 shipping for Custom Medallion
-      const shippingCost = item.product_name === 'Custom Medallion' ? 8.00 : 0;
+      // Always add $5 shipping for Custom Medallion
+      const shippingCost = item.product_name === 'Custom Medallion' ? 5.00 : 0;
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
         body: {
