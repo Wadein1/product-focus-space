@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +15,11 @@ const FundraiserPage = () => {
   const { toast } = useToast();
   const [selectedVariation, setSelectedVariation] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+
+  // Store current page for cart navigation
+  React.useEffect(() => {
+    sessionStorage.setItem('previousPage', `/fundraiser/${customLink}`);
+  }, [customLink]);
 
   const { data: fundraiser, isLoading } = useQuery({
     queryKey: ['fundraiser', customLink],
@@ -120,22 +124,42 @@ const FundraiserPage = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <FundraiserImages
-              mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
-              title={selectedVariationData?.title || fundraiser.title}
-            />
+            {/* Desktop Layout */}
+            <div className="hidden md:block">
+              <FundraiserImages
+                mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
+                title={selectedVariationData?.title || fundraiser.title}
+              />
+            </div>
 
-            <div className="space-y-6">
-              <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
-              
-              {fundraiser.fundraiser_variations && (
-                <FundraiserVariations
-                  variations={fundraiser.fundraiser_variations}
-                  selectedVariation={selectedVariation}
-                  onVariationSelect={setSelectedVariation}
+            <div className="space-y-6 hidden md:block">
+              {/* Monetary section moved to top for desktop */}
+              {selectedVariationData && (
+                <FundraiserPurchase
+                  price={selectedVariationData.price}
+                  quantity={quantity}
+                  onQuantityChange={(increment) => 
+                    setQuantity(increment ? quantity + 1 : Math.max(1, quantity - 1))
+                  }
+                  fundraiserId={fundraiser.id}
+                  variationId={selectedVariation || defaultVariation?.id || ''}
+                  productName={`${fundraiser.title} - ${selectedVariationData.title}`}
+                  imagePath={selectedVariationData.image_path}
                 />
               )}
+              
+              {/* Description below monetary section for desktop */}
+              <p className="text-lg text-muted-foreground">{fundraiser.description}</p>
+            </div>
 
+            {/* Mobile Layout */}
+            <div className="md:hidden space-y-6">
+              <FundraiserImages
+                mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
+                title={selectedVariationData?.title || fundraiser.title}
+              />
+              
+              {/* Purchase section only for mobile - no description */}
               {selectedVariationData && (
                 <FundraiserPurchase
                   price={selectedVariationData.price}
@@ -150,6 +174,28 @@ const FundraiserPage = () => {
                 />
               )}
             </div>
+          </div>
+
+          {/* Variations section moved below image for desktop */}
+          <div className="mt-8 hidden md:block">
+            {fundraiser.fundraiser_variations && (
+              <FundraiserVariations
+                variations={fundraiser.fundraiser_variations}
+                selectedVariation={selectedVariation}
+                onVariationSelect={setSelectedVariation}
+              />
+            )}
+          </div>
+
+          {/* Variations section for mobile - keep in original position */}
+          <div className="mt-6 md:hidden">
+            {fundraiser.fundraiser_variations && (
+              <FundraiserVariations
+                variations={fundraiser.fundraiser_variations}
+                selectedVariation={selectedVariation}
+                onVariationSelect={setSelectedVariation}
+              />
+            )}
           </div>
         </div>
       </div>

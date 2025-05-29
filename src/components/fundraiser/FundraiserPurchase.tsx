@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/types/cart";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Minus, Plus, Truck, MapPin } from "lucide-react";
 
 interface FundraiserPurchaseProps {
   price: number;
@@ -126,49 +127,89 @@ export const FundraiserPurchase = ({
         <div className="flex items-baseline gap-2">
           <p className="text-2xl font-bold">${(price * quantity).toFixed(2)}</p>
           {deliveryMethod === "shipping" && (
-            <p className="text-sm text-gray-500">(+$8.00 shipping, +5% tax)</p>
-          )}
-          {deliveryMethod === "pickup" && (
-            <p className="text-sm text-gray-500">(+5% tax)</p>
+            <p className="text-sm text-gray-500">(+$8.00 shipping)</p>
           )}
         </div>
       </div>
 
       <div className="space-y-6">
         <div className="space-y-4">
-          <Label>Delivery Method</Label>
-          <RadioGroup defaultValue="shipping" value={deliveryMethod} onValueChange={handleDeliveryMethodChange}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="shipping" id="shipping" />
-              <Label htmlFor="shipping">Ship to me (+$8.00)</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="pickup" id="pickup" />
-              <Label htmlFor="pickup">Pickup from my team</Label>
-            </div>
-          </RadioGroup>
+          <Label className="text-base font-semibold">Delivery Method</Label>
+          <div className="grid grid-cols-1 gap-3">
+            <button
+              type="button"
+              onClick={() => setDeliveryMethod('shipping')}
+              className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
+                deliveryMethod === 'shipping'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <Truck className="w-5 h-5 text-blue-600" />
+                <div className="text-left">
+                  <p className="font-medium">Ship to me</p>
+                  <p className="text-sm text-gray-500">+$8.00 shipping</p>
+                </div>
+              </div>
+              <div className={`w-4 h-4 rounded-full border-2 ${
+                deliveryMethod === 'shipping' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+              }`}>
+                {deliveryMethod === 'shipping' && (
+                  <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                )}
+              </div>
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setDeliveryMethod('pickup')}
+              className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
+                deliveryMethod === 'pickup'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-5 h-5 text-blue-600" />
+                <div className="text-left">
+                  <p className="font-medium">Pickup from my team</p>
+                  <p className="text-sm text-gray-500">No shipping cost</p>
+                </div>
+              </div>
+              <div className={`w-4 h-4 rounded-full border-2 ${
+                deliveryMethod === 'pickup' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+              }`}>
+                {deliveryMethod === 'pickup' && (
+                  <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                )}
+              </div>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <span className="text-sm font-medium text-gray-700">Quantity:</span>
-          <div className="flex items-center space-x-2">
+        <div className="space-y-3">
+          <Label className="text-base font-semibold">Quantity</Label>
+          <div className="flex items-center space-x-0 bg-white rounded-lg border border-gray-200 w-fit">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => onQuantityChange(false)}
               disabled={quantity <= 1}
-              className="h-8 w-8 p-0"
+              className="h-12 w-12 p-0 rounded-l-lg border-r hover:bg-gray-50"
             >
-              -
+              <Minus className="h-4 w-4" />
             </Button>
-            <span className="w-12 text-center">{quantity}</span>
+            <div className="h-12 w-16 flex items-center justify-center border-r text-lg font-medium">
+              {quantity}
+            </div>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => onQuantityChange(true)}
-              className="h-8 w-8 p-0"
+              className="h-12 w-12 p-0 rounded-r-lg hover:bg-gray-50"
             >
-              +
+              <Plus className="h-4 w-4" />
             </Button>
           </div>
         </div>
