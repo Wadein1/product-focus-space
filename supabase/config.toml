@@ -30,6 +30,9 @@ verify_jwt = false
 [functions.inventory-notification]
 verify_jwt = false
 
+[functions.update-stripe-key]
+verify_jwt = false
+
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
