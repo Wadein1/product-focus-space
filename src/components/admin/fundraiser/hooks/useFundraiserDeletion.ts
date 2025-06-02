@@ -104,22 +104,6 @@ export const useFundraiserDeletion = (refetch: () => void) => {
       }
 
       console.log('Fundraiser deleted successfully from database');
-      
-      // Step 8: Verify deletion worked
-      const { data: verifyData, error: verifyError } = await supabase
-        .from('fundraisers')
-        .select('id')
-        .eq('id', fundraiser.id)
-        .maybeSingle();
-
-      if (verifyError) {
-        console.warn('Error verifying deletion:', verifyError);
-      } else if (verifyData) {
-        console.error('CRITICAL: Fundraiser still exists after deletion attempt!');
-        throw new Error('Fundraiser deletion verification failed - record still exists');
-      } else {
-        console.log('Deletion verified - fundraiser no longer exists in database');
-      }
 
       toast({
         title: "Fundraiser deleted",
