@@ -44,13 +44,13 @@ serve(async (req) => {
       throw new Error('Missing required fields for fundraiser tracking');
     }
 
-    // Create a tracking record in fundraiser_orders table
+    // Create a tracking record in fundraiser_orders table without order_id reference
     const { data: trackingData, error: trackingError } = await supabaseClient
       .from('fundraiser_orders')
       .insert({
         fundraiser_id: fundraiser_id,
         variation_id: variation_id,
-        order_id: crypto.randomUUID(), // Temporary until we get real order ID from webhook
+        order_id: null, // Set to null to avoid foreign key constraint
         amount: item_price * quantity,
         donation_amount: donation_amount * quantity
       })
