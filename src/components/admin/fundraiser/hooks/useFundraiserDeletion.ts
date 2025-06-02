@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
@@ -31,19 +30,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
 
       console.log('Confirmed fundraiser exists:', beforeCheck);
 
-      // Step 2: Delete from fundraiser_totals (if exists)
-      console.log('Deleting from fundraiser_totals...');
-      const { error: totalsError } = await supabase
-        .from('fundraiser_totals')
-        .delete()
-        .eq('fundraiser_id', fundraiser.id);
-
-      if (totalsError) {
-        console.error('Error deleting from fundraiser_totals:', totalsError);
-        // Continue anyway as this table might not have records
-      }
-
-      // Step 3: Delete from fundraiser_transactions
+      // Step 2: Delete from fundraiser_transactions first (has foreign keys to fundraiser_id)
       console.log('Deleting from fundraiser_transactions...');
       const { error: transactionsError } = await supabase
         .from('fundraiser_transactions')
@@ -55,7 +42,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         throw new Error(`Failed to delete fundraiser transactions: ${transactionsError.message}`);
       }
 
-      // Step 4: Delete from fundraiser_orders
+      // Step 3: Delete from fundraiser_orders
       console.log('Deleting from fundraiser_orders...');
       const { error: ordersError } = await supabase
         .from('fundraiser_orders')
@@ -67,7 +54,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         throw new Error(`Failed to delete fundraiser orders: ${ordersError.message}`);
       }
 
-      // Step 5: Get variations for image cleanup
+      // Step 4: Get variations for image cleanup before deleting them
       console.log('Getting variations for cleanup...');
       const { data: variations, error: variationsError } = await supabase
         .from('fundraiser_variations')
@@ -79,7 +66,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         // Continue with deletion even if we can't get variations
       }
 
-      // Step 6: Delete fundraiser variations
+      // Step 5: Delete fundraiser variations
       console.log('Deleting fundraiser variations...');
       const { error: deleteVariationsError } = await supabase
         .from('fundraiser_variations')
@@ -91,7 +78,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         throw new Error(`Failed to delete fundraiser variations: ${deleteVariationsError.message}`);
       }
 
-      // Step 7: Update orders that reference this fundraiser
+      // Step 6: Update orders that reference this fundraiser
       console.log('Updating orders that reference this fundraiser...');
       const { error: updateOrdersError } = await supabase
         .from('orders')
@@ -107,7 +94,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         throw new Error(`Failed to update orders: ${updateOrdersError.message}`);
       }
 
-      // Step 8: Clean up images from storage
+      // Step 7: Clean up images from storage
       if (variations && variations.length > 0) {
         const imagePaths = variations
           .filter(v => v.image_path)
@@ -125,7 +112,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         }
       }
 
-      // Step 9: Delete the main fundraiser record - THIS IS CRITICAL
+      // Step 8: Delete the main fundraiser record - THIS IS CRITICAL
       console.log('Deleting main fundraiser record...');
       const { error: deleteFundraiserError, data: deleteData } = await supabase
         .from('fundraisers')
@@ -147,7 +134,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
 
       console.log('✅ Successfully deleted fundraiser from database');
 
-      // Step 10: Verify the fundraiser is actually gone
+      // Step 9: Verify the fundraiser is actually gone
       console.log('Verifying deletion...');
       const { data: afterCheck, error: afterError } = await supabase
         .from('fundraisers')
@@ -164,12 +151,12 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         console.log('✅ Verified: Fundraiser successfully deleted from database');
       }
 
-      // Step 11: Force React Query to refetch data
+      // Step 10: Force React Query to refetch data
       console.log('Invalidating React Query cache...');
       await queryClient.invalidateQueries({ queryKey: ['fundraisers'] });
       console.log('Cache invalidated');
 
-      // Step 12: Manual refetch as backup
+      // Step 11: Manual refetch as backup
       console.log('Triggering manual refetch...');
       await refetch();
       console.log('Manual refetch completed');
