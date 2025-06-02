@@ -68,7 +68,7 @@ serve(async (req) => {
       });
     }
 
-    // Prepare session metadata with all order details
+    // Prepare session metadata with all order details including fundraiser-specific data
     const sessionMetadata = {
       ...metadata,
       order_status: 'received',
@@ -82,7 +82,14 @@ serve(async (req) => {
       // Ensure fundraiser metadata is properly set
       is_fundraiser: metadata?.is_fundraiser || (items[0]?.is_fundraiser ? 'true' : 'false'),
       fundraiser_id: metadata?.fundraiser_id || '',
-      variation_id: metadata?.variation_id || ''
+      variation_id: metadata?.variation_id || '',
+      // New fundraiser-specific metadata for Stripe visibility
+      fundraiser_name: metadata?.fundraiser_name || '',
+      item_name: metadata?.item_name || '',
+      delivery_method: metadata?.delivery_method || 'shipping',
+      team_age_division: metadata?.team_age_division || '',
+      team_name: metadata?.team_name || '',
+      pickup_team_name: metadata?.pickup_team_name || ''
     };
 
     console.log('Creating Stripe session with metadata:', sessionMetadata);

@@ -16,6 +16,8 @@ interface FundraiserPurchaseProps {
   variationId: string;
   productName: string;
   imagePath?: string;
+  fundraiserTitle?: string;
+  variationTitle?: string;
 }
 
 export const FundraiserPurchase = ({
@@ -26,6 +28,8 @@ export const FundraiserPurchase = ({
   variationId,
   productName,
   imagePath,
+  fundraiserTitle,
+  variationTitle,
 }: FundraiserPurchaseProps) => {
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
@@ -115,7 +119,9 @@ export const FundraiserPurchase = ({
         variationId,
         deliveryMethod,
         ageDivision,
-        teamName
+        teamName,
+        fundraiserTitle,
+        variationTitle
       });
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
@@ -136,8 +142,11 @@ export const FundraiserPurchase = ({
             variation_id: variationId,
             is_fundraiser: 'true',
             delivery_method: deliveryMethod,
+            fundraiser_name: fundraiserTitle || 'Unknown Fundraiser',
+            item_name: variationTitle || productName,
             ...(deliveryMethod === 'pickup' && {
-              age_division: ageDivision,
+              team_age_division: ageDivision,
+              team_name: teamName,
               pickup_team_name: teamName
             })
           },

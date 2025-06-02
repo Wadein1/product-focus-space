@@ -89,6 +89,9 @@ serve(async (req) => {
           // Add fundraiser tracking columns to orders table
           fundraiser_id: fundraiserId || null,
           variation_id: variationId || null,
+          // Add team information for pickup orders
+          age_division: session.metadata?.team_age_division || null,
+          pickup_team_name: session.metadata?.pickup_team_name || null,
           // Add custom fields from metadata
           image_path: session.metadata?.item_image_path || null,
           chain_color: session.metadata?.item_chain_color || null,
