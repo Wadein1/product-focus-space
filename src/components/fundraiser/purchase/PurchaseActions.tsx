@@ -47,11 +47,37 @@ export const PurchaseActions = ({
     return true;
   };
 
-  // Calculate donation amount based on price (this should match your fundraiser's donation calculation)
-  const calculateDonationAmount = (itemPrice: number) => {
-    // This is a placeholder - you should fetch the actual fundraiser donation settings
-    // For now, assuming a fixed donation amount or percentage
-    return itemPrice * 0.3; // 30% donation as example
+  // Calculate donation amount based on fundraiser settings
+  const calculateDonationAmount = async (itemPrice: number, qty: number) => {
+    try {
+      // Fetch the fundraiser details to get donation settings
+      const { data: fundraiser, error } = await supabase
+        .from('fundraisers')
+        .select('donation_type, donation_percentage, donation_amount')
+        .eq('id', fundraiserId)
+        .single();
+
+      if (error || !fundraiser) {
+        console.error('Error fetching fundraiser:', error);
+        return 0;
+      }
+
+      let donationAmount = 0;
+      
+      if (fundraiser.donation_type === 'percentage') {
+        // For percentage: calculate based on item price (excluding shipping) * percentage
+        const itemPriceOnly = itemPrice; // Item price already excludes shipping
+        donationAmount = (itemPriceOnly * (fundraiser.donation_percentage / 100)) * qty;
+      } else {
+        // For fixed amount: multiply fixed donation amount by quantity
+        donationAmount = (fundraiser.donation_amount || 0) * qty;
+      }
+
+      return donationAmount;
+    } catch (error) {
+      console.error('Error calculating donation amount:', error);
+      return 0;
+    }
   };
 
   const handleAddToCart = () => {
@@ -99,7 +125,7 @@ export const PurchaseActions = ({
 
     try {
       const shippingCost = deliveryMethod === 'shipping' ? 5.00 : 0;
-      const donationAmount = calculateDonationAmount(price);
+      const donationAmount = await calculateDonationAmount(price, quantity);
       
       console.log('Creating fundraiser checkout with:', {
         quantity,
@@ -162,8 +188,6 @@ export const PurchaseActions = ({
         throw new Error('No checkout URL received from Stripe');
       }
 
-      // Add fundraiser tracking parameters to the checkout URL
-      const checkoutUrl = new URL(checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error: any) {
       console.error('Checkout error:', error);

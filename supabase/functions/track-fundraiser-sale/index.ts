@@ -40,9 +40,44 @@ serve(async (req) => {
       stripe_session_id
     });
 
-    if (!fundraiser_id || !variation_id || !quantity || !item_price || !donation_amount) {
+    if (!fundraiser_id || !variation_id || !quantity || !item_price) {
       throw new Error('Missing required fields for fundraiser tracking');
     }
+
+    // Fetch fundraiser details to calculate correct donation amount
+    const { data: fundraiser, error: fundraiserError } = await supabaseClient
+      .from('fundraisers')
+      .select('donation_type, donation_percentage, donation_amount')
+      .eq('id', fundraiser_id)
+      .single();
+
+    if (fundraiserError) {
+      console.error('Error fetching fundraiser:', fundraiserError);
+      throw fundraiserError;
+    }
+
+    // Calculate donation amount correctly based on fundraiser type
+    let calculatedDonationAmount = 0;
+    
+    if (fundraiser.donation_type === 'percentage') {
+      // For percentage: item_price * percentage (item_price should already exclude shipping)
+      calculatedDonationAmount = item_price * (fundraiser.donation_percentage / 100.0);
+    } else {
+      // For fixed amount: use the exact fixed donation amount from fundraiser
+      calculatedDonationAmount = fundraiser.donation_amount || 0;
+    }
+
+    // Total donation for all items
+    const totalDonationAmount = calculatedDonationAmount * quantity;
+
+    console.log('Donation calculation:', {
+      donationType: fundraiser.donation_type,
+      donationPercentage: fundraiser.donation_percentage,
+      fixedDonationAmount: fundraiser.donation_amount,
+      calculatedDonationPerItem: calculatedDonationAmount,
+      totalDonationAmount,
+      quantity
+    });
 
     // Create a tracking record in fundraiser_orders table
     const { data: trackingData, error: trackingError } = await supabaseClient
@@ -52,7 +87,7 @@ serve(async (req) => {
         variation_id: variation_id,
         order_id: null, // Direct tracking without order reference
         amount: item_price * quantity,
-        donation_amount: donation_amount * quantity
+        donation_amount: totalDonationAmount
       })
       .select()
       .single();
@@ -71,7 +106,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Fundraiser sale tracked successfully',
-        tracking_id: trackingData.id
+        tracking_id: trackingData.id,
+        calculated_donation: totalDonationAmount
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

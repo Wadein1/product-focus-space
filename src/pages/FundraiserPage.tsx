@@ -100,14 +100,20 @@ const FundraiserPage = () => {
   }
 
   const getDonationText = () => {
-    const donationAmount = fundraiser.donation_type === 'percentage' 
-      ? (fundraiser.base_price * (fundraiser.donation_percentage || 0) / 100)
-      : (fundraiser.donation_amount || 0);
+    if (!fundraiser) return '';
+    
+    let donationText = '';
+    if (fundraiser.donation_type === 'percentage') {
+      donationText = `${fundraiser.donation_percentage}% of each item purchase (excluding shipping) is donated.`;
+    } else {
+      const donationAmount = fundraiser.donation_amount || 0;
+      donationText = `$${donationAmount.toFixed(2)} per item is donated.`;
+    }
     
     const totalRaised = fundraiserStats?.total_raised || 0;
     const totalItems = fundraiserStats?.total_items_sold || 0;
     
-    return `$${donationAmount.toFixed(2)} of each item bought is donated. ${totalItems} items sold, $${totalRaised.toFixed(2)} raised so far!`;
+    return `${donationText} ${totalItems} items sold, $${totalRaised.toFixed(2)} raised so far!`;
   };
 
   return (

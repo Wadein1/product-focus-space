@@ -150,11 +150,15 @@ serve(async (req) => {
           console.log('Found fundraiser:', fundraiser);
           console.log('Found variation:', variation);
 
-          // Calculate donation amount based on type
+          // Calculate donation amount based on type - CORRECTED LOGIC
           let donationPerItem = 0;
+          const itemPriceExcludingShipping = (orderData.price - orderData.shipping_cost) / orderData.quantity;
+          
           if (fundraiser.donation_type === 'percentage') {
-            donationPerItem = (orderData.price / orderData.quantity) * (fundraiser.donation_percentage / 100);
+            // For percentage: use item price excluding shipping
+            donationPerItem = itemPriceExcludingShipping * (fundraiser.donation_percentage / 100.0);
           } else {
+            // For fixed amount: use the exact fixed donation amount set in fundraiser
             donationPerItem = fundraiser.donation_amount || 0;
           }
 
@@ -163,8 +167,11 @@ serve(async (req) => {
           console.log('Calculated donation amount:', {
             donationPerItem,
             totalDonationAmount,
-            orderPrice: orderData.price,
-            quantity: orderData.quantity
+            itemPriceExcludingShipping,
+            quantity: orderData.quantity,
+            donationType: fundraiser.donation_type,
+            donationPercentage: fundraiser.donation_percentage,
+            fixedDonationAmount: fundraiser.donation_amount
           });
 
           // Create fundraiser order record
