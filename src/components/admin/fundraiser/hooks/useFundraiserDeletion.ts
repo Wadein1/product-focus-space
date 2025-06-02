@@ -14,32 +14,37 @@ export const useFundraiserDeletion = (refetch: () => void) => {
   const deleteFundraiser = async (fundraiser: Fundraiser) => {
     setIsDeleting(true);
     try {
-      console.log('Starting deletion process for fundraiser:', fundraiser.id);
-      console.log('Current fundraiser data:', fundraiser);
+      console.log('=== STARTING FUNDRAISER DELETION ===');
+      console.log('Fundraiser to delete:', fundraiser.id, fundraiser.title);
 
-      // Log current fundraiser list before deletion
-      console.log('Checking current fundraiser list before deletion...');
-      const { data: beforeData } = await supabase
+      // Step 1: Verify fundraiser exists before deletion
+      const { data: beforeCheck, error: beforeError } = await supabase
         .from('fundraisers')
         .select('id, title')
-        .order('created_at', { ascending: false });
-      console.log('Fundraisers before deletion:', beforeData);
+        .eq('id', fundraiser.id)
+        .single();
 
-      // Step 1: Get all image paths from variations to clean up storage
-      const { data: variations, error: variationsError } = await supabase
-        .from('fundraiser_variations')
-        .select('image_path')
-        .eq('fundraiser_id', fundraiser.id);
-
-      if (variationsError) {
-        console.error('Error fetching variations for cleanup:', variationsError);
-        // Don't throw here, continue with deletion
+      if (beforeError || !beforeCheck) {
+        console.error('Fundraiser not found in database:', beforeError);
+        throw new Error('Fundraiser not found in database');
       }
 
-      console.log('Found variations for cleanup:', variations);
+      console.log('Confirmed fundraiser exists:', beforeCheck);
 
-      // Step 2: Delete fundraiser transactions (if any) - more robust approach
-      console.log('Deleting fundraiser transactions...');
+      // Step 2: Delete from fundraiser_totals (if exists)
+      console.log('Deleting from fundraiser_totals...');
+      const { error: totalsError } = await supabase
+        .from('fundraiser_totals')
+        .delete()
+        .eq('fundraiser_id', fundraiser.id);
+
+      if (totalsError) {
+        console.error('Error deleting from fundraiser_totals:', totalsError);
+        // Continue anyway as this table might not have records
+      }
+
+      // Step 3: Delete from fundraiser_transactions
+      console.log('Deleting from fundraiser_transactions...');
       const { error: transactionsError } = await supabase
         .from('fundraiser_transactions')
         .delete()
@@ -47,11 +52,11 @@ export const useFundraiserDeletion = (refetch: () => void) => {
 
       if (transactionsError) {
         console.error('Error deleting fundraiser transactions:', transactionsError);
-        // Don't throw here, continue with deletion
+        throw new Error(`Failed to delete fundraiser transactions: ${transactionsError.message}`);
       }
 
-      // Step 3: Delete fundraiser orders - more robust approach
-      console.log('Deleting fundraiser orders...');
+      // Step 4: Delete from fundraiser_orders
+      console.log('Deleting from fundraiser_orders...');
       const { error: ordersError } = await supabase
         .from('fundraiser_orders')
         .delete()
@@ -59,10 +64,34 @@ export const useFundraiserDeletion = (refetch: () => void) => {
 
       if (ordersError) {
         console.error('Error deleting fundraiser orders:', ordersError);
-        // Don't throw here, continue with deletion
+        throw new Error(`Failed to delete fundraiser orders: ${ordersError.message}`);
       }
 
-      // Step 4: Update any orders that reference this fundraiser
+      // Step 5: Get variations for image cleanup
+      console.log('Getting variations for cleanup...');
+      const { data: variations, error: variationsError } = await supabase
+        .from('fundraiser_variations')
+        .select('image_path')
+        .eq('fundraiser_id', fundraiser.id);
+
+      if (variationsError) {
+        console.error('Error fetching variations:', variationsError);
+        // Continue with deletion even if we can't get variations
+      }
+
+      // Step 6: Delete fundraiser variations
+      console.log('Deleting fundraiser variations...');
+      const { error: deleteVariationsError } = await supabase
+        .from('fundraiser_variations')
+        .delete()
+        .eq('fundraiser_id', fundraiser.id);
+
+      if (deleteVariationsError) {
+        console.error('Error deleting fundraiser variations:', deleteVariationsError);
+        throw new Error(`Failed to delete fundraiser variations: ${deleteVariationsError.message}`);
+      }
+
+      // Step 7: Update orders that reference this fundraiser
       console.log('Updating orders that reference this fundraiser...');
       const { error: updateOrdersError } = await supabase
         .from('orders')
@@ -75,22 +104,10 @@ export const useFundraiserDeletion = (refetch: () => void) => {
 
       if (updateOrdersError) {
         console.error('Error updating orders:', updateOrdersError);
-        // Don't throw here, continue with deletion
+        throw new Error(`Failed to update orders: ${updateOrdersError.message}`);
       }
 
-      // Step 5: Delete associated variations - this is critical
-      console.log('Deleting fundraiser variations...');
-      const { error: deleteVariationsError } = await supabase
-        .from('fundraiser_variations')
-        .delete()
-        .eq('fundraiser_id', fundraiser.id);
-
-      if (deleteVariationsError) {
-        console.error('Error deleting fundraiser variations:', deleteVariationsError);
-        // Don't throw here, continue with deletion to ensure main record is removed
-      }
-
-      // Step 6: Clean up images from storage (if variations were found)
+      // Step 8: Clean up images from storage
       if (variations && variations.length > 0) {
         const imagePaths = variations
           .filter(v => v.image_path)
@@ -104,56 +121,70 @@ export const useFundraiserDeletion = (refetch: () => void) => {
           
           if (storageError) {
             console.warn('Error cleaning up images (non-critical):', storageError);
-            // Don't throw here, image cleanup is not critical
           }
         }
       }
 
-      // Step 7: Finally delete the fundraiser - THIS IS THE MOST IMPORTANT STEP
+      // Step 9: Delete the main fundraiser record - THIS IS CRITICAL
       console.log('Deleting main fundraiser record...');
-      const { error: deleteFundraiserError } = await supabase
+      const { error: deleteFundraiserError, data: deleteData } = await supabase
         .from('fundraisers')
         .delete()
-        .eq('id', fundraiser.id);
+        .eq('id', fundraiser.id)
+        .select();
 
       if (deleteFundraiserError) {
         console.error('CRITICAL ERROR - Failed to delete fundraiser:', deleteFundraiserError);
         throw new Error(`Failed to delete fundraiser: ${deleteFundraiserError.message}`);
       }
 
-      console.log('Fundraiser deleted successfully from database');
+      console.log('Delete operation result:', deleteData);
 
-      // Step 8: Wait a moment for database consistency
-      console.log('Waiting for database consistency...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!deleteData || deleteData.length === 0) {
+        console.error('CRITICAL ERROR - No rows were deleted from fundraisers table');
+        throw new Error('No fundraiser record was deleted. The fundraiser may not exist or there may be a constraint preventing deletion.');
+      }
 
-      // Step 9: Verify deletion by checking database
+      console.log('✅ Successfully deleted fundraiser from database');
+
+      // Step 10: Verify the fundraiser is actually gone
       console.log('Verifying deletion...');
-      const { data: afterData } = await supabase
+      const { data: afterCheck, error: afterError } = await supabase
         .from('fundraisers')
-        .select('id, title')
-        .order('created_at', { ascending: false });
-      console.log('Fundraisers after deletion:', afterData);
+        .select('id')
+        .eq('id', fundraiser.id)
+        .maybeSingle();
 
-      // Step 10: Invalidate all fundraiser-related queries to force React Query to refetch
+      if (afterError) {
+        console.error('Error verifying deletion:', afterError);
+      } else if (afterCheck) {
+        console.error('CRITICAL ERROR - Fundraiser still exists after deletion:', afterCheck);
+        throw new Error('Fundraiser deletion failed - record still exists in database');
+      } else {
+        console.log('✅ Verified: Fundraiser successfully deleted from database');
+      }
+
+      // Step 11: Force React Query to refetch data
       console.log('Invalidating React Query cache...');
       await queryClient.invalidateQueries({ queryKey: ['fundraisers'] });
-      
-      // Also trigger manual refetch as backup
+      console.log('Cache invalidated');
+
+      // Step 12: Manual refetch as backup
       console.log('Triggering manual refetch...');
       await refetch();
+      console.log('Manual refetch completed');
 
       toast({
         title: "Fundraiser deleted",
         description: `"${fundraiser.title}" has been deleted successfully.`
       });
 
-      // Reset deletion state
       setDeletingFundraiser(null);
-      console.log('Deletion process completed successfully');
+      console.log('=== FUNDRAISER DELETION COMPLETED SUCCESSFULLY ===');
       
     } catch (error: any) {
-      console.error('Error deleting fundraiser:', error);
+      console.error('=== FUNDRAISER DELETION FAILED ===');
+      console.error('Error details:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete fundraiser. Please try again.",
