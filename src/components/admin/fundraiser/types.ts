@@ -1,4 +1,6 @@
 
+import { z } from 'zod';
+
 export interface Fundraiser {
   id: string;
   title: string;
@@ -37,3 +39,27 @@ export interface FundraiserTeam {
   team_name: string;
   display_order: number;
 }
+
+// Form-related types and schema
+export const fundraiserFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  customLink: z.string().min(1, "Custom link is required"),
+  basePrice: z.number().min(0.01, "Base price must be greater than 0"),
+  donationType: z.enum(['percentage', 'fixed']),
+  donationPercentage: z.number().min(0).max(100).optional(),
+  donationAmount: z.number().min(0).optional(),
+  variations: z.array(z.object({
+    title: z.string().min(1, "Variation title is required"),
+    image: z.instanceof(File).nullable(),
+    price: z.number().min(0.01, "Price must be greater than 0")
+  })).min(1, "At least one variation is required"),
+  ageDivisions: z.array(z.object({
+    divisionName: z.string().min(1, "Division name is required"),
+    teams: z.array(z.object({
+      teamName: z.string().min(1, "Team name is required")
+    }))
+  })).optional()
+});
+
+export type FundraiserFormData = z.infer<typeof fundraiserFormSchema>;
