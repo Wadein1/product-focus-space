@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { FundraiserTable } from './components/FundraiserTable';
@@ -10,6 +10,7 @@ import { useFundraiserDeletion } from './hooks/useFundraiserDeletion';
 import type { Fundraiser } from './types';
 
 export const FundraiserList = () => {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingFundraiser, setEditingFundraiser] = useState<Fundraiser | null>(null);
 
@@ -37,10 +38,19 @@ export const FundraiserList = () => {
         throw error;
       }
       console.log('Fetched fundraisers:', data);
+      console.log('Total fundraisers count:', data?.length || 0);
       return data as Fundraiser[];
     },
     retry: 1,
   });
+
+  // Enhanced refetch function with cache invalidation
+  const enhancedRefetch = async () => {
+    console.log('Enhanced refetch triggered - invalidating cache and refetching...');
+    await queryClient.invalidateQueries({ queryKey: ['fundraisers'] });
+    await refetch();
+    console.log('Enhanced refetch completed');
+  };
 
   const {
     deletingFundraiser,
@@ -48,10 +58,19 @@ export const FundraiserList = () => {
     handleDeleteClick,
     handleDeleteConfirm,
     handleDeleteCancel
-  } = useFundraiserDeletion(refetch);
+  } = useFundraiserDeletion(enhancedRefetch);
 
-  if (isLoading) return <div>Loading fundraisers...</div>;
-  if (error) return <div>Error loading fundraisers: {error.message}</div>;
+  if (isLoading) {
+    console.log('Loading fundraisers...');
+    return <div>Loading fundraisers...</div>;
+  }
+  
+  if (error) {
+    console.error('Error in FundraiserList:', error);
+    return <div>Error loading fundraisers: {error.message}</div>;
+  }
+
+  console.log('Rendering FundraiserList with', fundraisers?.length || 0, 'fundraisers');
 
   return (
     <div>
@@ -60,7 +79,10 @@ export const FundraiserList = () => {
           type="text"
           placeholder="Search fundraisers..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            console.log('Search term changed to:', e.target.value);
+            setSearchTerm(e.target.value);
+          }}
         />
       </div>
 
@@ -74,7 +96,7 @@ export const FundraiserList = () => {
       <EditDialog
         fundraiser={editingFundraiser}
         onClose={() => setEditingFundraiser(null)}
-        onSuccess={refetch}
+        onSuccess={enhancedRefetch}
       />
 
       <DeleteConfirmationDialog

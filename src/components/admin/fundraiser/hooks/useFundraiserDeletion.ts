@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import type { Fundraiser } from '../types';
 
 export const useFundraiserDeletion = (refetch: () => void) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [deletingFundraiser, setDeletingFundraiser] = useState<Fundraiser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -13,6 +15,15 @@ export const useFundraiserDeletion = (refetch: () => void) => {
     setIsDeleting(true);
     try {
       console.log('Starting deletion process for fundraiser:', fundraiser.id);
+      console.log('Current fundraiser data:', fundraiser);
+
+      // Log current fundraiser list before deletion
+      console.log('Checking current fundraiser list before deletion...');
+      const { data: beforeData } = await supabase
+        .from('fundraisers')
+        .select('id, title')
+        .order('created_at', { ascending: false });
+      console.log('Fundraisers before deletion:', beforeData);
 
       // Step 1: Get all image paths from variations to clean up storage
       const { data: variations, error: variationsError } = await supabase
@@ -25,7 +36,10 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         // Don't throw here, continue with deletion
       }
 
+      console.log('Found variations for cleanup:', variations);
+
       // Step 2: Delete fundraiser transactions (if any) - more robust approach
+      console.log('Deleting fundraiser transactions...');
       const { error: transactionsError } = await supabase
         .from('fundraiser_transactions')
         .delete()
@@ -37,6 +51,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
       }
 
       // Step 3: Delete fundraiser orders - more robust approach
+      console.log('Deleting fundraiser orders...');
       const { error: ordersError } = await supabase
         .from('fundraiser_orders')
         .delete()
@@ -48,6 +63,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
       }
 
       // Step 4: Update any orders that reference this fundraiser
+      console.log('Updating orders that reference this fundraiser...');
       const { error: updateOrdersError } = await supabase
         .from('orders')
         .update({ 
@@ -63,6 +79,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
       }
 
       // Step 5: Delete associated variations - this is critical
+      console.log('Deleting fundraiser variations...');
       const { error: deleteVariationsError } = await supabase
         .from('fundraiser_variations')
         .delete()
@@ -93,6 +110,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
       }
 
       // Step 7: Finally delete the fundraiser - THIS IS THE MOST IMPORTANT STEP
+      console.log('Deleting main fundraiser record...');
       const { error: deleteFundraiserError } = await supabase
         .from('fundraisers')
         .delete()
@@ -105,14 +123,34 @@ export const useFundraiserDeletion = (refetch: () => void) => {
 
       console.log('Fundraiser deleted successfully from database');
 
+      // Step 8: Wait a moment for database consistency
+      console.log('Waiting for database consistency...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Step 9: Verify deletion by checking database
+      console.log('Verifying deletion...');
+      const { data: afterData } = await supabase
+        .from('fundraisers')
+        .select('id, title')
+        .order('created_at', { ascending: false });
+      console.log('Fundraisers after deletion:', afterData);
+
+      // Step 10: Invalidate all fundraiser-related queries to force React Query to refetch
+      console.log('Invalidating React Query cache...');
+      await queryClient.invalidateQueries({ queryKey: ['fundraisers'] });
+      
+      // Also trigger manual refetch as backup
+      console.log('Triggering manual refetch...');
+      await refetch();
+
       toast({
         title: "Fundraiser deleted",
         description: `"${fundraiser.title}" has been deleted successfully.`
       });
 
-      // Force immediate refetch to update the UI
-      await refetch();
+      // Reset deletion state
       setDeletingFundraiser(null);
+      console.log('Deletion process completed successfully');
       
     } catch (error: any) {
       console.error('Error deleting fundraiser:', error);
@@ -127,16 +165,19 @@ export const useFundraiserDeletion = (refetch: () => void) => {
   };
 
   const handleDeleteClick = (fundraiser: Fundraiser) => {
+    console.log('Delete clicked for fundraiser:', fundraiser);
     setDeletingFundraiser(fundraiser);
   };
 
   const handleDeleteConfirm = () => {
+    console.log('Delete confirmed for fundraiser:', deletingFundraiser);
     if (deletingFundraiser) {
       deleteFundraiser(deletingFundraiser);
     }
   };
 
   const handleDeleteCancel = () => {
+    console.log('Delete cancelled');
     setDeletingFundraiser(null);
   };
 
