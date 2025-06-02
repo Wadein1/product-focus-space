@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +6,7 @@ import type { CartItem } from "@/types/cart";
 import { Label } from "@/components/ui/label";
 import { Minus, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TeamPickupSelector } from "./TeamPickupSelector";
 
 interface FundraiserPurchaseProps {
   price: number;
