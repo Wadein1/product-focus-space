@@ -44,13 +44,13 @@ serve(async (req) => {
       throw new Error('Missing required fields for fundraiser tracking');
     }
 
-    // Create a tracking record in fundraiser_orders table without order_id reference
+    // Create a tracking record in fundraiser_orders table
     const { data: trackingData, error: trackingError } = await supabaseClient
       .from('fundraiser_orders')
       .insert({
         fundraiser_id: fundraiser_id,
         variation_id: variation_id,
-        order_id: null, // Set to null to avoid foreign key constraint
+        order_id: null, // Direct tracking without order reference
         amount: item_price * quantity,
         donation_amount: donation_amount * quantity
       })
@@ -63,6 +63,9 @@ serve(async (req) => {
     }
 
     console.log('Fundraiser sale tracked successfully:', trackingData);
+
+    // The trigger will automatically update fundraiser_totals table
+    console.log('Fundraiser totals will be updated automatically by database trigger');
 
     return new Response(
       JSON.stringify({ 

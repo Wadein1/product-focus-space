@@ -104,6 +104,13 @@ export type Database = {
             foreignKeyName: "fundraiser_age_divisions_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
             isOneToOne: false
+            referencedRelation: "fundraiser_summary"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "fundraiser_age_divisions_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
@@ -116,7 +123,7 @@ export type Database = {
           donation_amount: number
           fundraiser_id: string
           id: string
-          order_id: string
+          order_id: string | null
           variation_id: string
         }
         Insert: {
@@ -125,7 +132,7 @@ export type Database = {
           donation_amount: number
           fundraiser_id: string
           id?: string
-          order_id: string
+          order_id?: string | null
           variation_id: string
         }
         Update: {
@@ -134,10 +141,17 @@ export type Database = {
           donation_amount?: number
           fundraiser_id?: string
           id?: string
-          order_id?: string
+          order_id?: string | null
           variation_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fundraiser_orders_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_summary"
+            referencedColumns: ["fundraiser_id"]
+          },
           {
             foreignKeyName: "fundraiser_orders_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
@@ -229,6 +243,13 @@ export type Database = {
             foreignKeyName: "fundraiser_totals_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
             isOneToOne: true
+            referencedRelation: "fundraiser_summary"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "fundraiser_totals_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: true
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
@@ -269,6 +290,13 @@ export type Database = {
           stripe_payment_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fundraiser_transactions_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_summary"
+            referencedColumns: ["fundraiser_id"]
+          },
           {
             foreignKeyName: "fundraiser_transactions_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
@@ -314,6 +342,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fundraiser_variations_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_summary"
+            referencedColumns: ["fundraiser_id"]
+          },
           {
             foreignKeyName: "fundraiser_variations_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
@@ -638,6 +673,13 @@ export type Database = {
             foreignKeyName: "orders_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
             isOneToOne: false
+            referencedRelation: "fundraiser_summary"
+            referencedColumns: ["fundraiser_id"]
+          },
+          {
+            foreignKeyName: "orders_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
@@ -709,7 +751,16 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      fundraiser_summary: {
+        Row: {
+          description: string | null
+          fundraiser_id: string | null
+          title: string | null
+          total_orders: number | null
+          total_raised: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_fundraiser_total: {

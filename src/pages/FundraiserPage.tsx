@@ -40,23 +40,28 @@ const FundraiserPage = () => {
     },
   });
 
-  // Get fundraiser stats using the improved function
+  // Get fundraiser stats from fundraiser_totals table (updated by trigger)
   const { data: fundraiserStats } = useQuery({
     queryKey: ['fundraiser-stats', fundraiser?.id],
     queryFn: async () => {
       if (!fundraiser?.id) return null;
       
       const { data, error } = await supabase
-        .rpc('get_fundraiser_stats_improved', { fundraiser_id_param: fundraiser.id });
+        .from('fundraiser_totals')
+        .select('total_items_sold, total_raised')
+        .eq('fundraiser_id', fundraiser.id)
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching fundraiser stats:', error);
-        return null;
+        return { total_items_sold: 0, total_raised: 0 };
       }
 
-      return data[0] || { total_items_sold: 0, total_raised: 0, total_orders: 0 };
+      return data || { total_items_sold: 0, total_raised: 0 };
     },
     enabled: !!fundraiser?.id,
+    // Refetch every 10 seconds to catch updates from new purchases
+    refetchInterval: 10000,
   });
 
   const defaultVariation = fundraiser?.fundraiser_variations?.find(v => v.is_default);

@@ -10,6 +10,7 @@ const Success = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [isTracking, setIsTracking] = useState(false);
+  const [trackingComplete, setTrackingComplete] = useState(false);
 
   useEffect(() => {
     const trackFundraiserSale = async () => {
@@ -58,9 +59,20 @@ const Success = () => {
             });
           } else {
             console.log('Fundraiser sale tracked successfully:', data);
+            setTrackingComplete(true);
+            toast({
+              title: "Fundraiser Updated!",
+              description: "The fundraiser totals have been updated with your purchase.",
+              variant: "default",
+            });
           }
         } catch (error) {
           console.error('Error in tracking request:', error);
+          toast({
+            title: "Tracking Notice", 
+            description: "Your order was successful, but we couldn't immediately track the fundraiser earnings. This will be resolved automatically.",
+            variant: "default",
+          });
         } finally {
           setIsTracking(false);
         }
@@ -85,6 +97,12 @@ const Success = () => {
           {isTracking && (
             <p className="text-sm text-blue-600 mb-4">
               Updating fundraiser totals...
+            </p>
+          )}
+
+          {trackingComplete && (
+            <p className="text-sm text-green-600 mb-4">
+              ✓ Fundraiser totals updated successfully!
             </p>
           )}
           
