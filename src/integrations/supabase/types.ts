@@ -763,6 +763,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_fundraiser_profit: {
+        Args: { fundraiser_id_param: string }
+        Returns: number
+      }
       calculate_fundraiser_total: {
         Args: { fundraiser_id: string }
         Returns: number

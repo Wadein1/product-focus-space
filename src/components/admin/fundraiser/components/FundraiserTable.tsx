@@ -31,10 +31,9 @@ export const FundraiserTable: React.FC<FundraiserTableProps> = ({
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Link</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Donation Type</TableHead>
-            <TableHead>Donation %/Amount</TableHead>
-            <TableHead>Variations</TableHead>
+            <TableHead>Donation Amount</TableHead>
+            <TableHead>Money Raised</TableHead>
+            <TableHead>Your Profit</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>

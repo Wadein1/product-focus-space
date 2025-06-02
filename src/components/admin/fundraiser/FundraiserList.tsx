@@ -46,9 +46,32 @@ export const FundraiserList = () => {
         console.error('Error fetching fundraisers:', error);
         throw error;
       }
-      console.log('Fetched fundraisers:', data);
-      console.log('Total fundraisers count:', data?.length || 0);
-      return data as Fundraiser[];
+
+      // Fetch additional stats for each fundraiser
+      const fundraisersWithStats = await Promise.all(
+        (data as Fundraiser[]).map(async (fundraiser) => {
+          // Get fundraiser stats (total raised)
+          const { data: statsData } = await supabase
+            .from('fundraiser_totals')
+            .select('total_raised')
+            .eq('fundraiser_id', fundraiser.id)
+            .maybeSingle();
+
+          // Calculate profit using the new function
+          const { data: profitData } = await supabase
+            .rpc('calculate_fundraiser_profit', { fundraiser_id_param: fundraiser.id });
+
+          return {
+            ...fundraiser,
+            total_raised: statsData?.total_raised || 0,
+            profit: profitData || 0
+          };
+        })
+      );
+
+      console.log('Fetched fundraisers:', fundraisersWithStats);
+      console.log('Total fundraisers count:', fundraisersWithStats?.length || 0);
+      return fundraisersWithStats;
     },
     retry: 1,
   });

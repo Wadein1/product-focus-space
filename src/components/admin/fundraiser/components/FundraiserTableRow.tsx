@@ -6,7 +6,10 @@ import { ExternalLink, Edit, Trash2 } from "lucide-react";
 import type { Fundraiser } from '../types';
 
 interface FundraiserTableRowProps {
-  fundraiser: Fundraiser;
+  fundraiser: Fundraiser & {
+    total_raised?: number;
+    profit?: number;
+  };
   onEdit: (fundraiser: Fundraiser) => void;
   onDelete: (fundraiser: Fundraiser) => void;
   isDeleting: boolean;
@@ -18,6 +21,16 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
   onDelete,
   isDeleting
 }) => {
+  const getDonationAmount = () => {
+    if (fundraiser.donation_type === 'percentage') {
+      // Calculate donation amount based on base price and percentage
+      const amount = (fundraiser.base_price * fundraiser.donation_percentage) / 100;
+      return `$${amount.toFixed(2)}`;
+    } else {
+      return `$${(fundraiser.donation_amount || 0).toFixed(2)}`;
+    }
+  };
+
   return (
     <TableRow>
       <TableCell>{fundraiser.title}</TableCell>
@@ -32,14 +45,13 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
           <ExternalLink className="w-4 h-4 ml-1" />
         </a>
       </TableCell>
-      <TableCell>${fundraiser.base_price}</TableCell>
-      <TableCell>{fundraiser.donation_type}</TableCell>
-      <TableCell>
-        {fundraiser.donation_type === 'percentage' 
-          ? `${fundraiser.donation_percentage}%`
-          : `$${fundraiser.donation_amount}`}
+      <TableCell>{getDonationAmount()}</TableCell>
+      <TableCell className="text-green-600 font-medium">
+        ${(fundraiser.total_raised || 0).toFixed(2)}
       </TableCell>
-      <TableCell>{fundraiser.fundraiser_variations?.length || 0}</TableCell>
+      <TableCell className="text-blue-600 font-medium">
+        ${(fundraiser.profit || 0).toFixed(2)}
+      </TableCell>
       <TableCell className="space-x-2">
         <Button
           variant="outline"
