@@ -15,6 +15,16 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, ExternalLink, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FundraiserForm } from './FundraiserForm';
 import type { Fundraiser } from './types';
 
@@ -22,10 +32,13 @@ export const FundraiserList = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingFundraiser, setEditingFundraiser] = useState<Fundraiser | null>(null);
+  const [deletingFundraiser, setDeletingFundraiser] = useState<Fundraiser | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: fundraisers, isLoading, error, refetch } = useQuery({
     queryKey: ['fundraisers', searchTerm],
     queryFn: async () => {
+      console.log('Fetching fundraisers with search term:', searchTerm);
       const { data, error } = await supabase
         .from('fundraisers')
         .select(`
@@ -41,79 +54,103 @@ export const FundraiserList = () => {
         .or(`title.ilike.%${searchTerm}%,custom_link.ilike.%${searchTerm}%`)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching fundraisers:', error);
+        throw error;
+      }
+      console.log('Fetched fundraisers:', data);
       return data as Fundraiser[];
     },
     retry: 1,
   });
 
-  const deleteFundraiser = async (id: string) => {
+  const deleteFundraiser = async (fundraiser: Fundraiser) => {
+    setIsDeleting(true);
     try {
-      console.log('Deleting fundraiser:', id);
+      console.log('Starting deletion process for fundraiser:', fundraiser.id);
 
-      // First, get all image paths from variations to clean up storage
-      const { data: variations } = await supabase
+      // Step 1: Get all image paths from variations to clean up storage
+      const { data: variations, error: variationsError } = await supabase
         .from('fundraiser_variations')
         .select('image_path')
-        .eq('fundraiser_id', id);
+        .eq('fundraiser_id', fundraiser.id);
 
-      // Delete fundraiser orders first (foreign key constraint)
+      if (variationsError) {
+        console.error('Error fetching variations for cleanup:', variationsError);
+      }
+
+      // Step 2: Delete fundraiser transactions (if any)
+      const { error: transactionsError } = await supabase
+        .from('fundraiser_transactions')
+        .delete()
+        .eq('fundraiser_id', fundraiser.id);
+
+      if (transactionsError) {
+        console.error('Error deleting fundraiser transactions:', transactionsError);
+        // Don't throw here, continue with deletion
+      }
+
+      // Step 3: Delete fundraiser orders
       const { error: ordersError } = await supabase
         .from('fundraiser_orders')
         .delete()
-        .eq('fundraiser_id', id);
+        .eq('fundraiser_id', fundraiser.id);
 
       if (ordersError) {
         console.error('Error deleting fundraiser orders:', ordersError);
-        throw ordersError;
+        // Don't throw here, continue with deletion
       }
 
-      // Delete associated variations
-      const { error: variationsError } = await supabase
+      // Step 4: Delete associated variations
+      const { error: deleteVariationsError } = await supabase
         .from('fundraiser_variations')
         .delete()
-        .eq('fundraiser_id', id);
+        .eq('fundraiser_id', fundraiser.id);
 
-      if (variationsError) {
-        console.error('Error deleting fundraiser variations:', variationsError);
-        throw variationsError;
+      if (deleteVariationsError) {
+        console.error('Error deleting fundraiser variations:', deleteVariationsError);
+        throw deleteVariationsError;
       }
 
-      // Clean up images from storage
+      // Step 5: Clean up images from storage
       if (variations && variations.length > 0) {
         const imagePaths = variations
           .filter(v => v.image_path)
           .map(v => v.image_path);
         
         if (imagePaths.length > 0) {
+          console.log('Cleaning up images:', imagePaths);
           const { error: storageError } = await supabase.storage
             .from('gallery')
             .remove(imagePaths);
           
           if (storageError) {
             console.warn('Error cleaning up images:', storageError);
+            // Don't throw here, storage cleanup is not critical
           }
         }
       }
 
-      // Finally delete the fundraiser
-      const { error } = await supabase
+      // Step 6: Finally delete the fundraiser
+      const { error: deleteFundraiserError } = await supabase
         .from('fundraisers')
         .delete()
-        .eq('id', id);
+        .eq('id', fundraiser.id);
 
-      if (error) {
-        console.error('Error deleting fundraiser:', error);
-        throw error;
+      if (deleteFundraiserError) {
+        console.error('Error deleting fundraiser:', deleteFundraiserError);
+        throw deleteFundraiserError;
       }
 
       console.log('Fundraiser deleted successfully');
       toast({
         title: "Fundraiser deleted",
-        description: "The fundraiser has been deleted successfully."
+        description: `"${fundraiser.title}" has been deleted successfully.`
       });
 
-      refetch();
+      // Immediately refetch the data to update the UI
+      await refetch();
+      setDeletingFundraiser(null);
     } catch (error: any) {
       console.error('Error deleting fundraiser:', error);
       toast({
@@ -121,7 +158,13 @@ export const FundraiserList = () => {
         description: error.message || "Failed to delete fundraiser. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleDeleteClick = (fundraiser: Fundraiser) => {
+    setDeletingFundraiser(fundraiser);
   };
 
   if (isLoading) return <div>Loading fundraisers...</div>;
@@ -184,7 +227,8 @@ export const FundraiserList = () => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => deleteFundraiser(fundraiser.id)}
+                    onClick={() => handleDeleteClick(fundraiser)}
+                    disabled={isDeleting}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -195,6 +239,7 @@ export const FundraiserList = () => {
         </Table>
       </div>
 
+      {/* Edit Dialog */}
       <Dialog open={!!editingFundraiser} onOpenChange={() => setEditingFundraiser(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -211,6 +256,34 @@ export const FundraiserList = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingFundraiser} onOpenChange={() => setDeletingFundraiser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Fundraiser</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingFundraiser?.title}"? This action cannot be undone and will remove:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>The fundraiser and all its variations</li>
+                <li>All associated images</li>
+                <li>All order history and transaction records</li>
+                <li>All donation tracking data</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deletingFundraiser && deleteFundraiser(deletingFundraiser)}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete Fundraiser"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
