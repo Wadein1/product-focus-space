@@ -1,1 +1,36 @@
+
 project_id = "qekvorbfjgzdfpanwnfs"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://gimmedrip.lovable.app"]
+jwt_expiry = 3600
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.track-fundraiser-sale]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.inventory-notification]
+verify_jwt = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false

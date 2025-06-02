@@ -47,6 +47,13 @@ export const PurchaseActions = ({
     return true;
   };
 
+  // Calculate donation amount based on price (this should match your fundraiser's donation calculation)
+  const calculateDonationAmount = (itemPrice: number) => {
+    // This is a placeholder - you should fetch the actual fundraiser donation settings
+    // For now, assuming a fixed donation amount or percentage
+    return itemPrice * 0.3; // 30% donation as example
+  };
+
   const handleAddToCart = () => {
     if (!validateTeamSelection()) return;
 
@@ -92,6 +99,8 @@ export const PurchaseActions = ({
 
     try {
       const shippingCost = deliveryMethod === 'shipping' ? 5.00 : 0;
+      const donationAmount = calculateDonationAmount(price);
+      
       console.log('Creating fundraiser checkout with:', {
         quantity,
         shippingCost,
@@ -101,7 +110,8 @@ export const PurchaseActions = ({
         ageDivision,
         teamName,
         fundraiserTitle,
-        variationTitle
+        variationTitle,
+        donationAmount
       });
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
@@ -130,7 +140,15 @@ export const PurchaseActions = ({
               pickup_team_name: teamName
             })
           },
-          shipping_cost: shippingCost
+          shipping_cost: shippingCost,
+          // Add fundraiser tracking data to success URL
+          success_url_params: {
+            fundraiser_id: fundraiserId,
+            variation_id: variationId,
+            quantity: quantity.toString(),
+            item_price: price.toString(),
+            donation_amount: donationAmount.toString()
+          }
         },
       });
 
@@ -144,6 +162,8 @@ export const PurchaseActions = ({
         throw new Error('No checkout URL received from Stripe');
       }
 
+      // Add fundraiser tracking parameters to the checkout URL
+      const checkoutUrl = new URL(checkoutData.url);
       window.location.href = checkoutData.url;
     } catch (error: any) {
       console.error('Checkout error:', error);
