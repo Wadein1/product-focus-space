@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -104,16 +103,15 @@ const FundraiserPage = () => {
     
     let donationText = '';
     if (fundraiser.donation_type === 'percentage') {
-      donationText = `${fundraiser.donation_percentage}% of each item purchase (excluding shipping) is donated.`;
+      donationText = `${fundraiser.donation_percentage}% of each item purchase (excluding shipping) is donated`;
     } else {
       const donationAmount = fundraiser.donation_amount || 0;
-      donationText = `$${donationAmount.toFixed(2)} per item is donated.`;
+      donationText = `$${donationAmount.toFixed(2)} of each item bought is donated`;
     }
     
     const totalRaised = fundraiserStats?.total_raised || 0;
-    const totalItems = fundraiserStats?.total_items_sold || 0;
     
-    return `${donationText} ${totalItems} items sold, $${totalRaised.toFixed(2)} raised so far!`;
+    return `${donationText}, $${totalRaised.toFixed(2)} raised so far!`;
   };
 
   return (
