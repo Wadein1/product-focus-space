@@ -30,14 +30,37 @@ export const FundraiserPurchase = ({
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
   const [deliveryMethod, setDeliveryMethod] = React.useState<'shipping' | 'pickup'>('shipping');
+  const [ageDivision, setAgeDivision] = React.useState<string>('');
+  const [teamName, setTeamName] = React.useState<string>('');
 
   const handleDeliveryMethodChange = (value: string) => {
     setDeliveryMethod(value as 'shipping' | 'pickup');
+    // Reset team selection when switching delivery methods
+    if (value === 'shipping') {
+      setAgeDivision('');
+      setTeamName('');
+    }
+  };
+
+  const handleTeamSelectionChange = (selectedAgeDivision: string, selectedTeamName: string) => {
+    setAgeDivision(selectedAgeDivision);
+    setTeamName(selectedTeamName);
   };
 
   const handleAddToCart = () => {
     try {
       setIsAddingToCart(true);
+      
+      // Validate team selection for pickup
+      if (deliveryMethod === 'pickup' && (!ageDivision || !teamName)) {
+        toast({
+          title: "Team selection required",
+          description: "Please select both age division and team for pickup orders.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const cartItem: CartItem = {
         id: crypto.randomUUID(),
         product_name: productName,
@@ -45,7 +68,10 @@ export const FundraiserPurchase = ({
         quantity: quantity,
         image_path: imagePath,
         is_fundraiser: true,
-        delivery_method: deliveryMethod
+        delivery_method: deliveryMethod,
+        ...(deliveryMethod === 'pickup' && {
+          team_name: `${ageDivision} - ${teamName}`
+        })
       };
 
       const existingCartJson = localStorage.getItem('cartItems');
@@ -71,13 +97,25 @@ export const FundraiserPurchase = ({
 
   const handleBuyNow = async () => {
     try {
+      // Validate team selection for pickup
+      if (deliveryMethod === 'pickup' && (!ageDivision || !teamName)) {
+        toast({
+          title: "Team selection required",
+          description: "Please select both age division and team for pickup orders.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const shippingCost = deliveryMethod === 'shipping' ? 5.00 : 0;
       console.log('Creating fundraiser checkout with:', {
         quantity,
         shippingCost,
         fundraiserId,
         variationId,
-        deliveryMethod
+        deliveryMethod,
+        ageDivision,
+        teamName
       });
 
       const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
@@ -88,13 +126,20 @@ export const FundraiserPurchase = ({
             quantity: quantity,
             image_path: imagePath,
             is_fundraiser: true,
-            delivery_method: deliveryMethod
+            delivery_method: deliveryMethod,
+            ...(deliveryMethod === 'pickup' && {
+              team_name: `${ageDivision} - ${teamName}`
+            })
           }],
           metadata: {
             fundraiser_id: fundraiserId,
             variation_id: variationId,
             is_fundraiser: 'true',
-            delivery_method: deliveryMethod
+            delivery_method: deliveryMethod,
+            ...(deliveryMethod === 'pickup' && {
+              age_division: ageDivision,
+              pickup_team_name: teamName
+            })
           },
           shipping_cost: shippingCost
         },
@@ -145,6 +190,15 @@ export const FundraiserPurchase = ({
             </SelectContent>
           </Select>
         </div>
+
+        {deliveryMethod === 'pickup' && (
+          <TeamPickupSelector
+            fundraiserId={fundraiserId}
+            onSelectionChange={handleTeamSelectionChange}
+            selectedAgeDivision={ageDivision}
+            selectedTeam={teamName}
+          />
+        )}
 
         <div className="space-y-3">
           <Label className="text-lg font-medium">Quantity</Label>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +27,16 @@ export const FundraiserList = () => {
             image_path,
             is_default,
             price
+          ),
+          fundraiser_age_divisions (
+            id,
+            division_name,
+            display_order,
+            fundraiser_teams (
+              id,
+              team_name,
+              display_order
+            )
           )
         `)
         .or(`title.ilike.%${searchTerm}%,custom_link.ilike.%${searchTerm}%`)

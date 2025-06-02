@@ -77,6 +77,38 @@ export type Database = {
           },
         ]
       }
+      fundraiser_age_divisions: {
+        Row: {
+          created_at: string
+          display_order: number
+          division_name: string
+          fundraiser_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          division_name: string
+          fundraiser_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          division_name?: string
+          fundraiser_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraiser_age_divisions_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: false
+            referencedRelation: "fundraisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fundraiser_orders: {
         Row: {
           amount: number
@@ -110,13 +142,6 @@ export type Database = {
             foreignKeyName: "fundraiser_orders_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
             isOneToOne: false
-            referencedRelation: "fundraiser_totals"
-            referencedColumns: ["fundraiser_id"]
-          },
-          {
-            foreignKeyName: "fundraiser_orders_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
             referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
@@ -132,6 +157,79 @@ export type Database = {
             columns: ["variation_id"]
             isOneToOne: false
             referencedRelation: "fundraiser_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fundraiser_teams: {
+        Row: {
+          age_division_id: string
+          created_at: string
+          display_order: number
+          id: string
+          team_name: string
+        }
+        Insert: {
+          age_division_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          team_name: string
+        }
+        Update: {
+          age_division_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          team_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraiser_teams_age_division_id_fkey"
+            columns: ["age_division_id"]
+            isOneToOne: false
+            referencedRelation: "fundraiser_age_divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fundraiser_totals: {
+        Row: {
+          created_at: string
+          donation_amount: number | null
+          fundraiser_id: string | null
+          id: string
+          title: string | null
+          total_items_sold: number | null
+          total_raised: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          donation_amount?: number | null
+          fundraiser_id?: string | null
+          id?: string
+          title?: string | null
+          total_items_sold?: number | null
+          total_raised?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          donation_amount?: number | null
+          fundraiser_id?: string | null
+          id?: string
+          title?: string | null
+          total_items_sold?: number | null
+          total_raised?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fundraiser_totals_fundraiser_id_fkey"
+            columns: ["fundraiser_id"]
+            isOneToOne: true
+            referencedRelation: "fundraisers"
             referencedColumns: ["id"]
           },
         ]
@@ -171,13 +269,6 @@ export type Database = {
           stripe_payment_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "fundraiser_transactions_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "fundraiser_totals"
-            referencedColumns: ["fundraiser_id"]
-          },
           {
             foreignKeyName: "fundraiser_transactions_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
@@ -223,13 +314,6 @@ export type Database = {
           title?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "fundraiser_variations_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "fundraiser_totals"
-            referencedColumns: ["fundraiser_id"]
-          },
           {
             foreignKeyName: "fundraiser_variations_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
@@ -463,6 +547,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          age_division: string | null
           cart_id: string | null
           chain_color: string | null
           created_at: string
@@ -475,6 +560,7 @@ export type Database = {
           is_fundraiser: boolean | null
           last_name: string | null
           order_status: string | null
+          pickup_team_name: string | null
           price: number
           product_name: string
           quantity: number
@@ -490,6 +576,7 @@ export type Database = {
           variation_id: string | null
         }
         Insert: {
+          age_division?: string | null
           cart_id?: string | null
           chain_color?: string | null
           created_at?: string
@@ -502,6 +589,7 @@ export type Database = {
           is_fundraiser?: boolean | null
           last_name?: string | null
           order_status?: string | null
+          pickup_team_name?: string | null
           price: number
           product_name: string
           quantity?: number
@@ -517,6 +605,7 @@ export type Database = {
           variation_id?: string | null
         }
         Update: {
+          age_division?: string | null
           cart_id?: string | null
           chain_color?: string | null
           created_at?: string
@@ -529,6 +618,7 @@ export type Database = {
           is_fundraiser?: boolean | null
           last_name?: string | null
           order_status?: string | null
+          pickup_team_name?: string | null
           price?: number
           product_name?: string
           quantity?: number
@@ -544,13 +634,6 @@ export type Database = {
           variation_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "orders_fundraiser_id_fkey"
-            columns: ["fundraiser_id"]
-            isOneToOne: false
-            referencedRelation: "fundraiser_totals"
-            referencedColumns: ["fundraiser_id"]
-          },
           {
             foreignKeyName: "orders_fundraiser_id_fkey"
             columns: ["fundraiser_id"]
@@ -626,16 +709,7 @@ export type Database = {
       }
     }
     Views: {
-      fundraiser_totals: {
-        Row: {
-          donation_amount: number | null
-          fundraiser_id: string | null
-          title: string | null
-          total_items_sold: number | null
-          total_raised: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_fundraiser_total: {

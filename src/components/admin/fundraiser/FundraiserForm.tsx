@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { VariationFields } from './form/VariationFields';
 import { BasicInfoFields } from './form/BasicInfoFields';
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import { fundraiserFormSchema, type FundraiserFormData, type Fundraiser } from './types';
+import { TeamPickupFields } from './form/TeamPickupFields';
 
 interface FundraiserFormProps {
   fundraiser?: Fundraiser;
@@ -45,10 +45,17 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         title: v.title,
         image: null,
         price: v.price
-      }))
+      })),
+      ageDivisions: fundraiser.fundraiser_age_divisions?.map(d => ({
+        divisionName: d.division_name,
+        teams: d.fundraiser_teams.map(t => ({
+          teamName: t.team_name
+        }))
+      })) || []
     } : {
       donationType: 'percentage',
-      variations: [{ title: '', image: null, price: 0 }]
+      variations: [{ title: '', image: null, price: 0 }],
+      ageDivisions: []
     }
   });
 
@@ -160,13 +167,20 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
 
           if (fundraiserError) throw fundraiserError;
 
-          // Delete existing variations
-          const { error: deleteError } = await supabase
+          // Delete existing variations and age divisions
+          const { error: deleteVariationsError } = await supabase
             .from('fundraiser_variations')
             .delete()
             .eq('fundraiser_id', fundraiser.id);
 
-          if (deleteError) throw deleteError;
+          if (deleteVariationsError) throw deleteVariationsError;
+
+          const { error: deleteDivisionsError } = await supabase
+            .from('fundraiser_age_divisions')
+            .delete()
+            .eq('fundraiser_id', fundraiser.id);
+
+          if (deleteDivisionsError) throw deleteDivisionsError;
         }
 
         // Create new fundraiser if needed
@@ -213,6 +227,52 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           }
         }
 
+        console.log('Processing age divisions and teams...');
+        // Handle age divisions and teams
+        if (data.ageDivisions && data.ageDivisions.length > 0) {
+          for (let i = 0; i < data.ageDivisions.length; i++) {
+            const division = data.ageDivisions[i];
+            if (!division.divisionName) continue;
+
+            // Create age division
+            const { data: savedDivision, error: divisionError } = await supabase
+              .from('fundraiser_age_divisions')
+              .insert({
+                fundraiser_id: savedFundraiser.id,
+                division_name: division.divisionName,
+                display_order: i
+              })
+              .select()
+              .single();
+
+            if (divisionError) {
+              console.error('Division error:', divisionError);
+              throw new Error(`Failed to create age division: ${divisionError.message}`);
+            }
+
+            // Create teams for this division
+            if (division.teams && division.teams.length > 0) {
+              for (let j = 0; j < division.teams.length; j++) {
+                const team = division.teams[j];
+                if (!team.teamName) continue;
+
+                const { error: teamError } = await supabase
+                  .from('fundraiser_teams')
+                  .insert({
+                    age_division_id: savedDivision.id,
+                    team_name: team.teamName,
+                    display_order: j
+                  });
+
+                if (teamError) {
+                  console.error('Team error:', teamError);
+                  throw new Error(`Failed to create team: ${teamError.message}`);
+                }
+              }
+            }
+          }
+        }
+
         console.log('Fundraiser saved successfully');
         toast({
           title: fundraiser ? "Fundraiser updated" : "Fundraiser created",
@@ -250,6 +310,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           <BasicInfoFields form={form} />
           <DonationFields form={form} />
           <VariationFields form={form} />
+          <TeamPickupFields form={form} />
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {fundraiser ? 'Update' : 'Create'} Fundraiser
           </Button>

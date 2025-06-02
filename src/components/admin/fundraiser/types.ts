@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const fundraiserFormSchema = z.object({
@@ -14,7 +15,13 @@ export const fundraiserFormSchema = z.object({
     title: z.string().min(1, "Variation title is required"),
     image: z.any(),
     price: z.number().min(0.01, "Price must be greater than 0")
-  }))
+  })),
+  ageDivisions: z.array(z.object({
+    divisionName: z.string().min(1, "Division name is required"),
+    teams: z.array(z.object({
+      teamName: z.string().min(1, "Team name is required")
+    }))
+  })).optional()
 });
 
 export type FundraiserFormData = z.infer<typeof fundraiserFormSchema>;
@@ -27,6 +34,19 @@ export interface FundraiserVariation {
   price: number;
 }
 
+export interface FundraiserTeam {
+  id: string;
+  team_name: string;
+  display_order: number;
+}
+
+export interface FundraiserAgeDivision {
+  id: string;
+  division_name: string;
+  display_order: number;
+  fundraiser_teams: FundraiserTeam[];
+}
+
 export interface Fundraiser {
   id: string;
   title: string;
@@ -37,6 +57,7 @@ export interface Fundraiser {
   donation_percentage: number | null;
   donation_amount: number | null;
   fundraiser_variations: FundraiserVariation[];
+  fundraiser_age_divisions?: FundraiserAgeDivision[];
   status: string;
   created_at: string;
 }

@@ -54,7 +54,19 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         throw new Error(`Failed to delete fundraiser orders: ${ordersError.message}`);
       }
 
-      // Step 4: Get variations for image cleanup before deleting them
+      // Step 4: Delete from fundraiser_age_divisions (this will cascade to fundraiser_teams)
+      console.log('Deleting from fundraiser_age_divisions...');
+      const { error: divisionsError } = await supabase
+        .from('fundraiser_age_divisions')
+        .delete()
+        .eq('fundraiser_id', fundraiser.id);
+
+      if (divisionsError) {
+        console.error('Error deleting fundraiser age divisions:', divisionsError);
+        throw new Error(`Failed to delete fundraiser age divisions: ${divisionsError.message}`);
+      }
+
+      // Step 5: Get variations for image cleanup before deleting them
       console.log('Getting variations for cleanup...');
       const { data: variations, error: variationsError } = await supabase
         .from('fundraiser_variations')
@@ -66,7 +78,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         // Continue with deletion even if we can't get variations
       }
 
-      // Step 5: Delete fundraiser variations
+      // Step 6: Delete fundraiser variations
       console.log('Deleting fundraiser variations...');
       const { error: deleteVariationsError } = await supabase
         .from('fundraiser_variations')
@@ -78,14 +90,16 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         throw new Error(`Failed to delete fundraiser variations: ${deleteVariationsError.message}`);
       }
 
-      // Step 6: Update orders that reference this fundraiser
+      // Step 7: Update orders that reference this fundraiser
       console.log('Updating orders that reference this fundraiser...');
       const { error: updateOrdersError } = await supabase
         .from('orders')
         .update({ 
           fundraiser_id: null, 
           variation_id: null,
-          is_fundraiser: false 
+          is_fundraiser: false,
+          age_division: null,
+          pickup_team_name: null
         })
         .eq('fundraiser_id', fundraiser.id);
 
@@ -94,7 +108,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         throw new Error(`Failed to update orders: ${updateOrdersError.message}`);
       }
 
-      // Step 7: Clean up images from storage
+      // Step 8: Clean up images from storage
       if (variations && variations.length > 0) {
         const imagePaths = variations
           .filter(v => v.image_path)
@@ -112,7 +126,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         }
       }
 
-      // Step 8: Delete the main fundraiser record - THIS IS CRITICAL
+      // Step 9: Delete the main fundraiser record - THIS IS CRITICAL
       console.log('Deleting main fundraiser record...');
       const { error: deleteFundraiserError, data: deleteData } = await supabase
         .from('fundraisers')
@@ -134,7 +148,7 @@ export const useFundraiserDeletion = (refetch: () => void) => {
 
       console.log('✅ Successfully deleted fundraiser from database');
 
-      // Step 9: Verify the fundraiser is actually gone
+      // Step 10: Verify the fundraiser is actually gone
       console.log('Verifying deletion...');
       const { data: afterCheck, error: afterError } = await supabase
         .from('fundraisers')
@@ -151,12 +165,12 @@ export const useFundraiserDeletion = (refetch: () => void) => {
         console.log('✅ Verified: Fundraiser successfully deleted from database');
       }
 
-      // Step 10: Force React Query to refetch data
+      // Step 11: Force React Query to refetch data
       console.log('Invalidating React Query cache...');
       await queryClient.invalidateQueries({ queryKey: ['fundraisers'] });
       console.log('Cache invalidated');
 
-      // Step 11: Manual refetch as backup
+      // Step 12: Manual refetch as backup
       console.log('Triggering manual refetch...');
       await refetch();
       console.log('Manual refetch completed');

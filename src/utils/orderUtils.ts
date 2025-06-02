@@ -26,8 +26,9 @@ export const mapRawOrderToOrder = (rawOrder: RawOrder): Order => {
     tax_amount: rawOrder.tax_amount,
     stl_file_path: rawOrder.stl_file_path || undefined,
     tracking_number: rawOrder.tracking_number || undefined,
-    // Add fundraiser tracking fields
     fundraiser_id: rawOrder.fundraiser_id || undefined,
-    variation_id: rawOrder.variation_id || undefined
+    variation_id: rawOrder.variation_id || undefined,
+    age_division: rawOrder.age_division || undefined,
+    pickup_team_name: rawOrder.pickup_team_name || undefined
   };
 };

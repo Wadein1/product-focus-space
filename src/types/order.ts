@@ -27,6 +27,8 @@ export interface Order {
   tracking_number?: string;
   fundraiser_id?: string;
   variation_id?: string;
+  age_division?: string;
+  pickup_team_name?: string;
 }
 
 export interface RawOrder {
@@ -48,4 +50,6 @@ export interface RawOrder {
   tracking_number: string | null;
   fundraiser_id: string | null;
   variation_id: string | null;
+  age_division: string | null;
+  pickup_team_name: string | null;
 }
