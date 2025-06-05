@@ -148,31 +148,35 @@ export const ProductImage = ({
           />
         </div>
 
-        <div className="flex items-center">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-4 text-gray-500">OR</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
+        {!isMobile && (
+          <>
+            <div className="flex items-center">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="mx-4 text-gray-500">OR</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Team information - We'll find your logo
-          </label>
-          <Input
-            type="text"
-            placeholder="Team Name"
-            value={teamName}
-            onChange={(e) => onTeamNameChange(e.target.value)}
-            className="w-full"
-          />
-          <Input
-            type="text"
-            placeholder="Team Location"
-            value={teamLocation}
-            onChange={(e) => onTeamLocationChange(e.target.value)}
-            className="w-full"
-          />
-        </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Team information - We'll find your logo
+              </label>
+              <Input
+                type="text"
+                placeholder="Team Name"
+                value={teamName}
+                onChange={(e) => onTeamNameChange(e.target.value)}
+                className="w-full"
+              />
+              <Input
+                type="text"
+                placeholder="Team Location"
+                value={teamLocation}
+                onChange={(e) => onTeamLocationChange(e.target.value)}
+                className="w-full"
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
