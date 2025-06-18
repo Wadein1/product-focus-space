@@ -9,17 +9,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FundraiserImages } from '@/components/fundraiser/FundraiserImages';
 import { FundraiserVariations } from '@/components/fundraiser/FundraiserVariations';
 import { FundraiserPurchase } from '@/components/fundraiser/FundraiserPurchase';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const FundraiserPage = () => {
   const { customLink } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [selectedVariation, setSelectedVariation] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  const { data: fundraiser, isLoading } = useQuery({
+  // Add mobile debugging
+  React.useEffect(() => {
+    console.log('FundraiserPage loaded - Mobile detection:', isMobile);
+    console.log('Custom link:', customLink);
+    console.log('User agent:', navigator.userAgent);
+  }, [isMobile, customLink]);
+
+  const { data: fundraiser, isLoading, error } = useQuery({
     queryKey: ['fundraiser', customLink],
     queryFn: async () => {
+      console.log('Fetching fundraiser data for:', customLink);
       const { data, error } = await supabase
         .from('fundraisers')
         .select(`
@@ -35,9 +45,15 @@ const FundraiserPage = () => {
         .eq('custom_link', customLink)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Fundraiser fetch error:', error);
+        throw error;
+      }
+      console.log('Fundraiser data loaded:', data);
       return data;
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Get fundraiser stats from fundraiser_totals table (updated by trigger)
@@ -46,6 +62,7 @@ const FundraiserPage = () => {
     queryFn: async () => {
       if (!fundraiser?.id) return null;
       
+      console.log('Fetching fundraiser stats for:', fundraiser.id);
       const { data, error } = await supabase
         .from('fundraiser_totals')
         .select('total_items_sold, total_raised')
@@ -57,10 +74,10 @@ const FundraiserPage = () => {
         return { total_items_sold: 0, total_raised: 0 };
       }
 
+      console.log('Fundraiser stats loaded:', data);
       return data || { total_items_sold: 0, total_raised: 0 };
     },
     enabled: !!fundraiser?.id,
-    // Refetch every 10 seconds to catch updates from new purchases
     refetchInterval: 10000,
   });
 
@@ -69,9 +86,33 @@ const FundraiserPage = () => {
 
   React.useEffect(() => {
     if (defaultVariation && !selectedVariation) {
+      console.log('Setting default variation:', defaultVariation.id);
       setSelectedVariation(defaultVariation.id);
     }
-  }, [defaultVariation]);
+  }, [defaultVariation, selectedVariation]);
+
+  if (error) {
+    console.error('FundraiserPage error:', error);
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24 pb-16">
+          <div className="max-w-6xl mx-auto text-center">
+            <h1 className="text-2xl font-bold mb-4">Fundraiser not found</h1>
+            <p className="text-gray-400 mb-4">
+              {isMobile ? 'Mobile device detected' : 'Desktop device detected'}
+            </p>
+            <button 
+              onClick={() => navigate('/')}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            >
+              Go Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -89,6 +130,11 @@ const FundraiserPage = () => {
                 ))}
               </div>
             </div>
+            {isMobile && (
+              <div className="mt-4 text-center text-sm text-gray-400">
+                Loading on mobile device...
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -96,7 +142,20 @@ const FundraiserPage = () => {
   }
 
   if (!fundraiser) {
-    return <div>Fundraiser not found</div>;
+    console.error('No fundraiser data available');
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24 pb-16">
+          <div className="max-w-6xl mx-auto text-center">
+            <h1 className="text-2xl font-bold mb-4">Fundraiser not found</h1>
+            <p className="text-gray-400 mb-4">
+              Device: {isMobile ? 'Mobile' : 'Desktop'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const getDonationText = () => {
@@ -114,6 +173,8 @@ const FundraiserPage = () => {
     
     return `${donationText}, $${totalRaised.toFixed(2)} raised so far!`;
   };
+
+  console.log('Rendering fundraiser page for:', fundraiser.title, 'Mobile:', isMobile);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
@@ -195,6 +256,15 @@ const FundraiserPage = () => {
                 productName={`${fundraiser.title} - ${selectedVariationData.title}`}
                 imagePath={selectedVariationData.image_path}
               />
+            )}
+            
+            {/* Mobile Debug Info */}
+            {isMobile && (
+              <div className="mt-4 p-2 bg-gray-800 rounded text-xs text-gray-300">
+                <p>Mobile Debug: Page loaded successfully</p>
+                <p>Variations: {fundraiser.fundraiser_variations?.length || 0}</p>
+                <p>Selected: {selectedVariation || 'none'}</p>
+              </div>
             )}
           </div>
         </div>
