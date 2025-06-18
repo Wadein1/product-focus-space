@@ -9,6 +9,7 @@ import { FundraiserLoadingState } from "@/components/fundraiser/FundraiserLoadin
 import { FundraiserErrorState } from "@/components/fundraiser/FundraiserErrorState";
 import { ImagePreloader } from "@/components/fundraiser/ImagePreloader";
 import { getDonationText } from "@/utils/fundraiserUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 const FundraiserPage = () => {
   const { customLink } = useParams();
@@ -33,7 +34,7 @@ const FundraiserPage = () => {
       .filter(v => v.image_path)
       .slice(0, 3) // Preload only first 3 images
       .map(v => {
-        const { data: { publicUrl } } = require("@/integrations/supabase/client").supabase
+        const { data: { publicUrl } } = supabase
           .storage
           .from('gallery')
           .getPublicUrl(v.image_path);
