@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { FundraiserImages } from './FundraiserImages';
 import { FundraiserVariations } from './FundraiserVariations';
 import { FundraiserPurchase } from './FundraiserPurchase';
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FundraiserContentProps {
   fundraiser: any;
@@ -19,7 +18,6 @@ export const FundraiserContent = ({
   setSelectedVariation,
 }: FundraiserContentProps) => {
   const [quantity, setQuantity] = useState(1);
-  const isMobile = useIsMobile();
 
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
 
@@ -93,15 +91,6 @@ export const FundraiserContent = ({
             productName={`${fundraiser.title} - ${selectedVariationData.title}`}
             imagePath={selectedVariationData.image_path}
           />
-        )}
-        
-        {/* Mobile Debug Info */}
-        {isMobile && (
-          <div className="mt-4 p-2 bg-gray-800 rounded text-xs text-gray-300">
-            <p>Mobile Debug: Page loaded successfully</p>
-            <p>Variations: {fundraiser.fundraiser_variations?.length || 0}</p>
-            <p>Selected: {selectedVariation || 'none'}</p>
-          </div>
         )}
       </div>
     </>
