@@ -29,8 +29,10 @@ export const useFundraiserData = (customLink: string | undefined) => {
       console.log('Fundraiser data loaded:', data);
       return data;
     },
-    retry: 3,
-    retryDelay: 1000,
+    retry: 2,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const fundraiserStatsQuery = useQuery({
@@ -54,7 +56,9 @@ export const useFundraiserData = (customLink: string | undefined) => {
       return data || { total_items_sold: 0, total_raised: 0 };
     },
     enabled: !!fundraiserQuery.data?.id,
-    refetchInterval: 10000,
+    refetchInterval: 60000, // Reduced from 10s to 60s
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
   return {

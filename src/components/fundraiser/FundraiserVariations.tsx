@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Variation {
@@ -15,51 +13,22 @@ interface FundraiserVariationsProps {
   variations: Variation[];
   selectedVariation: string | null;
   onVariationSelect: (id: string) => void;
+  imageUrls?: Record<string, string>;
+  imagesLoading?: boolean;
 }
 
 export const FundraiserVariations = ({
   variations,
   selectedVariation,
   onVariationSelect,
+  imageUrls = {},
+  imagesLoading = false,
 }: FundraiserVariationsProps) => {
-  const [imageUrls, setImageUrls] = React.useState<Record<string, string>>({});
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    const loadImages = async () => {
-      console.log('Loading variations:', variations);
-      const urls: Record<string, string> = {};
-      
-      for (const variation of variations) {
-        if (variation.image_path) {
-          console.log('Processing variation image:', variation.image_path);
-          const { data: { publicUrl } } = supabase
-            .storage
-            .from('gallery')
-            .getPublicUrl(variation.image_path);
-          console.log('Generated variation URL:', publicUrl);
-          urls[variation.id] = publicUrl;
-        }
-      }
-      
-      console.log('Final image URLs:', urls);
-      setImageUrls(urls);
-      setLoading(false);
-    };
-
-    if (variations?.length > 0) {
-      loadImages();
-    } else {
-      console.log('No variations provided');
-      setLoading(false);
-    }
-  }, [variations]);
-
-  if (loading) {
+  if (imagesLoading) {
     return (
       <div className="grid grid-cols-4 gap-2">
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="aspect-square rounded-lg" />
+        {variations?.slice(0, 4).map((_, index) => (
+          <Skeleton key={index} className="aspect-square rounded-lg" />
         ))}
       </div>
     );
@@ -82,7 +51,7 @@ export const FundraiserVariations = ({
               src={imageUrls[variation.id]}
               alt={variation.title}
               className="w-full h-full object-cover"
-              loading="eager"
+              loading="lazy"
               onError={(e) => {
                 console.error('Variation image failed to load:', imageUrls[variation.id]);
                 e.currentTarget.src = '/placeholder.svg';

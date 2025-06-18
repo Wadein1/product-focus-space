@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { FundraiserImages } from './FundraiserImages';
 import { FundraiserVariations } from './FundraiserVariations';
 import { FundraiserPurchase } from './FundraiserPurchase';
+import { useImageBatch } from '@/hooks/useImageBatch';
+import { supabase } from "@/integrations/supabase/client";
 
 interface FundraiserContentProps {
   fundraiser: any;
@@ -18,14 +20,44 @@ export const FundraiserContent = ({
   setSelectedVariation,
 }: FundraiserContentProps) => {
   const [quantity, setQuantity] = useState(1);
+  const [mainImageUrl, setMainImageUrl] = useState<string | null>(null);
 
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
+
+  // Prepare image paths for batch loading
+  const imagePaths = React.useMemo(() => {
+    if (!fundraiser?.fundraiser_variations) return [];
+    
+    return fundraiser.fundraiser_variations.map((variation: any) => ({
+      id: variation.id,
+      path: variation.image_path
+    })).filter((item: any) => item.path);
+  }, [fundraiser?.fundraiser_variations]);
+
+  const { images, loading: imagesLoading } = useImageBatch(imagePaths);
+
+  // Load main image URL
+  React.useEffect(() => {
+    const mainImagePath = selectedVariationData?.image_path || defaultVariation?.image_path;
+    if (mainImagePath) {
+      const { data: { publicUrl } } = supabase
+        .storage
+        .from('gallery')
+        .getPublicUrl(mainImagePath);
+      setMainImageUrl(publicUrl);
+    }
+  }, [selectedVariationData?.image_path, defaultVariation?.image_path]);
 
   const handleQuantityChange = (increment: boolean) => {
     setQuantity(increment ? quantity + 1 : Math.max(1, quantity - 1));
   };
 
   if (!fundraiser) return null;
+
+  // Extract image URLs for variations
+  const variationImageUrls = Object.fromEntries(
+    Object.entries(images).map(([id, imageData]) => [id, imageData.url])
+  );
 
   return (
     <>
@@ -36,6 +68,7 @@ export const FundraiserContent = ({
           <FundraiserImages
             mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
             title={selectedVariationData?.title || fundraiser.title}
+            imageUrl={mainImageUrl}
           />
           
           {fundraiser.fundraiser_variations && (
@@ -43,6 +76,8 @@ export const FundraiserContent = ({
               variations={fundraiser.fundraiser_variations}
               selectedVariation={selectedVariation}
               onVariationSelect={setSelectedVariation}
+              imageUrls={variationImageUrls}
+              imagesLoading={imagesLoading}
             />
           )}
         </div>
@@ -69,6 +104,7 @@ export const FundraiserContent = ({
         <FundraiserImages
           mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
           title={selectedVariationData?.title || fundraiser.title}
+          imageUrl={mainImageUrl}
         />
         
         {/* Variations */}
@@ -77,6 +113,8 @@ export const FundraiserContent = ({
             variations={fundraiser.fundraiser_variations}
             selectedVariation={selectedVariation}
             onVariationSelect={setSelectedVariation}
+            imageUrls={variationImageUrls}
+            imagesLoading={imagesLoading}
           />
         )}
         
