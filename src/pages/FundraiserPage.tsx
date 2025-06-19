@@ -7,15 +7,29 @@ import { FundraiserHeader } from "@/components/fundraiser/FundraiserHeader";
 import { FundraiserContent } from "@/components/fundraiser/FundraiserContent";
 import { FundraiserLoadingState } from "@/components/fundraiser/FundraiserLoadingState";
 import { FundraiserErrorState } from "@/components/fundraiser/FundraiserErrorState";
-import { ImagePreloader } from "@/components/fundraiser/ImagePreloader";
+import { MobileLoadingScreen } from "@/components/fundraiser/MobileLoadingScreen";
+import { useMobileProgressiveLoading } from "@/hooks/useMobileProgressiveLoading";
 import { getDonationText } from "@/utils/fundraiserUtils";
-import { supabase } from "@/integrations/supabase/client";
 
 const FundraiserPage = () => {
   const { customLink } = useParams();
   const [selectedVariation, setSelectedVariation] = useState<string | null>(null);
 
   const { fundraiser, fundraiserStats, isLoading, error } = useFundraiserData(customLink);
+  
+  const {
+    isInitialLoading,
+    showContent,
+    isMobile,
+    loadingProgress,
+    imagesLoaded,
+    markDataLoaded,
+    markImageLoaded,
+    markImageError,
+  } = useMobileProgressiveLoading({
+    maxLoadingTime: 3000,
+    onDataLoaded: () => console.log('Progressive loading: Data ready for display'),
+  });
 
   const defaultVariation = fundraiser?.fundraiser_variations?.find(v => v.is_default);
 
@@ -26,21 +40,13 @@ const FundraiserPage = () => {
     }
   }, [defaultVariation, selectedVariation]);
 
-  // Prepare image URLs for preloading
-  const imageUrls = React.useMemo(() => {
-    if (!fundraiser?.fundraiser_variations) return [];
-    
-    return fundraiser.fundraiser_variations
-      .filter(v => v.image_path)
-      .slice(0, 3) // Preload only first 3 images
-      .map(v => {
-        const { data: { publicUrl } } = supabase
-          .storage
-          .from('gallery')
-          .getPublicUrl(v.image_path);
-        return publicUrl;
-      });
-  }, [fundraiser?.fundraiser_variations]);
+  // Mark data as loaded when fundraiser data is ready
+  React.useEffect(() => {
+    if (fundraiser && !isLoading && !error) {
+      console.log('Fundraiser data loaded, marking data ready');
+      markDataLoaded();
+    }
+  }, [fundraiser, isLoading, error, markDataLoaded]);
 
   if (error) {
     return (
@@ -53,7 +59,20 @@ const FundraiserPage = () => {
     );
   }
 
-  if (isLoading) {
+  // Show mobile loading screen
+  if (isMobile && isInitialLoading) {
+    return (
+      <>
+        <MobileLoadingScreen show={true} progress={loadingProgress} />
+        <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
+          <Navbar />
+        </div>
+      </>
+    );
+  }
+
+  // Desktop loading or mobile after initial load
+  if (isLoading && !showContent) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
         <Navbar />
@@ -78,7 +97,6 @@ const FundraiserPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <Navbar />
-      <ImagePreloader imageUrls={imageUrls} priority />
       <div className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
           <FundraiserHeader
@@ -91,6 +109,10 @@ const FundraiserPage = () => {
             defaultVariation={defaultVariation}
             selectedVariation={selectedVariation}
             setSelectedVariation={setSelectedVariation}
+            imagesLoaded={imagesLoaded}
+            onImageLoad={markImageLoaded}
+            onImageError={markImageError}
+            showProgressiveLoading={isMobile}
           />
         </div>
       </div>
