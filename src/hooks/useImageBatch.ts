@@ -42,7 +42,22 @@ export const useImageBatch = (imagePaths: { id: string; path: string }[]) => {
       setImages(imageMap);
       setLoading(false);
       
-      console.log('Batch image URLs generated:', Object.keys(imageMap).length);
+      // Preload images in background
+      Object.values(imageMap).forEach(({ url, id }) => {
+        const img = new Image();
+        img.onload = () => {
+          setImages(prev => ({
+            ...prev,
+            [id]: { ...prev[id], loaded: true }
+          }));
+        };
+        img.onerror = () => {
+          console.error('Failed to preload image:', url);
+        };
+        img.src = url;
+      });
+      
+      console.log('Batch image URLs generated and preloading started:', Object.keys(imageMap).length);
     };
 
     loadImages();

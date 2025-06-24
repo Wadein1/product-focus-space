@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { ProgressiveFundraiserImages } from './ProgressiveFundraiserImages';
-import { ProgressiveFundraiserVariations } from './ProgressiveFundraiserVariations';
+import { FundraiserImages } from './FundraiserImages';
+import { FundraiserVariations } from './FundraiserVariations';
 import { FundraiserPurchase } from './FundraiserPurchase';
+import { ImagePreloader } from './ImagePreloader';
 import { useImageBatch } from '@/hooks/useImageBatch';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -44,6 +45,11 @@ export const FundraiserContent = ({
 
   const { images, loading: imagesLoading } = useImageBatch(imagePaths);
 
+  // Preload all images immediately for better performance
+  const allImageUrls = React.useMemo(() => {
+    return Object.values(images).map(imageData => imageData.url).filter(Boolean);
+  }, [images]);
+
   // Load main image URL
   React.useEffect(() => {
     const mainImagePath = selectedVariationData?.image_path || defaultVariation?.image_path;
@@ -79,33 +85,29 @@ export const FundraiserContent = ({
     Object.entries(images).map(([id, imageData]) => [id, imageData.url])
   );
 
-  // Use progressive components if mobile
-  const ImageComponent = showProgressiveLoading ? ProgressiveFundraiserImages : ProgressiveFundraiserImages;
-  const VariationsComponent = showProgressiveLoading ? ProgressiveFundraiserVariations : ProgressiveFundraiserVariations;
-
   return (
     <>
+      {/* Preload all images */}
+      <ImagePreloader imageUrls={allImageUrls} priority={true} />
+      
       {/* Desktop Layout */}
       <div className="hidden md:grid md:grid-cols-2 gap-8">
         {/* Left Column - Image and Variations */}
         <div className="space-y-6">
-          <ImageComponent
+          <FundraiserImages
             mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
             title={selectedVariationData?.title || fundraiser.title}
             imageUrl={mainImageUrl}
             onImageLoad={() => handleImageLoad()}
-            isLoaded={imagesLoaded[selectedVariationData?.id || defaultVariation?.id] !== false}
           />
           
           {fundraiser.fundraiser_variations && (
-            <VariationsComponent
+            <FundraiserVariations
               variations={fundraiser.fundraiser_variations}
               selectedVariation={selectedVariation}
               onVariationSelect={setSelectedVariation}
               imageUrls={variationImageUrls}
               imagesLoading={imagesLoading}
-              loadedImages={imagesLoaded}
-              onImageLoad={handleImageLoad}
             />
           )}
         </div>
@@ -129,24 +131,21 @@ export const FundraiserContent = ({
       {/* Mobile Layout */}
       <div className="md:hidden space-y-6">
         {/* Product Image */}
-        <ImageComponent
+        <FundraiserImages
           mainImage={selectedVariationData?.image_path || defaultVariation?.image_path}
           title={selectedVariationData?.title || fundraiser.title}
           imageUrl={mainImageUrl}
           onImageLoad={() => handleImageLoad()}
-          isLoaded={imagesLoaded[selectedVariationData?.id || defaultVariation?.id] !== false}
         />
         
         {/* Variations */}
         {fundraiser.fundraiser_variations && (
-          <VariationsComponent
+          <FundraiserVariations
             variations={fundraiser.fundraiser_variations}
             selectedVariation={selectedVariation}
             onVariationSelect={setSelectedVariation}
             imageUrls={variationImageUrls}
             imagesLoading={imagesLoading}
-            loadedImages={imagesLoaded}
-            onImageLoad={handleImageLoad}
           />
         )}
         

@@ -17,13 +17,14 @@ interface ProgressiveLoadingOptions {
 }
 
 export const useMobileProgressiveLoading = (options: ProgressiveLoadingOptions = {}) => {
-  const { maxLoadingTime = 3000 } = options;
+  const { maxLoadingTime = 2000 } = options; // Reduced default time
   const isMobile = useIsMobile();
   const startTime = useRef(Date.now());
+  const hasShownInitialLoading = useRef(false);
   
   const [loadingState, setLoadingState] = useState<LoadingState>({
-    isInitialLoading: isMobile,
-    showContent: false,
+    isInitialLoading: isMobile && !hasShownInitialLoading.current,
+    showContent: !isMobile,
     dataLoaded: false,
     imagesLoaded: {},
     loadingProgress: 0,
@@ -31,13 +32,14 @@ export const useMobileProgressiveLoading = (options: ProgressiveLoadingOptions =
 
   // Timer to force show content after max loading time
   useEffect(() => {
-    if (!isMobile) {
+    if (!isMobile || hasShownInitialLoading.current) {
       setLoadingState(prev => ({ ...prev, isInitialLoading: false, showContent: true }));
       return;
     }
 
     const timer = setTimeout(() => {
       console.log('Max loading time reached, showing content');
+      hasShownInitialLoading.current = true;
       setLoadingState(prev => ({ 
         ...prev, 
         isInitialLoading: false, 
@@ -50,12 +52,20 @@ export const useMobileProgressiveLoading = (options: ProgressiveLoadingOptions =
 
   // Progress calculation
   useEffect(() => {
-    const elapsed = Date.now() - startTime.current;
-    const progress = Math.min((elapsed / maxLoadingTime) * 100, 100);
+    if (!loadingState.isInitialLoading) return;
     
-    if (loadingState.isInitialLoading) {
+    const updateProgress = () => {
+      const elapsed = Date.now() - startTime.current;
+      const progress = Math.min((elapsed / maxLoadingTime) * 100, 100);
+      
       setLoadingState(prev => ({ ...prev, loadingProgress: progress }));
-    }
+      
+      if (progress < 100) {
+        requestAnimationFrame(updateProgress);
+      }
+    };
+    
+    requestAnimationFrame(updateProgress);
   }, [loadingState.isInitialLoading, maxLoadingTime]);
 
   const markDataLoaded = () => {
@@ -63,9 +73,10 @@ export const useMobileProgressiveLoading = (options: ProgressiveLoadingOptions =
     setLoadingState(prev => {
       const newState = { ...prev, dataLoaded: true };
       
-      // Show content if data is loaded and we're past minimum loading time or max time
+      // Show content if data is loaded and we're past minimum loading time
       const elapsed = Date.now() - startTime.current;
-      if (elapsed >= 1000 || !prev.isInitialLoading) {
+      if (elapsed >= 800 || !prev.isInitialLoading) { // Reduced minimum time
+        hasShownInitialLoading.current = true;
         newState.isInitialLoading = false;
         newState.showContent = true;
         options.onDataLoaded?.();

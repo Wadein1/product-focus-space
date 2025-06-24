@@ -19,7 +19,6 @@ const FundraiserPage = () => {
   
   const {
     isInitialLoading,
-    showContent,
     isMobile,
     loadingProgress,
     imagesLoaded,
@@ -27,7 +26,7 @@ const FundraiserPage = () => {
     markImageLoaded,
     markImageError,
   } = useMobileProgressiveLoading({
-    maxLoadingTime: 3000,
+    maxLoadingTime: 2000, // Reduced from 3000 to 2000ms
     onDataLoaded: () => console.log('Progressive loading: Data ready for display'),
   });
 
@@ -48,7 +47,8 @@ const FundraiserPage = () => {
     }
   }, [fundraiser, isLoading, error, markDataLoaded]);
 
-  if (error) {
+  // Show error only if there's actually an error AND we're not loading
+  if (error && !isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
         <Navbar />
@@ -59,8 +59,8 @@ const FundraiserPage = () => {
     );
   }
 
-  // Show mobile loading screen
-  if (isMobile && isInitialLoading) {
+  // Show mobile loading screen only during initial load
+  if (isMobile && isInitialLoading && isLoading) {
     return (
       <>
         <MobileLoadingScreen show={true} progress={loadingProgress} />
@@ -71,8 +71,8 @@ const FundraiserPage = () => {
     );
   }
 
-  // Desktop loading or mobile after initial load
-  if (isLoading && !showContent) {
+  // Show loading state while data is being fetched
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
         <Navbar />
@@ -83,12 +83,25 @@ const FundraiserPage = () => {
     );
   }
 
-  if (!fundraiser) {
+  // Only show "not found" if we have definitively determined there's no fundraiser
+  if (!fundraiser && !isLoading && !error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
         <Navbar />
         <div className="container mx-auto px-4 pt-24 pb-16">
           <FundraiserErrorState />
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render content until we have fundraiser data
+  if (!fundraiser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
+        <Navbar />
+        <div className="container mx-auto px-4 pt-24 pb-16">
+          <FundraiserLoadingState />
         </div>
       </div>
     );
@@ -112,7 +125,7 @@ const FundraiserPage = () => {
             imagesLoaded={imagesLoaded}
             onImageLoad={markImageLoaded}
             onImageError={markImageError}
-            showProgressiveLoading={isMobile}
+            showProgressiveLoading={false} // Disable progressive loading for product switching
           />
         </div>
       </div>
