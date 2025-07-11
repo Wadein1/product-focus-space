@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ProgressiveFundraiserImages } from './ProgressiveFundraiserImages';
+import { FundraiserImageCarousel } from './FundraiserImageCarousel';
 import { ProgressiveFundraiserVariations } from './ProgressiveFundraiserVariations';
 import { FundraiserPurchase } from './FundraiserPurchase';
 import { ImagePreloader } from './ImagePreloader';
@@ -30,14 +30,33 @@ export const FundraiserContent = ({
   const [quantity, setQuantity] = useState(1);
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
 
-  // Prepare image paths for batch loading
+  // Prepare image paths for batch loading - include all variation images
   const imagePaths = React.useMemo(() => {
     if (!fundraiser?.fundraiser_variations) return [];
     
-    return fundraiser.fundraiser_variations.map((variation: any) => ({
-      id: variation.id,
-      path: variation.image_path
-    })).filter((item: any) => item.path);
+    const paths = [];
+    
+    for (const variation of fundraiser.fundraiser_variations) {
+      // Add main variation image
+      if (variation.image_path) {
+        paths.push({
+          id: `${variation.id}_main`,
+          path: variation.image_path
+        });
+      }
+      
+      // Add additional variation images
+      if (variation.fundraiser_variation_images) {
+        variation.fundraiser_variation_images.forEach((img: any, index: number) => {
+          paths.push({
+            id: `${variation.id}_${index}`,
+            path: img.image_path
+          });
+        });
+      }
+    }
+    
+    return paths;
   }, [fundraiser?.fundraiser_variations]);
 
   const { images, loading: imagesLoading } = useImageBatch(imagePaths);
@@ -65,9 +84,34 @@ export const FundraiserContent = ({
 
   if (!fundraiser) return null;
 
-  // Extract image URLs for variations
+  // Get all images for the selected variation
+  const getVariationImages = (variationId: string) => {
+    const imageUrls = [];
+    const variation = fundraiser?.fundraiser_variations?.find((v: any) => v.id === variationId);
+    
+    if (variation?.image_path) {
+      const mainImageUrl = images[`${variationId}_main`]?.url;
+      if (mainImageUrl) imageUrls.push(mainImageUrl);
+    }
+    
+    if (variation?.fundraiser_variation_images) {
+      variation.fundraiser_variation_images
+        .sort((a: any, b: any) => a.display_order - b.display_order)
+        .forEach((img: any, index: number) => {
+          const imageUrl = images[`${variationId}_${index}`]?.url;
+          if (imageUrl) imageUrls.push(imageUrl);
+        });
+    }
+    
+    return imageUrls;
+  };
+
+  // Extract image URLs for variations (for the variation selector)
   const variationImageUrls = Object.fromEntries(
-    Object.entries(images).map(([id, imageData]) => [id, imageData.url])
+    fundraiser?.fundraiser_variations?.map((variation: any) => [
+      variation.id, 
+      images[`${variation.id}_main`]?.url || ''
+    ]) || []
   );
 
   return (
@@ -79,10 +123,9 @@ export const FundraiserContent = ({
       <div className="hidden md:grid md:grid-cols-2 gap-8">
         {/* Left Column - Image and Variations */}
         <div className="space-y-6">
-          <ProgressiveFundraiserImages
-            mainImage={selectedVariationData?.image_path || defaultVariation?.image_path || ''}
+          <FundraiserImageCarousel
+            images={getVariationImages(selectedVariation || defaultVariation?.id || '')}
             title={selectedVariationData?.title || fundraiser.title}
-            imageUrl={variationImageUrls[selectedVariation || defaultVariation?.id || '']}
             onImageLoad={() => handleImageLoad()}
             isLoaded={imagesLoaded[selectedVariation || defaultVariation?.id || '']}
           />
@@ -119,10 +162,9 @@ export const FundraiserContent = ({
       {/* Mobile Layout */}
       <div className="md:hidden space-y-6">
         {/* Product Image */}
-        <ProgressiveFundraiserImages
-          mainImage={selectedVariationData?.image_path || defaultVariation?.image_path || ''}
+        <FundraiserImageCarousel
+          images={getVariationImages(selectedVariation || defaultVariation?.id || '')}
           title={selectedVariationData?.title || fundraiser.title}
-          imageUrl={variationImageUrls[selectedVariation || defaultVariation?.id || '']}
           onImageLoad={() => handleImageLoad()}
           isLoaded={imagesLoaded[selectedVariation || defaultVariation?.id || '']}
         />
