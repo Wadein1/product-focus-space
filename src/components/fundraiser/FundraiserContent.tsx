@@ -1,11 +1,10 @@
 
 import React, { useState } from 'react';
-import { FundraiserImageGallery } from './FundraiserImageGallery';
-import { FundraiserVariations } from './FundraiserVariations';
+import { ProgressiveFundraiserImages } from './ProgressiveFundraiserImages';
+import { ProgressiveFundraiserVariations } from './ProgressiveFundraiserVariations';
 import { FundraiserPurchase } from './FundraiserPurchase';
 import { ImagePreloader } from './ImagePreloader';
 import { useImageBatch } from '@/hooks/useImageBatch';
-import { supabase } from "@/integrations/supabase/client";
 
 interface FundraiserContentProps {
   fundraiser: any;
@@ -31,29 +30,14 @@ export const FundraiserContent = ({
   const [quantity, setQuantity] = useState(1);
   const selectedVariationData = fundraiser?.fundraiser_variations?.find(v => v.id === selectedVariation);
 
-  // Prepare image paths for batch loading - now includes all variation images
+  // Prepare image paths for batch loading
   const imagePaths = React.useMemo(() => {
     if (!fundraiser?.fundraiser_variations) return [];
     
-    const paths: any[] = [];
-    fundraiser.fundraiser_variations.forEach((variation: any) => {
-      if (variation.fundraiser_variation_images?.length > 0) {
-        variation.fundraiser_variation_images.forEach((img: any) => {
-          paths.push({
-            id: `${variation.id}-${img.id}`,
-            path: img.image_path
-          });
-        });
-      } else if (variation.image_path) {
-        // Fallback to single image_path for backward compatibility
-        paths.push({
-          id: variation.id,
-          path: variation.image_path
-        });
-      }
-    });
-    
-    return paths;
+    return fundraiser.fundraiser_variations.map((variation: any) => ({
+      id: variation.id,
+      path: variation.image_path
+    })).filter((item: any) => item.path);
   }, [fundraiser?.fundraiser_variations]);
 
   const { images, loading: imagesLoading } = useImageBatch(imagePaths);
@@ -95,19 +79,23 @@ export const FundraiserContent = ({
       <div className="hidden md:grid md:grid-cols-2 gap-8">
         {/* Left Column - Image and Variations */}
         <div className="space-y-6">
-          <FundraiserImageGallery
-            images={selectedVariationData?.fundraiser_variation_images || defaultVariation?.fundraiser_variation_images || []}
+          <ProgressiveFundraiserImages
+            mainImage={selectedVariationData?.image_path || defaultVariation?.image_path || ''}
             title={selectedVariationData?.title || fundraiser.title}
+            imageUrl={variationImageUrls[selectedVariation || defaultVariation?.id || '']}
             onImageLoad={() => handleImageLoad()}
+            isLoaded={imagesLoaded[selectedVariation || defaultVariation?.id || '']}
           />
           
           {fundraiser.fundraiser_variations && (
-            <FundraiserVariations
+            <ProgressiveFundraiserVariations
               variations={fundraiser.fundraiser_variations}
               selectedVariation={selectedVariation}
               onVariationSelect={setSelectedVariation}
               imageUrls={variationImageUrls}
               imagesLoading={imagesLoading}
+              loadedImages={imagesLoaded}
+              onImageLoad={onImageLoad}
             />
           )}
         </div>
@@ -131,20 +119,24 @@ export const FundraiserContent = ({
       {/* Mobile Layout */}
       <div className="md:hidden space-y-6">
         {/* Product Image */}
-        <FundraiserImageGallery
-          images={selectedVariationData?.fundraiser_variation_images || defaultVariation?.fundraiser_variation_images || []}
+        <ProgressiveFundraiserImages
+          mainImage={selectedVariationData?.image_path || defaultVariation?.image_path || ''}
           title={selectedVariationData?.title || fundraiser.title}
+          imageUrl={variationImageUrls[selectedVariation || defaultVariation?.id || '']}
           onImageLoad={() => handleImageLoad()}
+          isLoaded={imagesLoaded[selectedVariation || defaultVariation?.id || '']}
         />
         
         {/* Variations */}
         {fundraiser.fundraiser_variations && (
-          <FundraiserVariations
+          <ProgressiveFundraiserVariations
             variations={fundraiser.fundraiser_variations}
             selectedVariation={selectedVariation}
             onVariationSelect={setSelectedVariation}
             imageUrls={variationImageUrls}
             imagesLoading={imagesLoading}
+            loadedImages={imagesLoaded}
+            onImageLoad={onImageLoad}
           />
         )}
         

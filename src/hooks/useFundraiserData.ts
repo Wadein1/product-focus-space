@@ -16,12 +16,7 @@ export const useFundraiserData = (customLink: string | undefined) => {
             title,
             image_path,
             is_default,
-            price,
-            fundraiser_variation_images (
-              id,
-              image_path,
-              display_order
-            )
+            price
           )
         `)
         .eq('custom_link', customLink)
