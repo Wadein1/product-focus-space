@@ -25,17 +25,24 @@ export const FundraiserManagement = () => {
         throw new Error('Failed to fetch storage files');
       }
 
-      // Get all image paths from fundraiser variations
+      // Get all image paths from fundraiser variations and variation images
       const { data: variations } = await supabase
         .from('fundraiser_variations')
         .select('image_path');
 
-      if (!variations) {
-        throw new Error('Failed to fetch variations');
+      const { data: variationImages } = await supabase
+        .from('fundraiser_variation_images')
+        .select('image_path');
+
+      if (!variations || !variationImages) {
+        throw new Error('Failed to fetch image paths');
       }
 
       // Create a set of used image paths
-      const usedPaths = new Set(variations.map(v => v.image_path).filter(Boolean));
+      const usedPaths = new Set([
+        ...variations.map(v => v.image_path).filter(Boolean),
+        ...variationImages.map(vi => vi.image_path).filter(Boolean)
+      ]);
 
       // Find unused files
       const unusedFiles = storageFiles.filter(file => !usedPaths.has(file.name));

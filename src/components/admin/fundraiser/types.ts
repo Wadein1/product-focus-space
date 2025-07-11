@@ -25,6 +25,14 @@ export interface FundraiserVariation {
   image_path?: string;
   is_default: boolean;
   price: number;
+  fundraiser_variation_images?: FundraiserVariationImage[];
+}
+
+export interface FundraiserVariationImage {
+  id: string;
+  variation_id: string;
+  image_path: string;
+  display_order: number;
 }
 
 export interface FundraiserAgeDivision {
@@ -51,8 +59,13 @@ export const fundraiserFormSchema = z.object({
   donationAmount: z.number().min(0).optional(),
   variations: z.array(z.object({
     title: z.string().min(1, "Variation title is required"),
-    image: z.instanceof(File).nullable(),
-    price: z.number().min(0.01, "Price must be greater than 0")
+    images: z.array(z.instanceof(File)).optional(),
+    price: z.number().min(0.01, "Price must be greater than 0"),
+    existingImages: z.array(z.object({
+      id: z.string(),
+      image_path: z.string(),
+      display_order: z.number()
+    })).optional()
   })).min(1, "At least one variation is required"),
   ageDivisions: z.array(z.object({
     divisionName: z.string().min(1, "Division name is required"),

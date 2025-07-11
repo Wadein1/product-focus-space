@@ -26,7 +26,12 @@ export const FundraiserList = () => {
             title,
             image_path,
             is_default,
-            price
+            price,
+            fundraiser_variation_images (
+              id,
+              image_path,
+              display_order
+            )
           ),
           fundraiser_age_divisions (
             id,

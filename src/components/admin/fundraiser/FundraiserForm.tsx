@@ -43,8 +43,9 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       donationAmount: fundraiser.donation_amount || undefined,
       variations: fundraiser.fundraiser_variations.map(v => ({
         title: v.title,
-        image: null,
-        price: v.price
+        images: [],
+        price: v.price,
+        existingImages: v.fundraiser_variation_images || []
       })),
       ageDivisions: fundraiser.fundraiser_age_divisions?.map(d => ({
         divisionName: d.division_name,
@@ -54,7 +55,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       })) || []
     } : {
       donationType: 'percentage',
-      variations: [{ title: '', image: null, price: 0 }],
+      variations: [{ title: '', images: [], price: 0, existingImages: [] }],
       ageDivisions: []
     }
   });
@@ -199,31 +200,56 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         for (const variation of data.variations) {
           if (!variation.title) continue;
 
-          let imagePath = null;
-          if (variation.image) {
-            const fileExt = variation.image.name.split('.').pop();
-            imagePath = `${crypto.randomUUID()}.${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-              .from('gallery')
-              .upload(imagePath, variation.image);
-
-            if (uploadError) throw uploadError;
-          }
-
-          const { error: variationError } = await supabase
+          // Create variation first
+          const { data: savedVariation, error: variationError } = await supabase
             .from('fundraiser_variations')
             .insert({
               fundraiser_id: savedFundraiser.id,
               title: variation.title,
-              image_path: imagePath,
+              image_path: null, // Will be updated with first image if any
               price: variation.price,
               is_default: data.variations.indexOf(variation) === 0
-            });
+            })
+            .select()
+            .single();
 
           if (variationError) {
             console.error('Variation error:', variationError);
             throw new Error(`Failed to create variation: ${variationError.message}`);
+          }
+
+          // Handle multiple images for this variation
+          if (variation.images && variation.images.length > 0) {
+            for (let i = 0; i < variation.images.length; i++) {
+              const image = variation.images[i];
+              const fileExt = image.name.split('.').pop();
+              const imagePath = `${crypto.randomUUID()}.${fileExt}`;
+
+              const { error: uploadError } = await supabase.storage
+                .from('gallery')
+                .upload(imagePath, image);
+
+              if (uploadError) throw uploadError;
+
+              // Insert into variation images table
+              const { error: imageError } = await supabase
+                .from('fundraiser_variation_images')
+                .insert({
+                  variation_id: savedVariation.id,
+                  image_path: imagePath,
+                  display_order: i
+                });
+
+              if (imageError) throw imageError;
+
+              // Update variation with first image path for backward compatibility
+              if (i === 0) {
+                await supabase
+                  .from('fundraiser_variations')
+                  .update({ image_path: imagePath })
+                  .eq('id', savedVariation.id);
+              }
+            }
           }
         }
 
