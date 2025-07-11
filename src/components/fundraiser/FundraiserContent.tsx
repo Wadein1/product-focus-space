@@ -89,18 +89,18 @@ export const FundraiserContent = ({
     const imageUrls = [];
     const variation = fundraiser?.fundraiser_variations?.find((v: any) => v.id === variationId);
     
-    if (variation?.image_path) {
-      const mainImageUrl = images[`${variationId}_main`]?.url;
-      if (mainImageUrl) imageUrls.push(mainImageUrl);
-    }
-    
-    if (variation?.fundraiser_variation_images) {
+    // If variation has additional images, use only those (they should include the main image)
+    if (variation?.fundraiser_variation_images && variation.fundraiser_variation_images.length > 0) {
       variation.fundraiser_variation_images
         .sort((a: any, b: any) => a.display_order - b.display_order)
         .forEach((img: any, index: number) => {
           const imageUrl = images[`${variationId}_${index}`]?.url;
           if (imageUrl) imageUrls.push(imageUrl);
         });
+    } else if (variation?.image_path) {
+      // Fallback to main image if no additional images
+      const mainImageUrl = images[`${variationId}_main`]?.url;
+      if (mainImageUrl) imageUrls.push(mainImageUrl);
     }
     
     return imageUrls;
