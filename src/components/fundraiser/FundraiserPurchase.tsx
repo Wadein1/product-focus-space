@@ -31,6 +31,7 @@ export const FundraiserPurchase = ({
   const [deliveryMethod, setDeliveryMethod] = React.useState<'shipping' | 'pickup'>('shipping');
   const [ageDivision, setAgeDivision] = React.useState<string>('');
   const [teamName, setTeamName] = React.useState<string>('');
+  const [isPickupAvailable, setIsPickupAvailable] = React.useState<boolean>(true);
 
   const handleDeliveryMethodChange = (value: 'shipping' | 'pickup') => {
     setDeliveryMethod(value);
@@ -44,6 +45,10 @@ export const FundraiserPurchase = ({
   const handleTeamSelectionChange = (selectedAgeDivision: string, selectedTeamName: string) => {
     setAgeDivision(selectedAgeDivision);
     setTeamName(selectedTeamName);
+  };
+
+  const handlePickupAvailabilityChange = (available: boolean) => {
+    setIsPickupAvailable(available);
   };
 
   return (
@@ -61,6 +66,7 @@ export const FundraiserPurchase = ({
           ageDivision={ageDivision}
           teamName={teamName}
           onTeamSelectionChange={handleTeamSelectionChange}
+          onPickupAvailabilityChange={handlePickupAvailabilityChange}
         />
 
         <QuantitySelector
@@ -80,6 +86,7 @@ export const FundraiserPurchase = ({
           teamName={teamName}
           fundraiserTitle={fundraiserTitle}
           variationTitle={variationTitle}
+          isPickupAvailable={isPickupAvailable}
         />
       </div>
     </div>

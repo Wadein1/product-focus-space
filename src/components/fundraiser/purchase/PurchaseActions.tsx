@@ -17,6 +17,7 @@ interface PurchaseActionsProps {
   teamName: string;
   fundraiserTitle?: string;
   variationTitle?: string;
+  isPickupAvailable?: boolean;
 }
 
 export const PurchaseActions = ({
@@ -31,18 +32,29 @@ export const PurchaseActions = ({
   teamName,
   fundraiserTitle,
   variationTitle,
+  isPickupAvailable = true,
 }: PurchaseActionsProps) => {
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
 
   const validateTeamSelection = () => {
-    if (deliveryMethod === 'pickup' && (!ageDivision || !teamName)) {
-      toast({
-        title: "Team selection required",
-        description: "Please select both age division and team for pickup orders.",
-        variant: "destructive",
-      });
-      return false;
+    if (deliveryMethod === 'pickup') {
+      if (!isPickupAvailable) {
+        toast({
+          title: "Pickup not available",
+          description: "Team pickup is not configured for this fundraiser.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (!ageDivision || !teamName) {
+        toast({
+          title: "Team selection required",
+          description: "Please select both age division and team for pickup orders.",
+          variant: "destructive",
+        });
+        return false;
+      }
     }
     return true;
   };
@@ -199,12 +211,15 @@ export const PurchaseActions = ({
     }
   };
 
+  const isDisabled = deliveryMethod === 'pickup' && (!isPickupAvailable || !ageDivision || !teamName);
+
   return (
     <div className="space-y-3">
       <Button 
         onClick={handleBuyNow}
         className="w-full bg-[#0CA2ED] hover:bg-[#0CA2ED]/90 text-white font-medium py-6"
         size="lg"
+        disabled={isDisabled}
       >
         Buy Now
       </Button>
@@ -213,10 +228,18 @@ export const PurchaseActions = ({
         variant="outline"
         className="w-full border-[#0CA2ED] text-[#0CA2ED] hover:bg-[#0CA2ED]/10"
         size="lg"
-        disabled={isAddingToCart}
+        disabled={isAddingToCart || isDisabled}
       >
         {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
       </Button>
+      {isDisabled && deliveryMethod === 'pickup' && (
+        <p className="text-sm text-gray-500 text-center">
+          {!isPickupAvailable 
+            ? "Team pickup is not available for this fundraiser" 
+            : "Please select age division and team to continue"
+          }
+        </p>
+      )}
     </div>
   );
 };
