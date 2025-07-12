@@ -97,6 +97,23 @@ serve(async (req) => {
       };
     });
 
+    // Add shipping as a separate line item if there's a shipping cost
+    if (shipping_cost > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: 'Shipping',
+            metadata: {
+              type: 'shipping'
+            }
+          },
+          unit_amount: Math.round(shipping_cost * 100), // Convert to cents
+        },
+        quantity: 1,
+      });
+    }
+
     // Prepare session metadata
     const sessionMetadata = {
       ...metadata,
