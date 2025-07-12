@@ -186,7 +186,8 @@ export const PurchaseActions = ({
             quantity: quantity.toString(),
             item_price: price.toString(),
             donation_amount: donationAmount.toString()
-          }
+          },
+          return_url: window.location.pathname
         },
       });
 

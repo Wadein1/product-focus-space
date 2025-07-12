@@ -1,12 +1,20 @@
 import { Ban } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Cancel = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleGoBack = () => {
-    navigate(-1); // Go back to the previous page
+    const returnUrl = searchParams.get('return_url');
+    if (returnUrl) {
+      // Navigate to the specific return URL
+      navigate(returnUrl);
+    } else {
+      // Fallback to going back in history
+      navigate(-1);
+    }
   };
 
   return (

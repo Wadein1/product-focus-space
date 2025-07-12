@@ -68,7 +68,8 @@ export const CartSummary = ({ items, isFundraiser = false }: CartSummaryProps) =
           shippingAddress: null,
           isFundraiser,
           shipping_cost: shippingCost,
-          metadata
+          metadata,
+          return_url: window.location.pathname
         },
       });
 

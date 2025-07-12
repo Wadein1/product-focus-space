@@ -48,6 +48,7 @@ export const CheckoutForm = ({ onSubmit, isSubmitting, cartItems }: CheckoutForm
             state: data.state,
             zipCode: data.zipCode,
           },
+          return_url: window.location.pathname
         },
       });
 

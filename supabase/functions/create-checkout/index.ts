@@ -21,7 +21,8 @@ serve(async (req) => {
       customerEmail, 
       shippingAddress, 
       shipping_cost = 0,
-      success_url_params = {}
+      success_url_params = {},
+      return_url = null
     } = requestData;
 
     if (!items || items.length === 0) {
@@ -127,12 +128,17 @@ serve(async (req) => {
     console.log('Creating Stripe session with metadata:', sessionMetadata);
 
     // Create Stripe checkout session
+    let cancelUrl = `${origin}/cancel`;
+    if (return_url) {
+      cancelUrl += `?return_url=${encodeURIComponent(return_url)}`;
+    }
+    
     const sessionConfig: any = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
       success_url: successUrl,
-      cancel_url: `${origin}/cancel`,
+      cancel_url: cancelUrl,
       metadata: sessionMetadata,
       allow_promotion_codes: true,
       automatic_tax: { enabled: true }
