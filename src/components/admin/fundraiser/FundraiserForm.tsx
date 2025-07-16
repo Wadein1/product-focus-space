@@ -218,10 +218,35 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
             throw new Error(`Failed to create variation: ${variationError.message}`);
           }
 
-          // Handle multiple images for this variation
+          // Handle both existing and new images for this variation
+          let imageDisplayOrder = 0;
+          let firstImagePath = null;
+
+          // First, handle existing images (preserve their order)
+          if (variation.existingImages && variation.existingImages.length > 0) {
+            for (const existingImage of variation.existingImages) {
+              const { error: imageError } = await supabase
+                .from('fundraiser_variation_images')
+                .insert({
+                  variation_id: savedVariation.id,
+                  image_path: existingImage.image_path,
+                  display_order: existingImage.display_order !== undefined ? existingImage.display_order : imageDisplayOrder
+                });
+
+              if (imageError) throw imageError;
+
+              // Set first image for backward compatibility
+              if (!firstImagePath) {
+                firstImagePath = existingImage.image_path;
+              }
+              
+              imageDisplayOrder++;
+            }
+          }
+
+          // Then, handle new uploaded images
           if (variation.images && variation.images.length > 0) {
-            for (let i = 0; i < variation.images.length; i++) {
-              const image = variation.images[i];
+            for (const image of variation.images) {
               const fileExt = image.name.split('.').pop();
               const imagePath = `${crypto.randomUUID()}.${fileExt}`;
 
@@ -237,19 +262,26 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
                 .insert({
                   variation_id: savedVariation.id,
                   image_path: imagePath,
-                  display_order: i
+                  display_order: imageDisplayOrder
                 });
 
               if (imageError) throw imageError;
 
-              // Update variation with first image path for backward compatibility
-              if (i === 0) {
-                await supabase
-                  .from('fundraiser_variations')
-                  .update({ image_path: imagePath })
-                  .eq('id', savedVariation.id);
+              // Set first image for backward compatibility if no existing images
+              if (!firstImagePath) {
+                firstImagePath = imagePath;
               }
+              
+              imageDisplayOrder++;
             }
+          }
+
+          // Update variation with first image path for backward compatibility
+          if (firstImagePath) {
+            await supabase
+              .from('fundraiser_variations')
+              .update({ image_path: firstImagePath })
+              .eq('id', savedVariation.id);
           }
         }
 
