@@ -12,16 +12,18 @@ import { useMobileProgressiveLoading } from "@/hooks/useMobileProgressiveLoading
 import { getDonationText } from "@/utils/fundraiserUtils";
 import { ShippingBanner } from "@/components/fundraiser/ShippingBanner";
 import { FundraiserPromoBanner } from "@/components/fundraiser/FundraiserPromoBanner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const FundraiserPage = () => {
   const { customLink } = useParams();
   const [selectedVariation, setSelectedVariation] = useState<string | null>(null);
 
   const { fundraiser, fundraiserStats, isLoading, error } = useFundraiserData(customLink);
+  const isMobile = useIsMobile();
   
   const {
     isInitialLoading,
-    isMobile,
+    isMobile: progressiveIsMobile,
     loadingProgress,
     imagesLoaded,
     markDataLoaded,
@@ -65,7 +67,7 @@ const FundraiserPage = () => {
   }
 
   // Show mobile loading screen only during initial load
-  if (isMobile && isInitialLoading && isLoading) {
+  if (progressiveIsMobile && isInitialLoading && isLoading) {
     return (
       <>
         <MobileLoadingScreen show={true} progress={loadingProgress} />
@@ -117,7 +119,7 @@ const FundraiserPage = () => {
       <Navbar />
       <ShippingBanner show={!hasShippingOptions} />
       <FundraiserPromoBanner show={hasShippingOptions} />
-      <div className={`container mx-auto px-4 pb-16 ${!hasShippingOptions ? 'pt-36' : hasShippingOptions ? 'pt-36' : 'pt-24'}`}>
+      <div className={`container mx-auto px-4 pb-16 ${!hasShippingOptions ? (isMobile ? 'pt-24' : 'pt-36') : hasShippingOptions ? (isMobile ? 'pt-24' : 'pt-36') : 'pt-24'}`}>
         <div className="max-w-6xl mx-auto">
           <FundraiserHeader
             title={fundraiser.title}
