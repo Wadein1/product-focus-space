@@ -14,7 +14,7 @@ export const FundraiserPromoBanner = ({ show }: FundraiserPromoBannerProps) => {
   if (!show || dismissed) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-green-600 text-white px-4 py-3 z-40 shadow-lg">
+    <div className="fixed top-0 left-0 right-0 bg-green-600 text-white px-4 py-3 z-[60] shadow-lg">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
           <p className="font-medium">
