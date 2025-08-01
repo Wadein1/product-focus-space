@@ -64,12 +64,12 @@ const Fundraising = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
       <Navbar />
       <div className="container mx-auto px-4 py-16 mt-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
               Fundraising Opportunities
             </h1>
             <p className="text-muted-foreground text-lg md:block hidden">
