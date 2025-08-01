@@ -11,6 +11,7 @@ import { MobileLoadingScreen } from "@/components/fundraiser/MobileLoadingScreen
 import { useMobileProgressiveLoading } from "@/hooks/useMobileProgressiveLoading";
 import { getDonationText } from "@/utils/fundraiserUtils";
 import { ShippingBanner } from "@/components/fundraiser/ShippingBanner";
+import { FundraiserPromoBanner } from "@/components/fundraiser/FundraiserPromoBanner";
 
 const FundraiserPage = () => {
   const { customLink } = useParams();
@@ -115,7 +116,8 @@ const FundraiserPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <Navbar />
       <ShippingBanner show={!hasShippingOptions} />
-      <div className={`container mx-auto px-4 pb-16 ${!hasShippingOptions ? 'pt-36' : 'pt-24'}`}>
+      <FundraiserPromoBanner show={hasShippingOptions} />
+      <div className={`container mx-auto px-4 pb-16 ${!hasShippingOptions ? 'pt-36' : hasShippingOptions ? 'pt-36' : 'pt-24'}`}>
         <div className="max-w-6xl mx-auto">
           <FundraiserHeader
             title={fundraiser.title}

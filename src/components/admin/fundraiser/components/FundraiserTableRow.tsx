@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +25,40 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
   isDeleting
 }) => {
   const { toast } = useToast();
+  const [isAnimating, setIsAnimating] = useState({ team: false, regular: false });
+
+  // Listen for universal updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('fundraiser-updates')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'fundraisers',
+          filter: `id=eq.${fundraiser.id}`
+        }, 
+        (payload) => {
+          const updated = payload.new as Fundraiser;
+          
+          // Animate if values changed
+          if (updated.allow_team_shipping !== fundraiser.allow_team_shipping) {
+            setIsAnimating(prev => ({ ...prev, team: true }));
+            setTimeout(() => setIsAnimating(prev => ({ ...prev, team: false })), 300);
+          }
+          
+          if (updated.allow_regular_shipping !== fundraiser.allow_regular_shipping) {
+            setIsAnimating(prev => ({ ...prev, regular: true }));
+            setTimeout(() => setIsAnimating(prev => ({ ...prev, regular: false })), 300);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fundraiser.id, fundraiser.allow_team_shipping, fundraiser.allow_regular_shipping]);
 
   const getDonationAmount = () => {
     if (fundraiser.donation_type === 'percentage') {
@@ -79,16 +113,20 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
         ${(fundraiser.profit || 0).toFixed(2)}
       </TableCell>
       <TableCell>
-        <Switch
-          checked={fundraiser.allow_team_shipping ?? true}
-          onCheckedChange={() => toggleShippingOption('allow_team_shipping', fundraiser.allow_team_shipping ?? true)}
-        />
+        <div className={`transition-all duration-300 ${isAnimating.team ? 'scale-110 bg-green-100 rounded-full p-1' : ''}`}>
+          <Switch
+            checked={fundraiser.allow_team_shipping ?? true}
+            onCheckedChange={() => toggleShippingOption('allow_team_shipping', fundraiser.allow_team_shipping ?? true)}
+          />
+        </div>
       </TableCell>
       <TableCell>
-        <Switch
-          checked={fundraiser.allow_regular_shipping ?? true}
-          onCheckedChange={() => toggleShippingOption('allow_regular_shipping', fundraiser.allow_regular_shipping ?? true)}
-        />
+        <div className={`transition-all duration-300 ${isAnimating.regular ? 'scale-110 bg-green-100 rounded-full p-1' : ''}`}>
+          <Switch
+            checked={fundraiser.allow_regular_shipping ?? true}
+            onCheckedChange={() => toggleShippingOption('allow_regular_shipping', fundraiser.allow_regular_shipping ?? true)}
+          />
+        </div>
       </TableCell>
       <TableCell className="space-x-2">
         <Button

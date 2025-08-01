@@ -110,14 +110,14 @@ const Fundraising = () => {
 
               <div className="space-y-2">
                 <label htmlFor="description" className="text-sm font-medium text-foreground">
-                  Tell us about your fundraising needs
+                  Team/Company Website (optional)
                 </label>
-                <Textarea
+                <Input
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="min-h-[120px] w-full"
-                  placeholder="Describe your organization and fundraising goals"
+                  className="w-full"
+                  placeholder="Enter your team or company website"
                 />
               </div>
 
