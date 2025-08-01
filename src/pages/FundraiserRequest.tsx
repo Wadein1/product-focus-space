@@ -34,12 +34,12 @@ const FundraiserRequest = () => {
       // Store the request in the database
       const { error } = await supabase
         .from('fundraising_requests')
-        .insert([{
+        .insert({
           company_name: data.organizationName,
           contact_email: data.email,
           description: `Contact: ${data.contactName}\nPhone: ${data.phone}\nGoal: ${data.fundraiserGoal}\nTimeline: ${data.timeline}\n\nDescription: ${data.description}`,
           status: 'pending'
-        }]);
+        });
 
       if (error) throw error;
 
