@@ -15,7 +15,7 @@ import Support from "./pages/Support";
 import Fundraising from "./pages/Fundraising";
 import FundraiserPage from "./pages/FundraiserPage";
 import About from "./pages/About";
-
+import FundraiserRequest from "./pages/FundraiserRequest";
 import { OrderSuccess } from "./components/checkout/OrderSuccess";
 
 const queryClient = new QueryClient({
@@ -46,7 +46,7 @@ const App: React.FC = () => {
               <Route path="/fundraising" element={<Fundraising />} />
               <Route path="/fundraiser/:customLink" element={<FundraiserPage />} />
               <Route path="/about" element={<About />} />
-              
+              <Route path="/fundraiser-request" element={<FundraiserRequest />} />
               <Route path="/checkout/success" element={<OrderSuccess />} />
             </Routes>
           </BrowserRouter>

@@ -14,25 +14,25 @@ export const FundraiserPromoBanner = ({ show }: FundraiserPromoBannerProps) => {
   if (!show || dismissed) return null;
 
   return (
-    <div className="fixed top-4 right-4 bg-green-600 text-white rounded-lg shadow-lg px-6 py-4 z-40 max-w-md animate-slide-in-right">
-      <div className="flex items-center justify-between">
-        <div className="flex-1 mr-4">
-          <p className="font-medium text-sm mb-2">
+    <div className="fixed top-0 left-0 right-0 bg-green-600 text-white px-4 py-3 z-40 shadow-lg">
+      <div className="container mx-auto flex items-center justify-between">
+        <div className="flex items-center space-x-4 flex-1">
+          <p className="font-medium">
             Learn more about how you can have your own fundraiser
           </p>
           <Button
             onClick={() => navigate('/fundraising')}
             variant="secondary"
             size="sm"
-            className="bg-white text-green-600 hover:bg-gray-100 text-xs"
+            className="bg-white text-green-600 hover:bg-gray-100"
           >
             Get Started
           </Button>
         </div>
         <button
           onClick={() => setDismissed(true)}
-          className="text-white hover:text-gray-200 transition-colors flex-shrink-0"
-          aria-label="Dismiss notification"
+          className="text-white hover:text-gray-200 transition-colors ml-4 flex-shrink-0"
+          aria-label="Dismiss banner"
         >
           <X className="w-5 h-5" />
         </button>
