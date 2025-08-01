@@ -2,7 +2,10 @@
 import React from 'react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Edit, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Edit, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import type { Fundraiser } from '../types';
 
 interface FundraiserTableRowProps {
@@ -21,6 +24,8 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
   onDelete,
   isDeleting
 }) => {
+  const { toast } = useToast();
+
   const getDonationAmount = () => {
     if (fundraiser.donation_type === 'percentage') {
       // Calculate donation amount based on base price and percentage
@@ -31,18 +36,42 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
     }
   };
 
+  const toggleShippingOption = async (field: 'allow_team_shipping' | 'allow_regular_shipping', currentValue: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('fundraisers')
+        .update({ [field]: !currentValue })
+        .eq('id', fundraiser.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Shipping option updated successfully`,
+      });
+      
+      // Trigger a refetch by calling the parent's refresh function if available
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating shipping option:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update shipping option",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <TableRow>
-      <TableCell>{fundraiser.title}</TableCell>
       <TableCell>
         <a
           href={`/fundraiser/${fundraiser.custom_link}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center text-blue-600 hover:text-blue-800"
+          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
         >
-          {fundraiser.custom_link}
-          <ExternalLink className="w-4 h-4 ml-1" />
+          {fundraiser.title}
         </a>
       </TableCell>
       <TableCell>{getDonationAmount()}</TableCell>
@@ -51,6 +80,18 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
       </TableCell>
       <TableCell className="text-blue-600 font-medium">
         ${(fundraiser.profit || 0).toFixed(2)}
+      </TableCell>
+      <TableCell>
+        <Switch
+          checked={fundraiser.allow_team_shipping ?? true}
+          onCheckedChange={() => toggleShippingOption('allow_team_shipping', fundraiser.allow_team_shipping ?? true)}
+        />
+      </TableCell>
+      <TableCell>
+        <Switch
+          checked={fundraiser.allow_regular_shipping ?? true}
+          onCheckedChange={() => toggleShippingOption('allow_regular_shipping', fundraiser.allow_regular_shipping ?? true)}
+        />
       </TableCell>
       <TableCell className="space-x-2">
         <Button

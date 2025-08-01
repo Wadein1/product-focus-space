@@ -14,6 +14,9 @@ export interface Fundraiser {
   created_at: string;
   fundraiser_variations?: FundraiserVariation[];
   fundraiser_age_divisions?: FundraiserAgeDivision[];
+  // Shipping control options
+  allow_team_shipping?: boolean;
+  allow_regular_shipping?: boolean;
   // New properties for admin display
   total_raised?: number;
   profit?: number;

@@ -44,7 +44,27 @@ export const DeliveryMethodSelector = ({
     enabled: !!fundraiserId
   });
 
-  const isPickupAvailable = !isLoading && ageDivisions && ageDivisions.length > 0;
+  // Fetch fundraiser shipping settings
+  const { data: fundraiser } = useQuery({
+    queryKey: ['fundraiser-shipping-settings', fundraiserId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('fundraisers')
+        .select('allow_team_shipping, allow_regular_shipping')
+        .eq('id', fundraiserId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching fundraiser shipping settings:', error);
+        throw error;
+      }
+      return data;
+    },
+    enabled: !!fundraiserId
+  });
+
+  const isPickupAvailable = !isLoading && ageDivisions && ageDivisions.length > 0 && (fundraiser?.allow_team_shipping ?? true);
+  const isRegularShippingAvailable = fundraiser?.allow_regular_shipping ?? true;
 
   // Notify parent component about pickup availability
   React.useEffect(() => {
@@ -54,13 +74,36 @@ export const DeliveryMethodSelector = ({
   // If pickup was selected but is no longer available, switch to shipping
   React.useEffect(() => {
     if (deliveryMethod === 'pickup' && !isPickupAvailable && !isLoading) {
-      onDeliveryMethodChange('shipping');
+      if (isRegularShippingAvailable) {
+        onDeliveryMethodChange('shipping');
+      }
     }
-  }, [deliveryMethod, isPickupAvailable, isLoading, onDeliveryMethodChange]);
+  }, [deliveryMethod, isPickupAvailable, isLoading, isRegularShippingAvailable, onDeliveryMethodChange]);
+
+  // If shipping was selected but is no longer available, switch to pickup
+  React.useEffect(() => {
+    if (deliveryMethod === 'shipping' && !isRegularShippingAvailable) {
+      if (isPickupAvailable) {
+        onDeliveryMethodChange('pickup');
+      }
+    }
+  }, [deliveryMethod, isRegularShippingAvailable, isPickupAvailable, onDeliveryMethodChange]);
 
   const handleDeliveryMethodChange = (value: string) => {
     onDeliveryMethodChange(value as 'shipping' | 'pickup');
   };
+
+  // If no delivery options are available
+  if (!isRegularShippingAvailable && !isPickupAvailable) {
+    return (
+      <div className="space-y-4">
+        <Label className="text-lg font-medium">Delivery Method</Label>
+        <div className="p-4 bg-muted rounded-md text-center text-muted-foreground">
+          No delivery options are currently available for this fundraiser.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -71,7 +114,9 @@ export const DeliveryMethodSelector = ({
             <SelectValue placeholder="Select delivery method" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="shipping">Ship to me (+$5.00)</SelectItem>
+            {isRegularShippingAvailable && (
+              <SelectItem value="shipping">Ship to me (+$5.00)</SelectItem>
+            )}
             {isPickupAvailable && (
               <SelectItem value="pickup">Pickup from my team</SelectItem>
             )}

@@ -397,6 +397,8 @@ export type Database = {
       }
       fundraisers: {
         Row: {
+          allow_regular_shipping: boolean | null
+          allow_team_shipping: boolean | null
           base_price: number
           created_at: string
           custom_link: string
@@ -409,6 +411,8 @@ export type Database = {
           title: string
         }
         Insert: {
+          allow_regular_shipping?: boolean | null
+          allow_team_shipping?: boolean | null
           base_price: number
           created_at?: string
           custom_link: string
@@ -421,6 +425,8 @@ export type Database = {
           title: string
         }
         Update: {
+          allow_regular_shipping?: boolean | null
+          allow_team_shipping?: boolean | null
           base_price?: number
           created_at?: string
           custom_link?: string

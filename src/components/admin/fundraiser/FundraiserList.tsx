@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FundraiserTable } from './components/FundraiserTable';
 import { EditDialog } from './components/EditDialog';
 import { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
 import { useFundraiserDeletion } from './hooks/useFundraiserDeletion';
+import { useToast } from "@/components/ui/use-toast";
 import type { Fundraiser } from './types';
 
 export const FundraiserList = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingFundraiser, setEditingFundraiser] = useState<Fundraiser | null>(null);
 
@@ -97,6 +101,57 @@ export const FundraiserList = () => {
     handleDeleteCancel
   } = useFundraiserDeletion(enhancedRefetch);
 
+  // Universal toggle functions
+  const toggleAllTeamShipping = async (enable: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('fundraisers')
+        .update({ allow_team_shipping: enable })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Team shipping ${enable ? 'enabled' : 'disabled'} for all fundraisers`,
+      });
+      
+      enhancedRefetch();
+    } catch (error) {
+      console.error('Error updating team shipping:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update team shipping for all fundraisers",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleAllRegularShipping = async (enable: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('fundraisers')
+        .update({ allow_regular_shipping: enable })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Regular shipping ${enable ? 'enabled' : 'disabled'} for all fundraisers`,
+      });
+      
+      enhancedRefetch();
+    } catch (error) {
+      console.error('Error updating regular shipping:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update regular shipping for all fundraisers",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     console.log('Loading fundraisers...');
     return <div>Loading fundraisers...</div>;
@@ -110,7 +165,7 @@ export const FundraiserList = () => {
   console.log('Rendering FundraiserList with', fundraisers?.length || 0, 'fundraisers');
 
   return (
-    <div>
+    <div className="space-y-6">
       <div className="mb-4">
         <Input
           type="text"
@@ -122,6 +177,48 @@ export const FundraiserList = () => {
           }}
         />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Universal Shipping Controls</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4">
+            <div className="space-x-2">
+              <Button
+                onClick={() => toggleAllTeamShipping(true)}
+                variant="outline"
+                size="sm"
+              >
+                Enable Team Shipping (All)
+              </Button>
+              <Button
+                onClick={() => toggleAllTeamShipping(false)}
+                variant="outline"
+                size="sm"
+              >
+                Disable Team Shipping (All)
+              </Button>
+            </div>
+            <div className="space-x-2">
+              <Button
+                onClick={() => toggleAllRegularShipping(true)}
+                variant="outline"
+                size="sm"
+              >
+                Enable Regular Shipping (All)
+              </Button>
+              <Button
+                onClick={() => toggleAllRegularShipping(false)}
+                variant="outline"
+                size="sm"
+              >
+                Disable Regular Shipping (All)
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <FundraiserTable
         fundraisers={fundraisers || []}

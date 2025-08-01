@@ -30,10 +30,11 @@ export const FundraiserTable: React.FC<FundraiserTableProps> = ({
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
-            <TableHead>Link</TableHead>
             <TableHead>Donation Amount</TableHead>
             <TableHead>Money Raised</TableHead>
             <TableHead>Your Profit</TableHead>
+            <TableHead>Team Shipping</TableHead>
+            <TableHead>Regular Shipping</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
