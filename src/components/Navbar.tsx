@@ -1,14 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { DesktopNav } from "./navigation/DesktopNav";
 import { MobileNav } from "./navigation/MobileNav";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
-  const isFundraisingPage = location.pathname === '/fundraising';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,11 +24,7 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || isMenuOpen 
-          ? isFundraisingPage 
-            ? "bg-green-900/80 backdrop-blur-md shadow-sm" 
-            : "bg-background/80 backdrop-blur-md shadow-sm" 
-          : "bg-transparent"
+        isScrolled || isMenuOpen ? "bg-background/80 backdrop-blur-md shadow-sm" : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,11 +40,10 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <DesktopNav isFundraisingPage={isFundraisingPage} />
+          <DesktopNav />
           <MobileNav 
             isMenuOpen={isMenuOpen}
             setIsMenuOpen={setIsMenuOpen}
-            isFundraisingPage={isFundraisingPage}
           />
         </div>
       </div>
