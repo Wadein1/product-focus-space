@@ -4,6 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FundraiserTable } from './components/FundraiserTable';
 import { EditDialog } from './components/EditDialog';
 import { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
@@ -16,6 +27,11 @@ export const FundraiserList = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingFundraiser, setEditingFundraiser] = useState<Fundraiser | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'team' | 'regular';
+    action: 'enable' | 'disable';
+  }>({ isOpen: false, type: 'team', action: 'enable' });
 
   const { data: fundraisers, isLoading, error, refetch } = useQuery({
     queryKey: ['fundraisers', searchTerm],
@@ -89,7 +105,6 @@ export const FundraiserList = () => {
   const enhancedRefetch = async () => {
     console.log('Enhanced refetch triggered - invalidating cache and refetching...');
     await queryClient.invalidateQueries({ queryKey: ['fundraisers'] });
-    await refetch();
     console.log('Enhanced refetch completed');
   };
 
@@ -101,54 +116,43 @@ export const FundraiserList = () => {
     handleDeleteCancel
   } = useFundraiserDeletion(enhancedRefetch);
 
-  // Universal toggle functions
-  const toggleAllTeamShipping = async (enable: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('fundraisers')
-        .update({ allow_team_shipping: enable })
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `Team shipping ${enable ? 'enabled' : 'disabled'} for all fundraisers`,
-      });
-      
-      enhancedRefetch();
-    } catch (error) {
-      console.error('Error updating team shipping:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update team shipping for all fundraisers",
-        variant: "destructive",
-      });
-    }
+  // Universal toggle functions with confirmation
+  const handleUniversalToggle = (type: 'team' | 'regular', enable: boolean) => {
+    setConfirmDialog({
+      isOpen: true,
+      type,
+      action: enable ? 'enable' : 'disable'
+    });
   };
 
-  const toggleAllRegularShipping = async (enable: boolean) => {
+  const confirmUniversalToggle = async () => {
+    const { type, action } = confirmDialog;
+    const enable = action === 'enable';
+    const field = type === 'team' ? 'allow_team_shipping' : 'allow_regular_shipping';
+    
     try {
       const { error } = await supabase
         .from('fundraisers')
-        .update({ allow_regular_shipping: enable })
+        .update({ [field]: enable })
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `Regular shipping ${enable ? 'enabled' : 'disabled'} for all fundraisers`,
+        description: `${type === 'team' ? 'Team' : 'Regular'} shipping ${enable ? 'enabled' : 'disabled'} for all fundraisers`,
       });
       
       enhancedRefetch();
     } catch (error) {
-      console.error('Error updating regular shipping:', error);
+      console.error('Error updating shipping:', error);
       toast({
         title: "Error",
-        description: "Failed to update regular shipping for all fundraisers",
+        description: "Failed to update shipping for all fundraisers",
         variant: "destructive",
       });
+    } finally {
+      setConfirmDialog({ isOpen: false, type: 'team', action: 'enable' });
     }
   };
 
@@ -166,6 +170,40 @@ export const FundraiserList = () => {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Universal Shipping Controls</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="flex items-center justify-between space-x-2">
+              <div>
+                <p className="font-medium">Team Shipping (All Fundraisers)</p>
+                <p className="text-sm text-muted-foreground">Enable/disable team pickup for all fundraisers</p>
+              </div>
+              <div className="flex space-x-2">
+                <Switch
+                  checked={true}
+                  onCheckedChange={(checked) => handleUniversalToggle('team', checked)}
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between space-x-2">
+              <div>
+                <p className="font-medium">Regular Shipping (All Fundraisers)</p>
+                <p className="text-sm text-muted-foreground">Enable/disable $5 shipping for all fundraisers</p>
+              </div>
+              <div className="flex space-x-2">
+                <Switch
+                  checked={true}
+                  onCheckedChange={(checked) => handleUniversalToggle('regular', checked)}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="mb-4">
         <Input
           type="text"
@@ -177,48 +215,6 @@ export const FundraiserList = () => {
           }}
         />
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Universal Shipping Controls</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4">
-            <div className="space-x-2">
-              <Button
-                onClick={() => toggleAllTeamShipping(true)}
-                variant="outline"
-                size="sm"
-              >
-                Enable Team Shipping (All)
-              </Button>
-              <Button
-                onClick={() => toggleAllTeamShipping(false)}
-                variant="outline"
-                size="sm"
-              >
-                Disable Team Shipping (All)
-              </Button>
-            </div>
-            <div className="space-x-2">
-              <Button
-                onClick={() => toggleAllRegularShipping(true)}
-                variant="outline"
-                size="sm"
-              >
-                Enable Regular Shipping (All)
-              </Button>
-              <Button
-                onClick={() => toggleAllRegularShipping(false)}
-                variant="outline"
-                size="sm"
-              >
-                Disable Regular Shipping (All)
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <FundraiserTable
         fundraisers={fundraisers || []}
@@ -239,6 +235,27 @@ export const FundraiserList = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
+
+      <AlertDialog 
+        open={confirmDialog.isOpen} 
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, isOpen: open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Universal Change</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {confirmDialog.action} {confirmDialog.type === 'team' ? 'team shipping' : 'regular shipping'} for ALL fundraisers? 
+              This action cannot be undone and will affect all existing fundraisers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUniversalToggle}>
+              {confirmDialog.action === 'enable' ? 'Enable' : 'Disable'} for All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

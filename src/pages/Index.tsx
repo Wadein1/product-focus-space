@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FundraiserRequestBanner } from "@/components/FundraiserRequestBanner";
 
 const Index = () => {
   return (
@@ -11,6 +12,9 @@ const Index = () => {
       <Suspense fallback={<HeroSkeleton />}>
         <Hero />
       </Suspense>
+      <div className="container mx-auto px-4 py-16">
+        <FundraiserRequestBanner />
+      </div>
     </main>
   );
 };

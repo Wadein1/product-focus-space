@@ -49,9 +49,6 @@ export const FundraiserTableRow: React.FC<FundraiserTableRowProps> = ({
         title: "Success",
         description: `Shipping option updated successfully`,
       });
-      
-      // Trigger a refetch by calling the parent's refresh function if available
-      window.location.reload();
     } catch (error) {
       console.error('Error updating shipping option:', error);
       toast({

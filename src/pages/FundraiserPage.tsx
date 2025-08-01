@@ -10,6 +10,7 @@ import { FundraiserErrorState } from "@/components/fundraiser/FundraiserErrorSta
 import { MobileLoadingScreen } from "@/components/fundraiser/MobileLoadingScreen";
 import { useMobileProgressiveLoading } from "@/hooks/useMobileProgressiveLoading";
 import { getDonationText } from "@/utils/fundraiserUtils";
+import { ShippingBanner } from "@/components/fundraiser/ShippingBanner";
 
 const FundraiserPage = () => {
   const { customLink } = useParams();
@@ -31,6 +32,9 @@ const FundraiserPage = () => {
   });
 
   const defaultVariation = fundraiser?.fundraiser_variations?.find(v => v.is_default);
+  
+  // Check if shipping options are available
+  const hasShippingOptions = (fundraiser?.allow_team_shipping || fundraiser?.allow_regular_shipping) ?? true;
 
   React.useEffect(() => {
     if (defaultVariation && !selectedVariation) {
@@ -110,6 +114,7 @@ const FundraiserPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
       <Navbar />
+      <ShippingBanner show={!hasShippingOptions} />
       <div className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
           <FundraiserHeader
