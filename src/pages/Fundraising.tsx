@@ -69,7 +69,7 @@ const Fundraising = () => {
       <div className="container mx-auto px-4 py-16 mt-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-500 to-green-600 md:from-primary md:to-blue-600 bg-clip-text text-transparent">
               Fundraising Opportunities
             </h1>
             <p className="text-muted-foreground text-lg md:block hidden">
@@ -124,7 +124,7 @@ const Fundraising = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-12 text-lg"
+                className="w-full h-12 text-lg bg-green-600 text-white hover:bg-green-700 md:bg-primary md:text-primary-foreground md:hover:bg-primary/90"
               >
                 {isSubmitting ? (
                   <>
