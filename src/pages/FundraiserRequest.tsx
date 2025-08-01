@@ -17,7 +17,7 @@ const requestSchema = z.object({
   email: z.string().email('Valid email is required'),
   phone: z.string().min(1, 'Phone number is required'),
   fundraiserGoal: z.string().min(1, 'Fundraiser goal is required'),
-  description: z.string().min(10, 'Please provide more details (minimum 10 characters)'),
+  website: z.string().optional(),
   timeline: z.string().min(1, 'Timeline is required'),
 });
 
@@ -37,7 +37,7 @@ const FundraiserRequest = () => {
         .insert({
           company_name: data.organizationName,
           contact_email: data.email,
-          description: `Contact: ${data.contactName}\nPhone: ${data.phone}\nGoal: ${data.fundraiserGoal}\nTimeline: ${data.timeline}\n\nDescription: ${data.description}`,
+          description: `Contact: ${data.contactName}\nPhone: ${data.phone}\nGoal: ${data.fundraiserGoal}\nTimeline: ${data.timeline}\nWebsite: ${data.website || 'Not provided'}`,
           status: 'pending'
         });
 
@@ -153,15 +153,14 @@ const FundraiserRequest = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Tell us more about your fundraiser *</Label>
-                  <Textarea
-                    id="description"
-                    {...register('description')}
-                    placeholder="Describe your organization, what you're raising money for, and any specific requirements..."
-                    rows={4}
+                  <Label htmlFor="website">Team/Company Website (optional)</Label>
+                  <Input
+                    id="website"
+                    {...register('website')}
+                    placeholder="https://yourorganization.com"
                   />
-                  {errors.description && (
-                    <p className="text-sm text-destructive">{errors.description.message}</p>
+                  {errors.website && (
+                    <p className="text-sm text-destructive">{errors.website.message}</p>
                   )}
                 </div>
 

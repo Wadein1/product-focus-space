@@ -170,39 +170,6 @@ export const FundraiserList = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Universal Shipping Controls</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="font-medium">Team Shipping (All Fundraisers)</p>
-                <p className="text-sm text-muted-foreground">Enable/disable team pickup for all fundraisers</p>
-              </div>
-              <div className="flex space-x-2">
-                <Switch
-                  checked={true}
-                  onCheckedChange={(checked) => handleUniversalToggle('team', checked)}
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between space-x-2">
-              <div>
-                <p className="font-medium">Regular Shipping (All Fundraisers)</p>
-                <p className="text-sm text-muted-foreground">Enable/disable $5 shipping for all fundraisers</p>
-              </div>
-              <div className="flex space-x-2">
-                <Switch
-                  checked={true}
-                  onCheckedChange={(checked) => handleUniversalToggle('regular', checked)}
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="mb-4">
         <Input

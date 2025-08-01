@@ -6,12 +6,29 @@ import { AdminAuth } from '@/components/admin/AdminAuth';
 import { FundraiserManagement } from '@/components/admin/fundraiser/FundraiserManagement';
 import { InventoryManagement } from '@/components/admin/inventory/InventoryManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { CreditCard } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'team' | 'regular';
+  }>({ isOpen: false, type: 'team' });
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = () => {
@@ -20,6 +37,52 @@ const Dashboard = () => {
     };
     checkAuth();
   }, []);
+
+  const handleUniversalToggle = (type: 'team' | 'regular') => {
+    setConfirmDialog({
+      isOpen: true,
+      type
+    });
+  };
+
+  const confirmUniversalToggle = async () => {
+    const { type } = confirmDialog;
+    const field = type === 'team' ? 'allow_team_shipping' : 'allow_regular_shipping';
+    
+    try {
+      // First get current state to toggle
+      const { data: currentData } = await supabase
+        .from('fundraisers')
+        .select(field)
+        .limit(1)
+        .single();
+      
+      const currentValue = currentData?.[field] ?? true;
+      const newValue = !currentValue;
+      
+      const { error } = await supabase
+        .from('fundraisers')
+        .update({ [field]: newValue })
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${type === 'team' ? 'Team' : 'Regular'} shipping ${newValue ? 'enabled' : 'disabled'} for all fundraisers`,
+      });
+      
+    } catch (error) {
+      console.error('Error updating shipping:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update shipping for all fundraisers",
+        variant: "destructive",
+      });
+    } finally {
+      setConfirmDialog({ isOpen: false, type: 'team' });
+    }
+  };
 
   if (!isAuthenticated) {
     return <AdminAuth onAuthSuccess={() => setIsAuthenticated(true)} />;
@@ -42,10 +105,28 @@ const Dashboard = () => {
       </div>
 
       <Tabs defaultValue="fundraisers" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="fundraisers">Fundraisers</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
-        </TabsList>
+        <div className="flex justify-between items-center">
+          <TabsList>
+            <TabsTrigger value="fundraisers">Fundraisers</TabsTrigger>
+            <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          </TabsList>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => handleUniversalToggle('team')}
+              variant="outline"
+              size="sm"
+            >
+              Toggle Team Shipping
+            </Button>
+            <Button 
+              onClick={() => handleUniversalToggle('regular')}
+              variant="outline" 
+              size="sm"
+            >
+              Toggle Regular Shipping
+            </Button>
+          </div>
+        </div>
 
         <TabsContent value="fundraisers">
           <Card>
@@ -69,6 +150,27 @@ const Dashboard = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog 
+        open={confirmDialog.isOpen} 
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, isOpen: open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Universal Change</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to toggle {confirmDialog.type === 'team' ? 'team shipping' : 'regular shipping'} for ALL fundraisers? 
+              This action will affect all existing fundraisers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUniversalToggle}>
+              Toggle for All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
