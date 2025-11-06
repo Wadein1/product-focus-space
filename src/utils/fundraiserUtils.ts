@@ -10,7 +10,5 @@ export const getDonationText = (fundraiser: any, fundraiserStats: any) => {
     donationText = `$${donationAmount.toFixed(2)} of each item bought is donated to ${fundraiser.title}`;
   }
   
-  const totalRaised = fundraiserStats?.total_raised || 0;
-  
-  return `${donationText}, $${totalRaised.toFixed(2)} raised so far!`;
+  return donationText;
 };
