@@ -99,7 +99,8 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
         console.error('Error fetching teams:', error);
         throw error;
       }
-      return data as Team[];
+      // Sort teams alphabetically by team_name
+      return (data as Team[]).sort((a, b) => a.team_name.localeCompare(b.team_name));
     },
     enabled: !!selectedDivisionId
   });
@@ -202,15 +203,15 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                 <Command>
                   <CommandInput placeholder={`Search ${teamLabel.toLowerCase()}...`} />
                   <CommandEmpty>No {teamLabel.toLowerCase()} found.</CommandEmpty>
-                  <CommandGroup>
+                  <CommandGroup className="max-h-[200px] overflow-auto">
                     {teamsLoading ? (
                       <Skeleton className="h-10 w-full" />
-                    ) : (
-                      teams?.map((team) => (
+                    ) : teams && teams.length > 0 ? (
+                      teams.map((team) => (
                         <CommandItem
                           key={team.id}
                           value={team.team_name}
@@ -228,6 +229,10 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
                           {team.team_name}
                         </CommandItem>
                       ))
+                    ) : (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        No {teamLabel.toLowerCase()} available for this {divisionLabel.toLowerCase()}.
+                      </div>
                     )}
                   </CommandGroup>
                 </Command>
