@@ -215,8 +215,8 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
                         <CommandItem
                           key={team.id}
                           value={team.team_name}
-                          onSelect={(currentValue) => {
-                            handleTeamChange(currentValue === selectedTeamName ? "" : currentValue);
+                          onSelect={() => {
+                            handleTeamChange(selectedTeamName === team.team_name ? "" : team.team_name);
                             setOpenTeamSelect(false);
                           }}
                         >
