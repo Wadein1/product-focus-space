@@ -400,6 +400,7 @@ export type Database = {
           allow_regular_shipping: boolean | null
           allow_team_shipping: boolean | null
           base_price: number
+          big_school: boolean | null
           created_at: string
           custom_link: string
           description: string | null
@@ -407,6 +408,7 @@ export type Database = {
           donation_percentage: number
           donation_type: string
           id: string
+          school_mode: boolean | null
           status: string
           title: string
         }
@@ -414,6 +416,7 @@ export type Database = {
           allow_regular_shipping?: boolean | null
           allow_team_shipping?: boolean | null
           base_price: number
+          big_school?: boolean | null
           created_at?: string
           custom_link: string
           description?: string | null
@@ -421,6 +424,7 @@ export type Database = {
           donation_percentage: number
           donation_type?: string
           id?: string
+          school_mode?: boolean | null
           status?: string
           title: string
         }
@@ -428,6 +432,7 @@ export type Database = {
           allow_regular_shipping?: boolean | null
           allow_team_shipping?: boolean | null
           base_price?: number
+          big_school?: boolean | null
           created_at?: string
           custom_link?: string
           description?: string | null
@@ -435,6 +440,7 @@ export type Database = {
           donation_percentage?: number
           donation_type?: string
           id?: string
+          school_mode?: boolean | null
           status?: string
           title?: string
         }

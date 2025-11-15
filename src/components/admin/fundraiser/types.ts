@@ -17,6 +17,9 @@ export interface Fundraiser {
   // Shipping control options
   allow_team_shipping?: boolean;
   allow_regular_shipping?: boolean;
+  // School mode options
+  school_mode?: boolean;
+  big_school?: boolean;
   // New properties for admin display
   total_raised?: number;
   profit?: number;
@@ -60,6 +63,8 @@ export const fundraiserFormSchema = z.object({
   donationType: z.enum(['percentage', 'fixed']),
   donationPercentage: z.number().min(0).max(100).optional(),
   donationAmount: z.number().min(0).optional(),
+  schoolMode: z.boolean().optional(),
+  bigSchool: z.boolean().optional(),
   variations: z.array(z.object({
     title: z.string().min(1, "Variation title is required"),
     images: z.array(z.instanceof(File)).optional(),
