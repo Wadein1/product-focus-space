@@ -96,7 +96,14 @@ serve(async (req) => {
           image_path: session.metadata?.item_image_path || null,
           chain_color: session.metadata?.item_chain_color || null,
           team_name: session.metadata?.item_team_name || null,
-          team_location: session.metadata?.item_team_location || null
+          team_location: session.metadata?.item_team_location || null,
+          // Add School Mode fields
+          school_mode: session.metadata?.school_mode === 'true',
+          big_school: session.metadata?.big_school === 'true',
+          school_button_clicked: session.metadata?.school_button_clicked === 'true',
+          grade: session.metadata?.grade || null,
+          teacher: session.metadata?.teacher || null,
+          homeroom_teacher: session.metadata?.homeroom_teacher || null
         };
 
         console.log('Creating order with data:', orderData);
