@@ -15,6 +15,9 @@ interface FundraiserPurchaseProps {
   imagePath?: string;
   fundraiserTitle?: string;
   variationTitle?: string;
+  schoolMode?: boolean;
+  bigSchool?: boolean;
+  teacherList?: string[];
 }
 
 export const FundraiserPurchase = ({
@@ -27,11 +30,15 @@ export const FundraiserPurchase = ({
   imagePath,
   fundraiserTitle,
   variationTitle,
+  schoolMode = false,
+  bigSchool = false,
+  teacherList = []
 }: FundraiserPurchaseProps) => {
   const [deliveryMethod, setDeliveryMethod] = React.useState<'shipping' | 'pickup'>('shipping');
   const [ageDivision, setAgeDivision] = React.useState<string>('');
   const [teamName, setTeamName] = React.useState<string>('');
   const [isPickupAvailable, setIsPickupAvailable] = React.useState<boolean>(true);
+  const [schoolButtonClicked, setSchoolButtonClicked] = React.useState<boolean>(false);
 
   const handleDeliveryMethodChange = (value: 'shipping' | 'pickup') => {
     setDeliveryMethod(value);
@@ -67,6 +74,9 @@ export const FundraiserPurchase = ({
           teamName={teamName}
           onTeamSelectionChange={handleTeamSelectionChange}
           onPickupAvailabilityChange={handlePickupAvailabilityChange}
+          schoolMode={schoolMode}
+          bigSchool={bigSchool}
+          teacherList={teacherList}
         />
 
         <QuantitySelector
@@ -87,6 +97,10 @@ export const FundraiserPurchase = ({
           fundraiserTitle={fundraiserTitle}
           variationTitle={variationTitle}
           isPickupAvailable={isPickupAvailable}
+          schoolMode={schoolMode}
+          bigSchool={bigSchool}
+          schoolButtonClicked={schoolButtonClicked}
+          onSchoolButtonClick={() => setSchoolButtonClicked(!schoolButtonClicked)}
         />
       </div>
     </div>

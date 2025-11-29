@@ -5,12 +5,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SchoolModeTeacherSelector } from "./SchoolModeTeacherSelector";
 
 interface TeamPickupSelectorProps {
   fundraiserId: string;
   onSelectionChange: (ageDivision: string, teamName: string) => void;
   selectedAgeDivision?: string;
   selectedTeam?: string;
+  schoolMode?: boolean;
+  bigSchool?: boolean;
+  teacherList?: string[];
 }
 
 interface AgeDivision {
@@ -29,7 +33,10 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
   fundraiserId,
   onSelectionChange,
   selectedAgeDivision,
-  selectedTeam
+  selectedTeam,
+  schoolMode = false,
+  bigSchool = false,
+  teacherList = []
 }) => {
   const [selectedDivisionId, setSelectedDivisionId] = useState<string>('');
   const [selectedTeamName, setSelectedTeamName] = useState<string>(selectedTeam || '');
@@ -129,18 +136,21 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
   if (!ageDivisions || ageDivisions.length === 0) {
     return (
       <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-lg">
-        Team pickup is not configured for this fundraiser.
+        {schoolMode ? "School delivery" : "Team pickup"} is not configured for this fundraiser.
       </div>
     );
   }
 
+  const divisionLabel = schoolMode ? "Grade" : "Age Division";
+  const teamLabel = bigSchool ? "Homeroom Teacher" : schoolMode ? "Teacher" : "Team";
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>Age Division</Label>
+        <Label>{divisionLabel}</Label>
         <Select value={selectedDivisionId} onValueChange={handleDivisionChange}>
           <SelectTrigger>
-            <SelectValue placeholder="Select age division" />
+            <SelectValue placeholder={`Select ${divisionLabel.toLowerCase()}`} />
           </SelectTrigger>
           <SelectContent>
             {ageDivisions.map((division) => (
@@ -152,31 +162,40 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label>Team</Label>
-        <Select 
-          value={selectedTeamName} 
-          onValueChange={handleTeamChange}
-          disabled={!selectedDivisionId || teamsLoading}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={
-              !selectedDivisionId 
-                ? "Select age division first" 
-                : teamsLoading 
-                ? "Loading teams..." 
-                : "Select team"
-            } />
-          </SelectTrigger>
-          <SelectContent>
-            {teams?.map((team) => (
-              <SelectItem key={team.id} value={team.team_name}>
-                {team.team_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {bigSchool && teacherList.length > 0 ? (
+        <SchoolModeTeacherSelector
+          teacherList={teacherList}
+          selectedTeacher={selectedTeamName}
+          onTeacherChange={handleTeamChange}
+          label={teamLabel}
+        />
+      ) : (
+        <div className="space-y-2">
+          <Label>{teamLabel}</Label>
+          <Select 
+            value={selectedTeamName} 
+            onValueChange={handleTeamChange}
+            disabled={!selectedDivisionId || teamsLoading}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={
+                !selectedDivisionId 
+                  ? `Select ${divisionLabel.toLowerCase()} first` 
+                  : teamsLoading 
+                  ? `Loading ${teamLabel.toLowerCase()}s...` 
+                  : `Select ${teamLabel.toLowerCase()}`
+              } />
+            </SelectTrigger>
+            <SelectContent>
+              {teams?.map((team) => (
+                <SelectItem key={team.id} value={team.team_name}>
+                  {team.team_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
     </div>
   );
 };
