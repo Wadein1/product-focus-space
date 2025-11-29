@@ -13,7 +13,6 @@ import { BasicInfoFields } from './form/BasicInfoFields';
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import { fundraiserFormSchema, type FundraiserFormData, type Fundraiser } from './types';
 import { TeamPickupFields } from './form/TeamPickupFields';
-import { SchoolModeFields } from './form/SchoolModeFields';
 
 interface FundraiserFormProps {
   fundraiser?: Fundraiser;
@@ -42,8 +41,6 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       donationType: fundraiser.donation_type,
       donationPercentage: fundraiser.donation_percentage || undefined,
       donationAmount: fundraiser.donation_amount || undefined,
-      schoolMode: fundraiser.school_mode || false,
-      bigSchool: fundraiser.big_school || false,
       variations: fundraiser.fundraiser_variations.map(v => ({
         title: v.title,
         images: [],
@@ -58,8 +55,6 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       })) || []
     } : {
       donationType: 'percentage',
-      schoolMode: false,
-      bigSchool: false,
       variations: [{ title: '', images: [], price: 0, existingImages: [] }],
       ageDivisions: []
     }
@@ -161,9 +156,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           base_price: data.basePrice,
           donation_type: data.donationType,
           donation_percentage: data.donationType === 'percentage' ? data.donationPercentage : 0,
-          donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0,
-          school_mode: data.schoolMode || false,
-          big_school: data.bigSchool || false
+          donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0
         };
 
         if (fundraiser) {
@@ -374,7 +367,6 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <BasicInfoFields form={form} />
           <DonationFields form={form} />
-          <SchoolModeFields form={form} />
           <VariationFields form={form} />
           <TeamPickupFields form={form} />
           <Button type="submit" className="w-full" disabled={isSubmitting}>

@@ -50,7 +50,7 @@ export const DeliveryMethodSelector = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('fundraisers')
-        .select('allow_team_shipping, allow_regular_shipping, school_mode')
+        .select('allow_team_shipping, allow_regular_shipping')
         .eq('id', fundraiserId)
         .single();
 
@@ -65,8 +65,6 @@ export const DeliveryMethodSelector = ({
 
   const isPickupAvailable = !isLoading && ageDivisions && ageDivisions.length > 0 && (fundraiser?.allow_team_shipping ?? true);
   const isRegularShippingAvailable = fundraiser?.allow_regular_shipping ?? true;
-  const schoolMode = fundraiser?.school_mode || false;
-  const pickupLabel = schoolMode ? 'Deliver to my school' : 'Pickup from my team';
 
   // Notify parent component about pickup availability
   React.useEffect(() => {
@@ -120,7 +118,7 @@ export const DeliveryMethodSelector = ({
               <SelectItem value="shipping">Ship to me (+$5.00)</SelectItem>
             )}
             {isPickupAvailable && (
-              <SelectItem value="pickup">{pickupLabel}</SelectItem>
+              <SelectItem value="pickup">Pickup from my team</SelectItem>
             )}
           </SelectContent>
         </Select>

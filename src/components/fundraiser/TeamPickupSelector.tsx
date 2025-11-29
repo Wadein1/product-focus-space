@@ -1,14 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface TeamPickupSelectorProps {
   fundraiserId: string;
@@ -37,32 +33,6 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
 }) => {
   const [selectedDivisionId, setSelectedDivisionId] = useState<string>('');
   const [selectedTeamName, setSelectedTeamName] = useState<string>(selectedTeam || '');
-  const [openTeamSelect, setOpenTeamSelect] = useState(false);
-
-  // Fetch fundraiser settings to get school_mode and big_school
-  const { data: fundraiser } = useQuery({
-    queryKey: ['fundraiser-settings', fundraiserId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('fundraisers')
-        .select('school_mode, big_school')
-        .eq('id', fundraiserId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching fundraiser settings:', error);
-        throw error;
-      }
-      return data;
-    },
-    enabled: !!fundraiserId
-  });
-
-  const schoolMode = fundraiser?.school_mode || false;
-  const bigSchool = fundraiser?.big_school || false;
-
-  const divisionLabel = schoolMode ? 'Grade' : 'Age Division';
-  const teamLabel = schoolMode && bigSchool ? 'Homeroom Teacher' : schoolMode ? 'Teacher' : 'Team';
 
   // Fetch age divisions for this fundraiser
   const { data: ageDivisions, isLoading: divisionsLoading } = useQuery({
@@ -99,8 +69,7 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
         console.error('Error fetching teams:', error);
         throw error;
       }
-      // Sort teams alphabetically by team_name
-      return (data as Team[]).sort((a, b) => a.team_name.localeCompare(b.team_name));
+      return data as Team[];
     },
     enabled: !!selectedDivisionId
   });
@@ -146,11 +115,11 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
     return (
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label>{divisionLabel}</Label>
+          <Label>Age Division</Label>
           <Skeleton className="h-10 w-full" />
         </div>
         <div className="space-y-2">
-          <Label>{teamLabel}</Label>
+          <Label>Team</Label>
           <Skeleton className="h-10 w-full" />
         </div>
       </div>
@@ -159,8 +128,8 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
 
   if (!ageDivisions || ageDivisions.length === 0) {
     return (
-      <div className="text-sm text-muted-foreground text-center py-4">
-        {schoolMode ? 'School delivery' : 'Team pickup'} is not configured for this fundraiser.
+      <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-lg">
+        Team pickup is not configured for this fundraiser.
       </div>
     );
   }
@@ -168,13 +137,10 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>{divisionLabel}</Label>
-        <Select 
-          value={selectedDivisionId} 
-          onValueChange={handleDivisionChange}
-        >
+        <Label>Age Division</Label>
+        <Select value={selectedDivisionId} onValueChange={handleDivisionChange}>
           <SelectTrigger>
-            <SelectValue placeholder={`Select ${divisionLabel.toLowerCase()}`} />
+            <SelectValue placeholder="Select age division" />
           </SelectTrigger>
           <SelectContent>
             {ageDivisions.map((division) => (
@@ -186,79 +152,31 @@ export const TeamPickupSelector: React.FC<TeamPickupSelectorProps> = ({
         </Select>
       </div>
 
-      {selectedDivisionId && (
-        <div className="space-y-2">
-          <Label>{teamLabel}</Label>
-          {bigSchool && schoolMode ? (
-            // Use searchable combobox for big school mode
-            <Popover open={openTeamSelect} onOpenChange={setOpenTeamSelect}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openTeamSelect}
-                  className="w-full justify-between"
-                >
-                  {selectedTeamName || `Select ${teamLabel.toLowerCase()}`}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                <Command>
-                  <CommandInput placeholder={`Search ${teamLabel.toLowerCase()}...`} />
-                  <CommandEmpty>No {teamLabel.toLowerCase()} found.</CommandEmpty>
-                  <CommandGroup className="max-h-[200px] overflow-auto">
-                    {teamsLoading ? (
-                      <Skeleton className="h-10 w-full" />
-                    ) : teams && teams.length > 0 ? (
-                      teams.map((team) => (
-                        <CommandItem
-                          key={team.id}
-                          value={team.team_name}
-                          onSelect={() => {
-                            handleTeamChange(selectedTeamName === team.team_name ? "" : team.team_name);
-                            setOpenTeamSelect(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedTeamName === team.team_name ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {team.team_name}
-                        </CommandItem>
-                      ))
-                    ) : (
-                      <div className="py-6 text-center text-sm text-muted-foreground">
-                        No {teamLabel.toLowerCase()} available for this {divisionLabel.toLowerCase()}.
-                      </div>
-                    )}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          ) : (
-            // Use regular select for non-big-school mode
-            <Select 
-              value={selectedTeamName} 
-              onValueChange={handleTeamChange}
-              disabled={teamsLoading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={`Select ${teamLabel.toLowerCase()}`} />
-              </SelectTrigger>
-              <SelectContent>
-                {teams?.map((team) => (
-                  <SelectItem key={team.id} value={team.team_name}>
-                    {team.team_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      )}
+      <div className="space-y-2">
+        <Label>Team</Label>
+        <Select 
+          value={selectedTeamName} 
+          onValueChange={handleTeamChange}
+          disabled={!selectedDivisionId || teamsLoading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={
+              !selectedDivisionId 
+                ? "Select age division first" 
+                : teamsLoading 
+                ? "Loading teams..." 
+                : "Select team"
+            } />
+          </SelectTrigger>
+          <SelectContent>
+            {teams?.map((team) => (
+              <SelectItem key={team.id} value={team.team_name}>
+                {team.team_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 };
