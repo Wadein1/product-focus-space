@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -400,6 +400,7 @@ export type Database = {
           allow_regular_shipping: boolean | null
           allow_team_shipping: boolean | null
           base_price: number
+          big_school: boolean | null
           created_at: string
           custom_link: string
           description: string | null
@@ -407,6 +408,7 @@ export type Database = {
           donation_percentage: number
           donation_type: string
           id: string
+          school_mode: boolean | null
           status: string
           title: string
         }
@@ -414,6 +416,7 @@ export type Database = {
           allow_regular_shipping?: boolean | null
           allow_team_shipping?: boolean | null
           base_price: number
+          big_school?: boolean | null
           created_at?: string
           custom_link: string
           description?: string | null
@@ -421,6 +424,7 @@ export type Database = {
           donation_percentage: number
           donation_type?: string
           id?: string
+          school_mode?: boolean | null
           status?: string
           title: string
         }
@@ -428,6 +432,7 @@ export type Database = {
           allow_regular_shipping?: boolean | null
           allow_team_shipping?: boolean | null
           base_price?: number
+          big_school?: boolean | null
           created_at?: string
           custom_link?: string
           description?: string | null
@@ -435,6 +440,7 @@ export type Database = {
           donation_percentage?: number
           donation_type?: string
           id?: string
+          school_mode?: boolean | null
           status?: string
           title?: string
         }
@@ -817,15 +823,12 @@ export type Database = {
       calculate_fundraiser_totals: {
         Args: { fundraiser_id: string }
         Returns: {
-          total_raised: number
-          total_orders: number
           total_items_sold: number
+          total_orders: number
+          total_raised: number
         }[]
       }
-      cleanup_inactive_carts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_inactive_carts: { Args: never; Returns: undefined }
       get_fundraiser_stats: {
         Args: { fundraiser_id_param: string }
         Returns: {
@@ -837,21 +840,18 @@ export type Database = {
         Args: { fundraiser_id_param: string }
         Returns: {
           total_items_sold: number
-          total_raised: number
           total_orders: number
+          total_raised: number
         }[]
       }
-      recover_fundraiser_orders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      recover_fundraiser_orders: { Args: never; Returns: undefined }
       validate_fundraiser_tracking: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
+          has_tracking: boolean
+          is_fundraiser: boolean
           order_id: string
           product_name: string
-          is_fundraiser: boolean
-          has_tracking: boolean
         }[]
       }
     }
