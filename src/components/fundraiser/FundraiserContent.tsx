@@ -154,6 +154,11 @@ export const FundraiserContent = ({
               variationId={selectedVariation || defaultVariation?.id || ''}
               productName={`${fundraiser.title} - ${selectedVariationData.title}`}
               imagePath={selectedVariationData.image_path}
+              fundraiserTitle={fundraiser.title}
+              variationTitle={selectedVariationData.title}
+              schoolMode={fundraiser.school_mode || false}
+              bigSchool={fundraiser.big_school || false}
+              teacherList={(fundraiser.teacher_list as string[]) || []}
             />
           )}
         </div>
@@ -192,6 +197,11 @@ export const FundraiserContent = ({
             variationId={selectedVariation || defaultVariation?.id || ''}
             productName={`${fundraiser.title} - ${selectedVariationData.title}`}
             imagePath={selectedVariationData.image_path}
+            fundraiserTitle={fundraiser.title}
+            variationTitle={selectedVariationData.title}
+            schoolMode={fundraiser.school_mode || false}
+            bigSchool={fundraiser.big_school || false}
+            teacherList={(fundraiser.teacher_list as string[]) || []}
           />
         )}
       </div>

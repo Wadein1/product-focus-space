@@ -14,6 +14,9 @@ interface DeliveryMethodSelectorProps {
   teamName: string;
   onTeamSelectionChange: (ageDivision: string, teamName: string) => void;
   onPickupAvailabilityChange?: (isAvailable: boolean) => void;
+  schoolMode?: boolean;
+  bigSchool?: boolean;
+  teacherList?: string[];
 }
 
 export const DeliveryMethodSelector = ({
@@ -24,6 +27,9 @@ export const DeliveryMethodSelector = ({
   teamName,
   onTeamSelectionChange,
   onPickupAvailabilityChange,
+  schoolMode = false,
+  bigSchool = false,
+  teacherList = []
 }: DeliveryMethodSelectorProps) => {
   // Check if pickup is available for this fundraiser
   const { data: ageDivisions, isLoading } = useQuery({
@@ -44,13 +50,13 @@ export const DeliveryMethodSelector = ({
     enabled: !!fundraiserId
   });
 
-  // Fetch fundraiser shipping settings
+  // Fetch fundraiser shipping settings and school mode
   const { data: fundraiser } = useQuery({
     queryKey: ['fundraiser-shipping-settings', fundraiserId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('fundraisers')
-        .select('allow_team_shipping, allow_regular_shipping')
+        .select('allow_team_shipping, allow_regular_shipping, school_mode, big_school, teacher_list')
         .eq('id', fundraiserId)
         .single();
 
@@ -65,6 +71,12 @@ export const DeliveryMethodSelector = ({
 
   const isPickupAvailable = !isLoading && ageDivisions && ageDivisions.length > 0 && (fundraiser?.allow_team_shipping ?? true);
   const isRegularShippingAvailable = fundraiser?.allow_regular_shipping ?? true;
+  
+  const currentSchoolMode = fundraiser?.school_mode ?? schoolMode;
+  const currentBigSchool = fundraiser?.big_school ?? bigSchool;
+  const currentTeacherList = (fundraiser?.teacher_list as string[]) ?? teacherList;
+  
+  const pickupLabel = currentSchoolMode ? "Deliver to my school" : "Pickup from my team";
 
   // Notify parent component about pickup availability
   React.useEffect(() => {
@@ -118,7 +130,7 @@ export const DeliveryMethodSelector = ({
               <SelectItem value="shipping">Ship to me (+$5.00)</SelectItem>
             )}
             {isPickupAvailable && (
-              <SelectItem value="pickup">Pickup from my team</SelectItem>
+              <SelectItem value="pickup">{pickupLabel}</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -130,6 +142,9 @@ export const DeliveryMethodSelector = ({
           onSelectionChange={onTeamSelectionChange}
           selectedAgeDivision={ageDivision}
           selectedTeam={teamName}
+          schoolMode={currentSchoolMode}
+          bigSchool={currentBigSchool}
+          teacherList={currentTeacherList}
         />
       )}
     </div>

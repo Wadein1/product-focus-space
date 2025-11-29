@@ -18,6 +18,10 @@ interface PurchaseActionsProps {
   fundraiserTitle?: string;
   variationTitle?: string;
   isPickupAvailable?: boolean;
+  schoolMode?: boolean;
+  bigSchool?: boolean;
+  schoolButtonClicked?: boolean;
+  onSchoolButtonClick?: () => void;
 }
 
 export const PurchaseActions = ({
@@ -33,6 +37,10 @@ export const PurchaseActions = ({
   fundraiserTitle,
   variationTitle,
   isPickupAvailable = true,
+  schoolMode = false,
+  bigSchool = false,
+  schoolButtonClicked = false,
+  onSchoolButtonClick
 }: PurchaseActionsProps) => {
   const { toast } = useToast();
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
@@ -40,17 +48,20 @@ export const PurchaseActions = ({
   const validateTeamSelection = () => {
     if (deliveryMethod === 'pickup') {
       if (!isPickupAvailable) {
+        const deliveryType = schoolMode ? "School delivery" : "Team pickup";
         toast({
-          title: "Pickup not available",
-          description: "Team pickup is not configured for this fundraiser.",
+          title: `${deliveryType} not available`,
+          description: `${deliveryType} is not configured for this fundraiser.`,
           variant: "destructive",
         });
         return false;
       }
       if (!ageDivision || !teamName) {
+        const divisionLabel = schoolMode ? "grade" : "age division";
+        const teamLabel = bigSchool ? "homeroom teacher" : schoolMode ? "teacher" : "team";
         toast({
-          title: "Team selection required",
-          description: "Please select both age division and team for pickup orders.",
+          title: "Selection required",
+          description: `Please select both ${divisionLabel} and ${teamLabel} for ${schoolMode ? "school delivery" : "pickup"} orders.`,
           variant: "destructive",
         });
         return false;
@@ -172,10 +183,16 @@ export const PurchaseActions = ({
             delivery_method: deliveryMethod,
             fundraiser_name: fundraiserTitle || 'Unknown Fundraiser',
             item_name: variationTitle || productName,
+            school_mode: schoolMode.toString(),
+            big_school: bigSchool.toString(),
+            school_button_clicked: schoolButtonClicked.toString(),
             ...(deliveryMethod === 'pickup' && {
               team_age_division: ageDivision,
               team_name: teamName,
-              pickup_team_name: teamName
+              pickup_team_name: teamName,
+              grade: schoolMode ? ageDivision : '',
+              teacher: schoolMode && !bigSchool ? teamName : '',
+              homeroom_teacher: bigSchool ? teamName : ''
             })
           },
           shipping_cost: shippingCost,
@@ -214,6 +231,10 @@ export const PurchaseActions = ({
 
   const isDisabled = deliveryMethod === 'pickup' && (!isPickupAvailable || !ageDivision || !teamName);
 
+  const divisionLabel = schoolMode ? "grade" : "age division";
+  const teamLabel = bigSchool ? "homeroom teacher" : schoolMode ? "teacher" : "team";
+  const deliveryType = schoolMode ? "school delivery" : "pickup";
+
   return (
     <div className="space-y-3">
       <Button 
@@ -233,11 +254,21 @@ export const PurchaseActions = ({
       >
         {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
       </Button>
+      {schoolMode && onSchoolButtonClick && (
+        <Button 
+          onClick={onSchoolButtonClick}
+          variant={schoolButtonClicked ? "default" : "outline"}
+          className={`w-full ${schoolButtonClicked ? 'bg-[#0CA2ED] text-white' : 'border-[#0CA2ED] text-[#0CA2ED]'} hover:bg-[#0CA2ED]/90 hover:text-white`}
+          size="lg"
+        >
+          {schoolButtonClicked ? '✓ School Option Selected' : 'Select School Option'}
+        </Button>
+      )}
       {isDisabled && deliveryMethod === 'pickup' && (
         <p className="text-sm text-gray-500 text-center">
           {!isPickupAvailable 
-            ? "Team pickup is not available for this fundraiser" 
-            : "Please select age division and team to continue"
+            ? `${deliveryType.charAt(0).toUpperCase() + deliveryType.slice(1)} is not available for this fundraiser` 
+            : `Please select ${divisionLabel} and ${teamLabel} to continue`
           }
         </p>
       )}

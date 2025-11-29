@@ -13,6 +13,7 @@ import { BasicInfoFields } from './form/BasicInfoFields';
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import { fundraiserFormSchema, type FundraiserFormData, type Fundraiser } from './types';
 import { TeamPickupFields } from './form/TeamPickupFields';
+import { SchoolModeFields } from './form/SchoolModeFields';
 
 interface FundraiserFormProps {
   fundraiser?: Fundraiser;
@@ -41,6 +42,9 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       donationType: fundraiser.donation_type,
       donationPercentage: fundraiser.donation_percentage || undefined,
       donationAmount: fundraiser.donation_amount || undefined,
+      schoolMode: fundraiser.school_mode || false,
+      bigSchool: fundraiser.big_school || false,
+      teacherList: fundraiser.teacher_list?.join(', ') || '',
       variations: fundraiser.fundraiser_variations.map(v => ({
         title: v.title,
         images: [],
@@ -55,6 +59,9 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
       })) || []
     } : {
       donationType: 'percentage',
+      schoolMode: false,
+      bigSchool: false,
+      teacherList: '',
       variations: [{ title: '', images: [], price: 0, existingImages: [] }],
       ageDivisions: []
     }
@@ -149,6 +156,15 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
         }
 
         console.log('Creating/updating fundraiser...');
+        
+        // Parse teacher list if Big School is enabled
+        const teacherList = data.bigSchool && data.teacherList
+          ? data.teacherList
+              .split(',')
+              .map(t => t.trim())
+              .filter((t, index, self) => t && self.indexOf(t) === index) // Remove empty and duplicates
+          : [];
+
         const fundraiserData = {
           title: data.title,
           description: data.description,
@@ -156,7 +172,10 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           base_price: data.basePrice,
           donation_type: data.donationType,
           donation_percentage: data.donationType === 'percentage' ? data.donationPercentage : 0,
-          donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0
+          donation_amount: data.donationType === 'fixed' ? data.donationAmount : 0,
+          school_mode: data.schoolMode || false,
+          big_school: data.bigSchool || false,
+          teacher_list: teacherList
         };
 
         if (fundraiser) {
@@ -368,6 +387,7 @@ export const FundraiserForm: React.FC<FundraiserFormProps> = ({
           <BasicInfoFields form={form} />
           <DonationFields form={form} />
           <VariationFields form={form} />
+          <SchoolModeFields form={form} />
           <TeamPickupFields form={form} />
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {fundraiser ? 'Update' : 'Create'} Fundraiser

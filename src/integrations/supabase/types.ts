@@ -410,6 +410,7 @@ export type Database = {
           id: string
           school_mode: boolean | null
           status: string
+          teacher_list: Json | null
           title: string
         }
         Insert: {
@@ -426,6 +427,7 @@ export type Database = {
           id?: string
           school_mode?: boolean | null
           status?: string
+          teacher_list?: Json | null
           title: string
         }
         Update: {
@@ -442,6 +444,7 @@ export type Database = {
           id?: string
           school_mode?: boolean | null
           status?: string
+          teacher_list?: Json | null
           title?: string
         }
         Relationships: []
@@ -632,6 +635,7 @@ export type Database = {
       orders: {
         Row: {
           age_division: string | null
+          big_school: boolean | null
           cart_id: string | null
           chain_color: string | null
           created_at: string
@@ -639,6 +643,8 @@ export type Database = {
           design_notes: string | null
           first_name: string | null
           fundraiser_id: string | null
+          grade: string | null
+          homeroom_teacher: string | null
           id: string
           image_path: string | null
           is_fundraiser: boolean | null
@@ -648,11 +654,14 @@ export type Database = {
           price: number
           product_name: string
           quantity: number
+          school_button_clicked: boolean | null
+          school_mode: boolean | null
           shipping_address: Json
           shipping_cost: number
           status: string
           stl_file_path: string | null
           tax_amount: number
+          teacher: string | null
           team_location: string | null
           team_name: string | null
           total_amount: number
@@ -661,6 +670,7 @@ export type Database = {
         }
         Insert: {
           age_division?: string | null
+          big_school?: boolean | null
           cart_id?: string | null
           chain_color?: string | null
           created_at?: string
@@ -668,6 +678,8 @@ export type Database = {
           design_notes?: string | null
           first_name?: string | null
           fundraiser_id?: string | null
+          grade?: string | null
+          homeroom_teacher?: string | null
           id?: string
           image_path?: string | null
           is_fundraiser?: boolean | null
@@ -677,11 +689,14 @@ export type Database = {
           price: number
           product_name: string
           quantity?: number
+          school_button_clicked?: boolean | null
+          school_mode?: boolean | null
           shipping_address: Json
           shipping_cost?: number
           status?: string
           stl_file_path?: string | null
           tax_amount: number
+          teacher?: string | null
           team_location?: string | null
           team_name?: string | null
           total_amount: number
@@ -690,6 +705,7 @@ export type Database = {
         }
         Update: {
           age_division?: string | null
+          big_school?: boolean | null
           cart_id?: string | null
           chain_color?: string | null
           created_at?: string
@@ -697,6 +713,8 @@ export type Database = {
           design_notes?: string | null
           first_name?: string | null
           fundraiser_id?: string | null
+          grade?: string | null
+          homeroom_teacher?: string | null
           id?: string
           image_path?: string | null
           is_fundraiser?: boolean | null
@@ -706,11 +724,14 @@ export type Database = {
           price?: number
           product_name?: string
           quantity?: number
+          school_button_clicked?: boolean | null
+          school_mode?: boolean | null
           shipping_address?: Json
           shipping_cost?: number
           status?: string
           stl_file_path?: string | null
           tax_amount?: number
+          teacher?: string | null
           team_location?: string | null
           team_name?: string | null
           total_amount?: number
